@@ -55,25 +55,32 @@ export default function Header() {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 w-full bg-white border-t border-stone-100 flex flex-col items-start p-6 gap-4 text-stone-700">
-          <Link href="/brazil/porto-alegre" onClick={() => setOpen(false)}>
-            Porto Alegre
-          </Link>
-          <Link href="/brazil/porto-alegre/hosts" onClick={() => setOpen(false)}>
-            Hosts
-          </Link>
-          <Link href="/brazil/porto-alegre/stays" onClick={() => setOpen(false)}>
-            Stays
-          </Link>
-          <a
-            href="https://wa.me/+5551997783369"
-            target="_blank"
-            onClick={() => setOpen(false)}
-          >
-            Contact
-          </a>
-        </div>
-      )}
+  <div className="absolute top-full left-0 w-full bg-white border-t border-stone-100 flex flex-col items-start p-6 gap-4 text-stone-700">
+
+    {pathname !== "/brazil/porto-alegre" && (
+      <Link href="/brazil/porto-alegre" onClick={() => setOpen(false)}>
+        Porto Alegre
+      </Link>
+    )}
+
+    <Link href="/brazil/porto-alegre/hosts" onClick={() => setOpen(false)}>
+      Hosts
+    </Link>
+
+    <Link href="/brazil/porto-alegre/stays" onClick={() => setOpen(false)}>
+      Stays
+    </Link>
+
+    <a
+      href="https://wa.me/+5551997783369"
+      target="_blank"
+      onClick={() => setOpen(false)}
+    >
+      Contact
+    </a>
+
+  </div>
+)}
     </header>
   );
 }
