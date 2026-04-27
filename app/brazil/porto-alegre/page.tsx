@@ -13,62 +13,90 @@ export default function PortoAlegrePage() {
           <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-6">
             Porto Alegre
           </h1>
-          <p className="text-stone-500 max-w-xl mx-auto">
-            Your local guide to navigating the city — from trusted hosts to the best places to stay, eat and explore.
-          </p>
         </div>
       </section>
 
+      {/* Intro text */}
+      <section className="max-w-3xl mx-auto px-8 mb-16 text-center">
+        <p className="text-lg text-stone-600 leading-relaxed">
+          Porto Alegre is a green and safe city along a beautiful river in southern Brazil.
+          It’s a place where business and daily life blend naturally — with great restaurants,
+          a charming historic center and a lively public market.
+        </p>
+
+        <p className="text-lg text-stone-600 leading-relaxed mt-6">
+          With its relaxed atmosphere, mild climate and spacious parks, it offers a comfortable
+          environment for international visitors — both for work and to unwind after.
+        </p>
+      </section>
+
       {/* Sections */}
-      <section className="max-w-6xl mx-auto px-8 pb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <section className="max-w-5xl mx-auto px-8 grid gap-12 pb-20">
 
         {/* Hosts */}
-        <Link href="/brazil/porto-alegre/hosts" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Local Hosts</h3>
-          <p className="text-sm text-stone-500">
-            Meet trusted people who help you navigate the city.
+        <div>
+          <h2 className="text-2xl font-light text-stone-800 mb-3">
+            Meet your local host
+          </h2>
+          <p className="text-stone-500 mb-4">
+            Get personal support from someone who knows the city and understands international business needs.
           </p>
-        </Link>
+          <Link href="/brazil/porto-alegre/hosts" className="text-stone-800 underline">
+            View hosts →
+          </Link>
+        </div>
 
         {/* Stays */}
-        <Link href="/brazil/porto-alegre/stays" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Stays</h3>
-          <p className="text-sm text-stone-500">
-            Carefully selected apartments and accommodations.
+        <div>
+          <h2 className="text-2xl font-light text-stone-800 mb-3">
+            Find a place to stay
+          </h2>
+          <p className="text-stone-500 mb-4">
+            Carefully selected apartments that offer comfort, safety and a local experience.
           </p>
-        </Link>
+          <Link href="/brazil/porto-alegre/stays" className="text-stone-800 underline">
+            View stays →
+          </Link>
+        </div>
 
         {/* Eat */}
-        <Link href="/brazil/porto-alegre/eat" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Where to Eat</h3>
-          <p className="text-sm text-stone-500">
-            A curated selection of restaurants and cafés.
+        <div>
+          <h2 className="text-2xl font-light text-stone-800 mb-3">
+            Where to eat
+          </h2>
+          <p className="text-stone-500 mb-4">
+            A curated selection of restaurants and cafés — from business lunches to relaxed evenings.
           </p>
-        </Link>
+          <Link href="/brazil/porto-alegre/eat" className="text-stone-800 underline">
+            Explore restaurants →
+          </Link>
+        </div>
 
         {/* Agenda */}
-        <Link href="/brazil/porto-alegre/agenda" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Agenda</h3>
-          <p className="text-sm text-stone-500">
-            What’s happening in the city during your stay.
+        <div>
+          <h2 className="text-2xl font-light text-stone-800 mb-3">
+            What’s happening
+          </h2>
+          <p className="text-stone-500 mb-4">
+            Events, culture and activities worth knowing during your stay.
           </p>
-        </Link>
-
-        {/* Tips */}
-        <Link href="/brazil/porto-alegre/tips" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Tips</h3>
-          <p className="text-sm text-stone-500">
-            Essential information for international visitors.
-          </p>
-        </Link>
+          <Link href="/brazil/porto-alegre/agenda" className="text-stone-800 underline">
+            View agenda →
+          </Link>
+        </div>
 
         {/* Services */}
-        <Link href="/brazil/porto-alegre/services" className="block bg-white p-6 rounded-2xl hover:shadow-md transition-shadow">
-          <h3 className="text-xl text-stone-800 mb-2">Services</h3>
-          <p className="text-sm text-stone-500">
-            Transport, translation, and other local support.
+        <div>
+          <h2 className="text-2xl font-light text-stone-800 mb-3">
+            Need something specific?
+          </h2>
+          <p className="text-stone-500 mb-4">
+            From transport and translation to tailored support — we help you arrange what you need.
           </p>
-        </Link>
+          <Link href="/brazil/porto-alegre/services" className="text-stone-800 underline">
+            View services →
+          </Link>
+        </div>
 
       </section>
 
