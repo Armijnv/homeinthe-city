@@ -29,9 +29,11 @@ export default function Header() {
       </Link>
 
       <nav className="hidden md:flex items-center gap-8 text-sm text-stone-500">
-        <Link href="/brazil/porto-alegre" className="hover:text-stone-800 transition-colors">
-          Porto Alegre
-        </Link>
+        {pathname !== "/brazil/porto-alegre" && (
+  <Link href="/brazil/porto-alegre" onClick={() => setOpen(false)}>
+    Porto Alegre
+  </Link>
+)}
         <Link href="/brazil/porto-alegre/hosts" className="hover:text-stone-800 transition-colors">
           Hosts
         </Link>
