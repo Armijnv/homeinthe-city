@@ -7,7 +7,7 @@ export default function Home() {
       <section className="relative min-h-screen pt-28 flex items-center justify-center overflow-hidden bg-[#1a1f2e]">
         
         {/* Globe */}
-        <div className="absolute z-50 left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 scale-75 opacity-90 md:left-[28%] md:top-1/2 md:scale-110">
+        <div className="absolute z-50 left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 scale-60 opacity-90 md:left-[28%] md:top-1/2 md:scale-110">
           <GlobeComponent />
         </div>
 
