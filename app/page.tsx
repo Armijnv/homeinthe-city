@@ -4,15 +4,10 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#1a1f2e]">
-      <section className="relative min-h-screen pt-28 flex items-center justify-center overflow-hidden bg-[#1a1f2e]">
-        
-        {/* Globe */}
-        <div className="absolute z-50 left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2 scale-60 opacity-90 md:left-[28%] md:top-1/2 md:scale-110">
-          <GlobeComponent />
-        </div>
+      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-32">
 
         {/* Text */}
-        <div className="relative z-10 px-8 text-center md:ml-[42%] md:text-left">
+        <div className="relative z-20 text-center md:absolute md:right-24 md:top-1/2 md:-translate-y-1/2 md:text-left">
           <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
             Your local guide · Wherever business takes you
           </p>
@@ -23,7 +18,7 @@ export default function Home() {
             <span className="text-stone-300">In any city.</span>
           </h1>
 
-          <p className="mx-auto mb-10 max-w-xl text-lg text-stone-400 md:mx-0">
+          <p className="mx-auto mb-8 max-w-xl text-lg text-stone-400 md:mx-0">
             Local hosts, trusted stays, restaurant guides and cultural agendas —
             for international business visitors who want more than a hotel room.
           </p>
@@ -34,6 +29,11 @@ export default function Home() {
           >
             Explore Porto Alegre →
           </Link>
+        </div>
+
+        {/* Globe */}
+        <div className="relative z-10 mx-auto mt-8 flex justify-center scale-[0.55] md:absolute md:left-[28%] md:top-1/2 md:mt-0 md:-translate-x-1/2 md:-translate-y-1/2 md:scale-110">
+          <GlobeComponent />
         </div>
 
       </section>
