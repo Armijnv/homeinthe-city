@@ -16,7 +16,7 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4 bg-[#1a1f2e]">
       <Link href="/" className="flex items-center gap-3">
-        <Image src="/logo.png" alt="Home in the City logo" width={76} height={76} />
+        <Image src="/logo.png" alt="Home in the City logo" width={64} height={64} />
 
         <span className="text-white font-medium tracking-tight text-lg">
           {title}
