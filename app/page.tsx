@@ -5,9 +5,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#1a1f2e]">
       <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] pt-28 px-6">
-
         {/* Globe */}
-        <div className="absolute z-[60] left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2 scale-[0.65] md:left-[28%] md:top-1/2 md:scale-110">
+        <div className="absolute z-10 left-1/2 top-[63%] -translate-x-1/2 -translate-y-1/2 scale-[0.55] opacity-90 md:z-[60] md:left-[28%] md:top-1/2 md:scale-110">
           <GlobeComponent />
         </div>
 
@@ -35,7 +34,6 @@ export default function Home() {
             Explore Porto Alegre →
           </Link>
         </div>
-
       </section>
     </div>
   );
