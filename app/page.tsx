@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#1a1f2e]">
-      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-32">
+      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-10">
 
         {/* Text */}
         <div className="relative z-20 text-center md:absolute md:right-24 md:top-1/2 md:-translate-y-1/2 md:text-left">
@@ -12,13 +12,13 @@ export default function Home() {
             Your local guide · Wherever business takes you
           </p>
 
-          <h1 className="mb-6 text-5xl font-light leading-tight text-white md:text-7xl">
+          <h1 className="mb-5 text-5xl font-light leading-tight text-white md:text-7xl">
             Feel at home.
             <br />
             <span className="text-stone-300">In any city.</span>
           </h1>
 
-          <p className="mx-auto mb-8 max-w-xl text-lg text-stone-400 md:mx-0">
+          <p className="mx-auto mb-7 max-w-xl text-lg text-stone-400 md:mx-0">
             Local hosts, trusted stays, restaurant guides and cultural agendas —
             for international business visitors who want more than a hotel room.
           </p>
@@ -32,7 +32,7 @@ export default function Home() {
         </div>
 
         {/* Globe */}
-        <div className="relative z-10 mx-auto mt-8 flex justify-center scale-[0.55] md:absolute md:left-[28%] md:top-1/2 md:mt-0 md:-translate-x-1/2 md:-translate-y-1/2 md:scale-110">
+        <div className="relative z-10 mx-auto -mt-20 flex h-[360px] justify-center scale-[0.55] md:absolute md:left-[28%] md:top-1/2 md:mt-0 md:h-auto md:-translate-x-1/2 md:-translate-y-1/2 md:scale-110">
           <GlobeComponent />
         </div>
 
