@@ -4,7 +4,12 @@ import Link from "next/link";
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#1a1f2e]">
-      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-10">
+      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] pt-28 px-6">
+
+        {/* Globe */}
+        <div className="absolute z-10 left-1/2 top-[65%] -translate-x-1/2 -translate-y-1/2 scale-[0.65] md:left-[28%] md:top-1/2 md:scale-110">
+          <GlobeComponent />
+        </div>
 
         {/* Text */}
         <div className="relative z-20 text-center md:absolute md:right-24 md:top-1/2 md:-translate-y-1/2 md:text-left">
@@ -29,11 +34,6 @@ export default function Home() {
           >
             Explore Porto Alegre →
           </Link>
-        </div>
-
-        {/* Globe */}
-        <div className="relative z-10 mx-auto -mt-20 flex h-[360px] justify-center scale-[0.55] md:absolute md:left-[28%] md:top-1/2 md:mt-0 md:h-auto md:-translate-x-1/2 md:-translate-y-1/2 md:scale-110">
-          <GlobeComponent />
         </div>
 
       </section>
