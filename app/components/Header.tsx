@@ -35,27 +35,23 @@ export default function Header() {
           </a>
         </nav>
 
-        {/* Mobile menu checkbox */}
-        <input id="menu-toggle" type="checkbox" className="peer hidden" />
+        {/* Mobile menu */}
+        <details className="relative md:hidden">
+          <summary className="flex cursor-pointer list-none flex-col gap-1">
+            <span className="w-6 h-[2px] bg-white"></span>
+            <span className="w-6 h-[2px] bg-white"></span>
+            <span className="w-6 h-[2px] bg-white"></span>
+          </summary>
 
-        <label
-          htmlFor="menu-toggle"
-          className="md:hidden flex flex-col gap-1 cursor-pointer"
-        >
-          <span className="w-6 h-[2px] bg-white"></span>
-          <span className="w-6 h-[2px] bg-white"></span>
-          <span className="w-6 h-[2px] bg-white"></span>
-        </label>
+          <nav className="absolute right-0 mt-6 flex w-48 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
+            <a href="/brazil/porto-alegre">Porto Alegre</a>
+            <a href="/hosts/armijn">Your Host</a>
+            <a href="https://wa.me/+5551997783369" target="_blank">
+              Contact
+            </a>
+          </nav>
+        </details>
       </div>
-
-      {/* Mobile menu */}
-      <nav className="hidden peer-checked:flex md:hidden flex-col gap-4 pt-6 text-white">
-        <a href="/brazil/porto-alegre">Porto Alegre</a>
-        <a href="/hosts/armijn">Your Host</a>
-        <a href="https://wa.me/+5551997783369" target="_blank">
-          Contact
-        </a>
-      </nav>
     </header>
   );
 }
