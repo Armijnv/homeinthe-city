@@ -6,15 +6,16 @@ export default function PortoAlegrePage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
         {/* Fixed profile image */}
-        <div className="fixed top-24 right-6 z-[70] transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-          <Image
-            src="/me.png"
-            alt="Your local host in Porto Alegre"
-            width={90}
-            height={90}
-            className="rounded-full border-4 border-white shadow-xl object-cover md:w-[120px] md:h-[120px]"
-          />
-        </div>
+        <div className="fixed top-24 right-4 md:right-8 z-[70] transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+  <div className="w-20 h-20 md:w-28 md:h-28">
+    <Image
+      src="/me.png"
+      alt="Your local host in Porto Alegre"
+      fill
+      className="rounded-full object-cover border-4 border-white shadow-xl"
+    />
+  </div>
+</div>
 
         {/* LEFT */}
         <div className="md:col-span-2 space-y-8">
