@@ -78,13 +78,24 @@ export default function ArmijnHostPage() {
             </p>
           </div>
 
-          <a
-            href="https://wa.me/+5551997783369"
-            target="_blank"
-            className="inline-block rounded-full bg-white px-8 py-4 text-sm text-stone-900 transition hover:bg-stone-200"
-          >
-            Contact me on WhatsApp
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4">
+
+  <a
+    href="https://wa.me/+5551997783369"
+    target="_blank"
+    className="inline-block rounded-full bg-white px-8 py-4 text-sm text-stone-900 transition hover:bg-stone-200 text-center"
+  >
+    WhatsApp
+  </a>
+
+  <a
+    href="mailto:armijnvandijk@gmail.com"
+    className="inline-block rounded-full bg-white/10 px-8 py-4 text-sm text-white border border-white/20 transition hover:bg-white/20 text-center"
+  >
+    Email me
+  </a>
+
+</div>
         </div>
 
       </div>
