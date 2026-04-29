@@ -5,20 +5,19 @@ export default function PortoAlegrePage() {
     <div className="min-h-screen bg-[#1a1f2e] md:bg-stone-50 px-6 pt-28 pb-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
-        {/* Floating profile image */}
-        <div className="absolute -top-12 right-2 md:right-0 z-[70]">
-  <Image
-    src="/me.png"
-    alt="Your local host in Porto Alegre"
-    width={90}
-    height={90}
-    className="rounded-full border-4 border-white shadow-xl object-cover md:w-[120px] md:h-[120px]"
-  />
-</div>
+        {/* Fixed profile image */}
+        <div className="fixed top-24 right-6 z-[70] transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+          <Image
+            src="/me.png"
+            alt="Your local host in Porto Alegre"
+            width={90}
+            height={90}
+            className="rounded-full border-4 border-white shadow-xl object-cover md:w-[120px] md:h-[120px]"
+          />
+        </div>
 
         {/* LEFT */}
         <div className="md:col-span-2 space-y-8">
-
           <div className="bg-white p-8 rounded-3xl">
             <p className="text-stone-500 text-sm tracking-widest uppercase mb-4">
               Your local guide · Wherever business takes you
