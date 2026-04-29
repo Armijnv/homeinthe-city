@@ -1,21 +1,52 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 export default function PortoAlegrePage() {
+  const [open, setOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#1a1f2e] md:bg-stone-50 px-6 pt-28 pb-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
-        {/* Fixed profile image */}
-        <div className="fixed top-24 right-4 md:right-8 z-[70] transition-all duration-300 hover:scale-105 hover:shadow-2xl">
-  <div className="w-20 h-20 md:w-28 md:h-28">
-    <Image
-      src="/me.png"
-      alt="Your local host in Porto Alegre"
-      fill
-      className="rounded-full object-cover border-4 border-white shadow-xl"
-    />
-  </div>
-</div>
+        {/* Fixed profile image + menu */}
+        <div className="fixed top-24 right-4 md:right-8 z-[70]">
+          <button
+            onClick={() => setOpen(!open)}
+            className="relative w-20 h-20 md:w-28 md:h-28 transition-all duration-300 hover:scale-105"
+          >
+            <Image
+              src="/me.png"
+              alt="Your local host in Porto Alegre"
+              fill
+              className="rounded-full object-cover border-4 border-white shadow-xl"
+            />
+          </button>
+
+          {open && (
+            <div className="absolute right-0 mt-4 w-52 rounded-2xl bg-white p-4 shadow-xl text-sm text-stone-700 flex flex-col gap-3">
+              <a href="/profile" className="hover:text-black">
+                My profile
+              </a>
+
+              <a
+                href="https://wa.me/+5551997783369"
+                target="_blank"
+                className="hover:text-black"
+              >
+                WhatsApp me
+              </a>
+
+              <a
+                href="/brazil/porto-alegre/restaurants"
+                className="hover:text-black"
+              >
+                My top 5 restaurants
+              </a>
+            </div>
+          )}
+        </div>
 
         {/* LEFT */}
         <div className="md:col-span-2 space-y-8">
