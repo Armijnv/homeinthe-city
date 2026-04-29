@@ -15,7 +15,7 @@ const portoAlegre = [
 
 export default function GlobeComponent() {
   const globeRef = useRef<any>(null);
-  const [supported, setSupported] = useState(false);
+  const [supported, setSupported] = useState(true);
 
   useEffect(() => {
     try {
@@ -24,12 +24,8 @@ export default function GlobeComponent() {
         canvas.getContext("webgl") ||
         canvas.getContext("experimental-webgl");
 
-      const isOldIOS =
-        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-        !("MSStream" in window);
-
-      if (gl && !isOldIOS) {
-        setSupported(true);
+      if (!gl) {
+        setSupported(false);
       }
     } catch {
       setSupported(false);
@@ -53,19 +49,7 @@ export default function GlobeComponent() {
   }
 
   if (!supported) {
-    return (
-      <a
-        href="/brazil/porto-alegre"
-        className="flex h-[700px] w-[700px] items-center justify-center rounded-full bg-gradient-to-br from-[#0b1220] via-[#1a1f2e] to-black text-center text-white shadow-2xl"
-      >
-        <div>
-          <div className="mx-auto mb-4 h-5 w-5 rounded-full bg-white shadow-[0_0_30px_rgba(245,215,110,0.95)]" />
-          <p className="text-sm uppercase tracking-widest text-white/70">
-            Porto Alegre
-          </p>
-        </div>
-      </a>
-    );
+    return null;
   }
 
   return (
