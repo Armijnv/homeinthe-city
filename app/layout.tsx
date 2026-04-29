@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import Image from "next/image";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -20,46 +21,58 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geist.className} bg-[#1a1f2e]`}>
-
         <Header />
 
-        <main>
-          {children}
-        </main>
+        <main>{children}</main>
 
-        {/* Footer */}
-        <footer className="px-6 py-10 bg-[#1a1f2e]">
-          <div className="max-w-6xl mx-auto flex flex-col items-center gap-6 text-sm text-stone-400 md:flex-row md:justify-between">
+        <footer className="bg-[#1a1f2e] px-6 py-12">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-8 text-center text-sm text-stone-400 md:flex-row md:items-end md:justify-between md:text-left">
             
-            {/* Left */}
-            <span className="text-center md:text-left">
-              © 2026 home in the city
-            </span>
+            <div className="flex flex-col items-center gap-3 md:items-start">
+              <Image
+                src="/logo.png"
+                alt="Home in the City logo"
+                width={44}
+                height={44}
+                className="opacity-80"
+              />
 
-            {/* Links */}
-            <div className="flex flex-col items-center gap-4 md:flex-row md:gap-6">
-              <Link href="/brazil/porto-alegre" className="hover:text-white">
-                Porto Alegre
-              </Link>
-              <a
-                href="https://www.instagram.com/homeinthe.city/"
-                target="_blank"
-                className="hover:text-white"
-              >
-                Instagram
-              </a>
-              <a
-                href="https://wa.me/+5551997783369"
-                target="_blank"
-                className="hover:text-white"
-              >
-                WhatsApp
-              </a>
+              <div>
+                <p className="text-white">home in the city</p>
+                <p className="mt-1 max-w-xs text-stone-500">
+                  Local support for business visitors who want to feel at home.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-4 md:items-end">
+              <div className="flex flex-wrap justify-center gap-6 md:justify-end">
+                <Link href="/brazil/porto-alegre" className="hover:text-white">
+                  Porto Alegre
+                </Link>
+                <a
+                  href="https://www.instagram.com/homeinthe.city/"
+                  target="_blank"
+                  className="hover:text-white"
+                >
+                  Instagram
+                </a>
+                <a
+                  href="https://wa.me/+5551997783369"
+                  target="_blank"
+                  className="hover:text-white"
+                >
+                  WhatsApp
+                </a>
+              </div>
+
+              <span className="text-xs text-stone-600">
+                © 2026 home in the city
+              </span>
             </div>
 
           </div>
         </footer>
-
       </body>
     </html>
   );
