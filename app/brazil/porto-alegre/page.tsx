@@ -6,15 +6,15 @@ export default function PortoAlegrePage() {
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
         {/* Floating profile image */}
-        <div className="absolute -top-14 right-2 md:right-0 z-[70]">
-          <Image
-            src="/me.png"
-            alt="Your local host in Porto Alegre"
-            width={120}
-            height={120}
-            className="rounded-full border-4 border-white shadow-xl object-cover"
-          />
-        </div>
+        <div className="absolute -top-12 right-2 md:right-0 z-[70]">
+  <Image
+    src="/me.png"
+    alt="Your local host in Porto Alegre"
+    width={90}
+    height={90}
+    className="rounded-full border-4 border-white shadow-xl object-cover md:w-[120px] md:h-[120px]"
+  />
+</div>
 
         {/* LEFT */}
         <div className="md:col-span-2 space-y-8">
