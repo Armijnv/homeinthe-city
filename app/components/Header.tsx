@@ -18,7 +18,7 @@ export default function Header() {
       
       {/* Logo */}
       <Link href="/" className="flex items-center gap-3">
-        <Image src="/logo.png" alt="Home in the City logo" width={64} height={64} />
+        <Image src="/logo.png" alt="Home in the City logo" width={64} height={64} priority />
         <span className="text-white font-medium tracking-tight text-lg">
           {title}
         </span>
@@ -58,14 +58,14 @@ export default function Header() {
         <div className="absolute top-full left-0 w-full bg-[#1a1f2e] flex flex-col items-start p-6 gap-4 text-white">
 
           {pathname !== "/brazil/porto-alegre" && (
-            <Link href="/brazil/porto-alegre" onClick={() => setOpen(false)}>
+            <a href="/brazil/porto-alegre" onClick={() => setOpen(false)}>
               Porto Alegre
-            </Link>
+            </a>
           )}
 
-          <Link href="/hosts/armijn" onClick={() => setOpen(false)}>
+          <a href="/hosts/armijn" onClick={() => setOpen(false)}>
             Your Host
-          </Link>
+          </a>
 
           <a
             href="https://wa.me/+5551997783369"
