@@ -1,33 +1,42 @@
+import Image from "next/image";
+
 export default function PortoAlegrePage() {
   return (
     <div className="min-h-screen bg-stone-50 px-6 pt-28 pb-16">
 
-      {/* Page title */}
-      <div className="max-w-6xl mx-auto mb-10">
-        <h1 className="text-4xl md:text-6xl font-light text-stone-800">
-          Porto Alegre
-        </h1>
-      </div>
-
-      {/* Layout */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
 
         {/* LEFT — Main content */}
         <div className="md:col-span-2 space-y-8">
 
-          {/* Main feature */}
-          <div className="bg-white p-6 rounded-2xl">
-            <h2 className="text-2xl text-stone-800 mb-2">
+          {/* Hero box */}
+          <div className="relative bg-white p-8 rounded-3xl overflow-visible">
+            <p className="text-stone-500 text-sm tracking-widest uppercase mb-4">
+              Your local guide · Wherever business takes you
+            </p>
+
+            <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-4">
               A city that works at your pace
-            </h2>
-            <p className="text-stone-600">
+            </h1>
+
+            <p className="text-stone-600 max-w-2xl">
               Porto Alegre combines business and lifestyle in a relaxed way.
               Wide streets, green parks and a strong local culture make it
               easy to navigate and comfortable to stay.
             </p>
+
+            {/* Floating profile image */}
+            <div className="absolute -top-10 right-8 hidden md:block">
+              <Image
+                src="/me.png"
+                alt="Your local host in Porto Alegre"
+                width={110}
+                height={110}
+                className="rounded-full border-4 border-white shadow-xl object-cover"
+              />
+            </div>
           </div>
 
-          {/* Featured restaurant */}
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-xl text-stone-800 mb-2">
               Restaurant highlight
@@ -37,7 +46,6 @@ export default function PortoAlegrePage() {
             </p>
           </div>
 
-          {/* Cultural highlight */}
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-xl text-stone-800 mb-2">
               Cultural highlight
@@ -49,31 +57,25 @@ export default function PortoAlegrePage() {
 
         </div>
 
-        {/* RIGHT — Big info blocks */}
+        {/* RIGHT — Info blocks */}
         <div className="space-y-6">
-
-          {/* Weather */}
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-lg text-stone-800 mb-2">Weather</h3>
             <p className="text-stone-600">25°C — sunny</p>
           </div>
 
-          {/* Cinema */}
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-lg text-stone-800 mb-2">Cinema today</h3>
             <p className="text-stone-600">Top movies playing in the city</p>
           </div>
 
-          {/* Transport */}
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-lg text-stone-800 mb-2">Catamaran</h3>
             <p className="text-stone-600">Next departure to Guaíba</p>
           </div>
-
         </div>
 
       </div>
-
     </div>
   );
 }
