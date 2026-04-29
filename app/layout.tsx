@@ -23,15 +23,21 @@ export default function RootLayout({
 
         <Header />
 
-        {/* REMOVE padding */}
         <main>
           {children}
         </main>
 
-        <footer className="py-8 px-8 bg-[#1a1f2e]">
-          <div className="max-w-6xl mx-auto flex justify-between items-center text-sm text-stone-400">
-            <span>© 2026 home in the city</span>
-            <div className="flex gap-6">
+        {/* Footer */}
+        <footer className="px-6 py-10 bg-[#1a1f2e]">
+          <div className="max-w-6xl mx-auto flex flex-col items-center gap-6 text-sm text-stone-400 md:flex-row md:justify-between">
+            
+            {/* Left */}
+            <span className="text-center md:text-left">
+              © 2026 home in the city
+            </span>
+
+            {/* Links */}
+            <div className="flex flex-col items-center gap-4 md:flex-row md:gap-6">
               <Link href="/brazil/porto-alegre" className="hover:text-white">
                 Porto Alegre
               </Link>
@@ -50,8 +56,10 @@ export default function RootLayout({
                 WhatsApp
               </a>
             </div>
+
           </div>
         </footer>
+
       </body>
     </html>
   );
