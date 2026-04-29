@@ -27,7 +27,7 @@ export default function PortoAlegrePage() {
           {open && (
             <>
               <a
-                href="/profile"
+                href="/hosts/armijn"
                 className="absolute right-24 top-0 md:right-32 md:top-0 rounded-full bg-white px-4 py-2 text-xs md:text-sm text-stone-800 shadow-xl hover:bg-stone-100"
               >
                 Profile
