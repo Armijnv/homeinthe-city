@@ -10,7 +10,7 @@ export default function PortoAlegrePage() {
     <div className="min-h-screen bg-[#1a1f2e] md:bg-stone-50 px-6 pt-28 pb-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
-        {/* Fixed profile image + sun-ray menu */}
+        {/* Fixed profile image + menu */}
         <div className="fixed top-24 right-4 md:right-8 z-[70]">
           <button
             onClick={() => setOpen(!open)}
@@ -26,34 +26,36 @@ export default function PortoAlegrePage() {
 
           {open && (
             <>
-              <a
-                href="/hosts/armijn"
-                className="absolute right-24 top-0 md:right-32 md:top-0 rounded-full bg-white px-4 py-2 text-xs md:text-sm text-stone-800 shadow-xl hover:bg-stone-100"
-              >
-                Profile
-              </a>
+              {/* Desktop sun rays */}
+              <div className="hidden md:block">
+                <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
+                  Profile
+                </a>
 
-              <a
-                href="https://wa.me/+5551997783369"
-                target="_blank"
-                className="absolute right-24 top-12 md:right-36 md:top-16 rounded-full bg-white px-4 py-2 text-xs md:text-sm text-stone-800 shadow-xl hover:bg-stone-100"
-              >
-                WhatsApp
-              </a>
+                <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
+                  WhatsApp
+                </a>
 
-              <a
-                href="mailto:armijnvandijk@gmail.com"
-                className="absolute right-14 top-24 md:right-20 md:top-32 rounded-full bg-white px-4 py-2 text-xs md:text-sm text-stone-800 shadow-xl hover:bg-stone-100"
-              >
-                Email me
-              </a>
+                <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
+                  Email me
+                </a>
 
-              <a
-                href="/brazil/porto-alegre/restaurants"
-                className="absolute right-0 top-32 md:right-0 md:top-40 rounded-full bg-white px-4 py-2 text-xs md:text-sm text-stone-800 shadow-xl hover:bg-stone-100 whitespace-nowrap"
-              >
-                Top 5 restaurants
-              </a>
+                <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100 whitespace-nowrap">
+                  Top 5 restaurants
+                </a>
+              </div>
+
+              {/* Mobile / older phone menu */}
+              <div className="absolute right-0 mt-4 flex w-48 flex-col gap-3 rounded-2xl bg-white p-4 text-sm text-stone-800 shadow-xl md:hidden">
+                <a href="/hosts/armijn">Profile</a>
+                <a href="https://wa.me/+5551997783369" target="_blank">
+                  WhatsApp
+                </a>
+                <a href="mailto:armijnvandijk@gmail.com">Email me</a>
+                <a href="/brazil/porto-alegre/restaurants">
+                  Top 5 restaurants
+                </a>
+              </div>
             </>
           )}
         </div>
