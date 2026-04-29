@@ -12,17 +12,21 @@ export default function PortoAlegrePage() {
 
         {/* Fixed profile image + menu */}
         <div className="fixed top-24 right-4 md:right-8 z-[70]">
-          <button
-            onClick={() => setOpen(!open)}
-            className="relative w-20 h-20 md:w-28 md:h-28 transition-all duration-300 hover:scale-105"
-          >
+
+          {/* Clickable image (fixed for old iPhone) */}
+          <div className="relative w-20 h-20 md:w-28 md:h-28">
+            <button
+              onClick={() => setOpen(!open)}
+              className="absolute inset-0 z-10"
+            />
+
             <Image
               src="/me.png"
               alt="Your local host in Porto Alegre"
               fill
               className="rounded-full object-cover border-4 border-white shadow-xl"
             />
-          </button>
+          </div>
 
           {open && (
             <>
@@ -45,13 +49,15 @@ export default function PortoAlegrePage() {
                 </a>
               </div>
 
-              {/* Mobile / older phone menu */}
+              {/* Mobile / older phones */}
               <div className="absolute right-0 mt-4 flex w-48 flex-col gap-3 rounded-2xl bg-white p-4 text-sm text-stone-800 shadow-xl md:hidden">
                 <a href="/hosts/armijn">Profile</a>
                 <a href="https://wa.me/+5551997783369" target="_blank">
                   WhatsApp
                 </a>
-                <a href="mailto:armijnvandijk@gmail.com">Email me</a>
+                <a href="mailto:armijnvandijk@gmail.com">
+                  Email me
+                </a>
                 <a href="/brazil/porto-alegre/restaurants">
                   Top 5 restaurants
                 </a>
