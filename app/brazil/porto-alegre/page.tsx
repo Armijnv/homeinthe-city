@@ -2,11 +2,11 @@ import Image from "next/image";
 
 export default function PortoAlegrePage() {
   return (
-    <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16">
+    <div className="min-h-screen bg-[#1a1f2e] md:bg-stone-50 px-6 pt-28 pb-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
         {/* Floating profile image */}
-        <div className="absolute -top-10 right-0 z-30">
+        <div className="absolute -top-14 right-2 md:right-0 z-[70]">
           <Image
             src="/me.png"
             alt="Your local host in Porto Alegre"
@@ -16,10 +16,9 @@ export default function PortoAlegrePage() {
           />
         </div>
 
-        {/* LEFT — Main content */}
+        {/* LEFT */}
         <div className="md:col-span-2 space-y-8">
 
-          {/* Hero box */}
           <div className="bg-white p-8 rounded-3xl">
             <p className="text-stone-500 text-sm tracking-widest uppercase mb-4">
               Your local guide · Wherever business takes you
@@ -55,7 +54,7 @@ export default function PortoAlegrePage() {
           </div>
         </div>
 
-        {/* RIGHT — Info blocks */}
+        {/* RIGHT */}
         <div className="space-y-6 pt-24 md:pt-0">
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-lg text-stone-800 mb-2">Weather</h3>
@@ -72,6 +71,7 @@ export default function PortoAlegrePage() {
             <p className="text-stone-600">Next departure to Guaíba</p>
           </div>
         </div>
+
       </div>
     </div>
   );
