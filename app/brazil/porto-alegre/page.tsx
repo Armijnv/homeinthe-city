@@ -2,15 +2,25 @@ import Image from "next/image";
 
 export default function PortoAlegrePage() {
   return (
-    <div className="min-h-screen bg-stone-50 px-6 pt-28 pb-16">
+    <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Floating profile image */}
+        <div className="absolute -top-10 right-0 z-30">
+          <Image
+            src="/me.png"
+            alt="Your local host in Porto Alegre"
+            width={120}
+            height={120}
+            className="rounded-full border-4 border-white shadow-xl object-cover"
+          />
+        </div>
 
         {/* LEFT — Main content */}
         <div className="md:col-span-2 space-y-8">
 
           {/* Hero box */}
-          <div className="relative bg-white p-8 rounded-3xl overflow-visible">
+          <div className="bg-white p-8 rounded-3xl">
             <p className="text-stone-500 text-sm tracking-widest uppercase mb-4">
               Your local guide · Wherever business takes you
             </p>
@@ -24,17 +34,6 @@ export default function PortoAlegrePage() {
               Wide streets, green parks and a strong local culture make it
               easy to navigate and comfortable to stay.
             </p>
-
-            {/* Floating profile image */}
-            <div className="absolute -top-10 right-8 hidden md:block">
-              <Image
-                src="/me.png"
-                alt="Your local host in Porto Alegre"
-                width={110}
-                height={110}
-                className="rounded-full border-4 border-white shadow-xl object-cover"
-              />
-            </div>
           </div>
 
           <div className="bg-white p-6 rounded-2xl">
@@ -54,11 +53,10 @@ export default function PortoAlegrePage() {
               Concerts and events at Araujo Viana.
             </p>
           </div>
-
         </div>
 
         {/* RIGHT — Info blocks */}
-        <div className="space-y-6">
+        <div className="space-y-6 pt-24 md:pt-0">
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-lg text-stone-800 mb-2">Weather</h3>
             <p className="text-stone-600">25°C — sunny</p>
@@ -74,7 +72,6 @@ export default function PortoAlegrePage() {
             <p className="text-stone-600">Next departure to Guaíba</p>
           </div>
         </div>
-
       </div>
     </div>
   );
