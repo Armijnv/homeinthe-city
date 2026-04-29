@@ -1,69 +1,81 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PortoAlegrePage() {
   const [open, setOpen] = useState(false);
+  const [canUseMenu, setCanUseMenu] = useState(true);
+
+  useEffect(() => {
+    // detect very old iPhones → disable menu
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua) && !window.CSS) {
+      setCanUseMenu(false);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] md:bg-stone-50 px-6 pt-28 pb-16">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
 
-        {/* Fixed profile image + menu */}
-        <div className="fixed top-24 right-4 md:right-8 z-[70]">
+        {/* Profile image */}
+        <div className="fixed top-24 right-4 md:right-8 z-[70] group">
 
-          {/* Clickable image (fixed for old iPhone) */}
-          <div className="relative w-20 h-20 md:w-28 md:h-28">
-            <button
-              onClick={() => setOpen(!open)}
-              className="absolute inset-0 z-10"
-            />
-
+          {/* Click / fallback */}
+          <div
+            className="relative w-20 h-20 md:w-28 md:h-28"
+            onClick={() => {
+              if (canUseMenu) {
+                setOpen(!open);
+              } else {
+                window.location.href = "/hosts/armijn";
+              }
+            }}
+          >
             <Image
               src="/me.png"
               alt="Your local host in Porto Alegre"
               fill
-              className="rounded-full object-cover border-4 border-white shadow-xl"
+              className="rounded-full object-cover border-4 border-white shadow-xl cursor-pointer"
             />
           </div>
 
-          {open && (
-            <>
-              {/* Desktop sun rays */}
-              <div className="hidden md:block">
-                <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
-                  Profile
-                </a>
+          {/* Rays (hover desktop OR tap mobile) */}
+          {(open || false) && (
+            <div className="opacity-100 pointer-events-auto md:group-hover:opacity-100 md:group-hover:pointer-events-auto transition-opacity duration-300">
 
-                <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
-                  WhatsApp
-                </a>
+              <a
+                href="/hosts/armijn"
+                className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100"
+              >
+                Profile
+              </a>
 
-                <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100">
-                  Email me
-                </a>
+              <a
+                href="https://wa.me/+5551997783369"
+                target="_blank"
+                className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100"
+              >
+                WhatsApp
+              </a>
 
-                <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100 whitespace-nowrap">
-                  Top 5 restaurants
-                </a>
-              </div>
+              <a
+                href="mailto:armijnvandijk@gmail.com"
+                className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100"
+              >
+                Email me
+              </a>
 
-              {/* Mobile / older phones */}
-              <div className="absolute right-0 mt-4 flex w-48 flex-col gap-3 rounded-2xl bg-white p-4 text-sm text-stone-800 shadow-xl md:hidden">
-                <a href="/hosts/armijn">Profile</a>
-                <a href="https://wa.me/+5551997783369" target="_blank">
-                  WhatsApp
-                </a>
-                <a href="mailto:armijnvandijk@gmail.com">
-                  Email me
-                </a>
-                <a href="/brazil/porto-alegre/restaurants">
-                  Top 5 restaurants
-                </a>
-              </div>
-            </>
+              <a
+                href="/brazil/porto-alegre/restaurants"
+                className="absolute right-0 top-40 rounded-full bg-white px-4 py-2 text-sm text-stone-800 shadow-xl hover:bg-stone-100 whitespace-nowrap"
+              >
+                Top 5 restaurants
+              </a>
+            </div>
           )}
+
         </div>
 
         {/* LEFT */}
