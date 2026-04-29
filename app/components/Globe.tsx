@@ -15,7 +15,7 @@ const portoAlegre = [
 
 export default function GlobeComponent() {
   const globeRef = useRef<any>(null);
-  const [supported, setSupported] = useState(true);
+  const [supported, setSupported] = useState(false);
 
   useEffect(() => {
     try {
@@ -24,7 +24,13 @@ export default function GlobeComponent() {
         canvas.getContext("webgl") ||
         canvas.getContext("experimental-webgl");
 
-      if (!gl) setSupported(false);
+      const isOldIOS =
+        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+        !("MSStream" in window);
+
+      if (gl && !isOldIOS) {
+        setSupported(true);
+      }
     } catch {
       setSupported(false);
     }
@@ -50,10 +56,10 @@ export default function GlobeComponent() {
     return (
       <a
         href="/brazil/porto-alegre"
-        className="flex h-[700px] w-[700px] items-center justify-center rounded-full bg-gradient-to-br from-blue-950 via-slate-900 to-black text-center text-white shadow-2xl"
+        className="flex h-[700px] w-[700px] items-center justify-center rounded-full bg-gradient-to-br from-[#0b1220] via-[#1a1f2e] to-black text-center text-white shadow-2xl"
       >
         <div>
-          <div className="mx-auto mb-4 h-4 w-4 rounded-full bg-white shadow-[0_0_25px_rgba(255,255,255,0.9)]" />
+          <div className="mx-auto mb-4 h-5 w-5 rounded-full bg-white shadow-[0_0_30px_rgba(245,215,110,0.95)]" />
           <p className="text-sm uppercase tracking-widest text-white/70">
             Porto Alegre
           </p>
