@@ -142,25 +142,24 @@ export default function PortoAlegrePage() {
 </div>
 
           {/* Iberê */}
-<div className="bg-white rounded-2xl overflow-hidden p-5">
+<div className="bg-white rounded-2xl overflow-hidden">
   <a
     href="https://iberecamargo.org.br/exposicao/erro-de-imagem-a-imagem/"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex gap-4 items-start"
   >
     {/* Image */}
-    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+    <div className="relative h-40">
       <Image
         src="/ibere.jpg"
         alt="Erró exhibition at Fundação Iberê Camargo"
         fill
-        className="object-cover rounded-lg"
+        className="object-cover"
       />
     </div>
 
     {/* Text */}
-    <div>
+    <div className="p-5">
       <h3 className="text-lg text-stone-800 mb-1">
         Iberê Camargo — Erró
       </h3>
@@ -170,34 +169,33 @@ export default function PortoAlegrePage() {
       </p>
 
       <p className="text-stone-600">
-        A bold and visually rich exhibition blending pop culture,
-        narrative painting and political commentary — in one of the
-        city’s most striking buildings by the river.
+        A bold, visually dense exhibition mixing pop culture,
+        narrative painting and political themes — set in one of
+        the city’s most striking buildings by the river.
       </p>
     </div>
   </a>
 </div>
 
           {/* Santander */}
-<div className="bg-white rounded-2xl overflow-hidden p-5">
+<div className="bg-white rounded-2xl overflow-hidden">
   <a
     href="https://farolsantander.com.br/poa/exposicao/viva-volpi-arte-para-brincar-em-breve"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex gap-4 items-start"
   >
     {/* Image */}
-    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+    <div className="relative h-40">
       <Image
         src="/santander.jpg"
         alt="Viva Volpi exhibition"
         fill
-        className="object-cover rounded-lg"
+        className="object-cover"
       />
     </div>
 
     {/* Text */}
-    <div>
+    <div className="p-5">
       <h3 className="text-lg text-stone-800 mb-1">
         Farol Santander — Viva Volpi
       </h3>
