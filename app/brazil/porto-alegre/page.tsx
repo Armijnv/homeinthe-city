@@ -142,26 +142,77 @@ export default function PortoAlegrePage() {
 </div>
 
           {/* Iberê */}
-          <div className="bg-white rounded-2xl overflow-hidden">
-            <div className="relative h-40">
-              <Image src="/ibere.jpg" alt="Ibere Camargo" fill className="object-cover" />
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg text-stone-800">Iberê Camargo</h3>
-              <p className="text-stone-600">Minimal architecture, strong modern art.</p>
-            </div>
-          </div>
+<div className="bg-white rounded-2xl overflow-hidden p-5">
+  <a
+    href="https://iberecamargo.org.br/exposicao/erro-de-imagem-a-imagem/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex gap-4 items-start"
+  >
+    {/* Image */}
+    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+      <Image
+        src="/ibere.jpg"
+        alt="Erró exhibition at Fundação Iberê Camargo"
+        fill
+        className="object-cover rounded-lg"
+      />
+    </div>
+
+    {/* Text */}
+    <div>
+      <h3 className="text-lg text-stone-800 mb-1">
+        Iberê Camargo — Erró
+      </h3>
+
+      <p className="text-sm text-stone-500 mb-2">
+        March → August 2026
+      </p>
+
+      <p className="text-stone-600">
+        A bold and visually rich exhibition blending pop culture,
+        narrative painting and political commentary — in one of the
+        city’s most striking buildings by the river.
+      </p>
+    </div>
+  </a>
+</div>
 
           {/* Santander */}
-          <div className="bg-white rounded-2xl overflow-hidden">
-            <div className="relative h-40">
-              <Image src="/santander.jpg" alt="Santander Cultural" fill className="object-cover" />
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg text-stone-800">Santander Cultural</h3>
-              <p className="text-stone-600">Smaller curated exhibitions in the city center.</p>
-            </div>
-          </div>
+<div className="bg-white rounded-2xl overflow-hidden p-5">
+  <a
+    href="https://farolsantander.com.br/poa/exposicao/viva-volpi-arte-para-brincar-em-breve"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex gap-4 items-start"
+  >
+    {/* Image */}
+    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+      <Image
+        src="/santander.jpg"
+        alt="Viva Volpi exhibition"
+        fill
+        className="object-cover rounded-lg"
+      />
+    </div>
+
+    {/* Text */}
+    <div>
+      <h3 className="text-lg text-stone-800 mb-1">
+        Farol Santander — Viva Volpi
+      </h3>
+
+      <p className="text-sm text-stone-500 mb-2">
+        Feb → May 2026
+      </p>
+
+      <p className="text-stone-600">
+        A lighter, more playful exhibition — interactive and easy to enjoy.
+        Good option if you want something cultural without spending hours.
+      </p>
+    </div>
+  </a>
+</div>
 
           {/* CTA */}
           <div className="bg-white p-6 rounded-2xl">
