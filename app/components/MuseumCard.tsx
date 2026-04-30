@@ -14,28 +14,25 @@ export default function MuseumCard({
   description: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden p-5 hover:shadow-lg transition-shadow">
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex gap-4 items-start"
-      >
-        <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+    <div className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        {/* Image TOP */}
+        <div className="relative w-full h-40">
           <Image
             src={image}
             alt={title}
             fill
-            className="object-cover rounded-lg"
+            className="object-cover"
           />
         </div>
 
-        <div>
+        {/* Text */}
+        <div className="p-5">
           <h3 className="text-lg text-stone-800 mb-1">{title}</h3>
 
           <p className="text-sm text-stone-500 mb-2">{dates}</p>
 
-          <p className="text-stone-600 mb-2">{description}</p>
+          <p className="text-stone-600 mb-3">{description}</p>
 
           <span className="text-sm text-stone-400">
             View exhibition →
