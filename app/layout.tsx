@@ -20,6 +20,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <meta
+          name="google-site-verification"
+          content="UP4h8B-BAThTU-bsGtY6i0ldvgdKuacyc6mMpZgi5Qk"
+        />
+      </head>
+
       <body className={`${geist.className} bg-[#1a1f2e]`}>
         <Header />
 
