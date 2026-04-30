@@ -180,7 +180,8 @@ export default function PortoAlegrePage() {
                   </div>
 
                   <p className="mt-2 text-sm text-stone-500 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
-                    {place.note}
+                    {place.review}
+      
                   </p>
                 </div>
               ))}
