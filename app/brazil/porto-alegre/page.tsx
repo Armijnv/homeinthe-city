@@ -136,50 +136,7 @@ export default function PortoAlegrePage() {
             </p>
           </div>
 
-          {/* Top 5 places */}
-          <div className="rounded-2xl bg-white p-6">
-            <div className="mb-5">
-              <h3 className="text-xl text-stone-800">
-                5 places I’d go this week
-              </h3>
-              <p className="mt-1 text-sm text-stone-500">
-                Not a ranking. Just places I’d actually recommend right now.
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {places.map((place, i) => (
-                <div
-                  key={place.name}
-                  className={`group rounded-xl border p-4 transition hover:border-stone-300 hover:bg-stone-50 ${
-                    i === 0
-                      ? "border-[#1a1f2e] bg-stone-50"
-                      : "border-stone-100"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1f2e] text-xs text-white">
-                      {i + 1}
-                    </span>
-
-                    <span className="font-medium text-stone-800">
-                      {place.name}
-                    </span>
-
-                    {i === 0 && (
-                      <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
-                        my pick
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-sm text-stone-500 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
-                    {place.note}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
+          
 {/* Live events */}
 <div className="bg-white p-6 rounded-2xl">
   <h3 className="text-xl text-stone-800 mb-4">
@@ -251,7 +208,50 @@ export default function PortoAlegrePage() {
           className="object-contain"
         />
       </div>
+{/* Top 5 places */}
+          <div className="rounded-2xl bg-white p-6">
+            <div className="mb-5">
+              <h3 className="text-xl text-stone-800">
+                5 places I’d go this week
+              </h3>
+              <p className="mt-1 text-sm text-stone-500">
+                Not a ranking. Just places I’d actually recommend right now.
+              </p>
+            </div>
 
+            <div className="space-y-3">
+              {places.map((place, i) => (
+                <div
+                  key={place.name}
+                  className={`group rounded-xl border p-4 transition hover:border-stone-300 hover:bg-stone-50 ${
+                    i === 0
+                      ? "border-[#1a1f2e] bg-stone-50"
+                      : "border-stone-100"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1f2e] text-xs text-white">
+                      {i + 1}
+                    </span>
+
+                    <span className="font-medium text-stone-800">
+                      {place.name}
+                    </span>
+
+                    {i === 0 && (
+                      <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
+                        my pick
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-2 text-sm text-stone-500 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
+                    {place.note}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
       <div>
         <h4 className="text-stone-800">Hard Rock Café</h4>
         <p className="text-sm text-stone-500">
@@ -262,15 +262,7 @@ export default function PortoAlegrePage() {
 
   </div>
 </div>
-          <div className="rounded-2xl bg-white p-6">
-            <h3 className="mb-2 text-xl text-stone-800">
-              Tonight in the city
-            </h3>
-            <p className="text-stone-600">
-              A few things worth doing after work — not everything, just what
-              matters.
-            </p>
-          </div>
+          
 
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-xl text-stone-800">
