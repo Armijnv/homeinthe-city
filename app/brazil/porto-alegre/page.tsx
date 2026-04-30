@@ -81,7 +81,9 @@ export default function PortoAlegrePage() {
         </div>
 
         {/* LEFT */}
-        <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-6">
+        <div className="md:col-span-2 space-y-8">
+          <div className="bg-white p-8 rounded-3xl">
+            <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-6">
   Porto Alegre without the friction
 </h1>
 
@@ -96,6 +98,7 @@ export default function PortoAlegrePage() {
 <p className="text-stone-600 max-w-2xl mt-4">
   I help you move through it smoothly — meetings, places, decisions — so you can focus on why you came here in the first place.
 </p>
+          </div>
 
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-xl mb-2 text-stone-800">Restaurant highlight</h3>
