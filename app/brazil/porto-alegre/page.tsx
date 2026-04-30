@@ -40,20 +40,19 @@ function getWeatherLabel(code: number) {
 const places = [
   {
     name: "Boxfim",
-    note: "Good brazilian type burger, the borrucia is my favorite.",
+    note: "Good Brazilian-style burger. The Borrucia is my favorite.",
   },
   {
     name: "Le Bateau Ivre",
-    note: "Classic, quiet, good for romantic evening out.",
+    note: "Classic, quiet, and good for a romantic evening out.",
   },
   {
-
     name: "Sambo",
-    note: "Really nice sushi with plenty of other options.",
+    note: "Really nice sushi, with plenty of other options too.",
   },
   {
     name: "Barranco",
-    note: "On a sunny day in spring or fall there is no better place than the garden at Barranco.",
+    note: "On a sunny day in spring or fall, there is no better place than the garden at Barranco.",
   },
   {
     name: "Madre",
@@ -97,29 +96,16 @@ export default function PortoAlegrePage() {
 
           {open && (
             <>
-              <a
-                href="/hosts/armijn"
-                className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl"
-              >
+              <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
                 Profile
               </a>
-              <a
-                href="https://wa.me/+5551997783369"
-                target="_blank"
-                className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl"
-              >
+              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
                 WhatsApp
               </a>
-              <a
-                href="mailto:armijnvandijk@gmail.com"
-                className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl"
-              >
+              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
                 Email
               </a>
-              <a
-                href="/brazil/porto-alegre/restaurants"
-                className="absolute right-0 top-40 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm shadow-xl"
-              >
+              <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm shadow-xl">
                 Top 5
               </a>
             </>
@@ -152,22 +138,24 @@ export default function PortoAlegrePage() {
 
           {/* Top 5 places */}
           <div className="rounded-2xl bg-white p-6">
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <div>
-                <h3 className="text-xl text-stone-800">
-                  5 places I’d go this week
-                </h3>
-                <p className="mt-1 text-sm text-stone-500">
-                  Not a ranking. Just places I’d actually recommend right now.
-                </p>
-              </div>
+            <div className="mb-5">
+              <h3 className="text-xl text-stone-800">
+                5 places I’d go this week
+              </h3>
+              <p className="mt-1 text-sm text-stone-500">
+                Not a ranking. Just places I’d actually recommend right now.
+              </p>
             </div>
 
             <div className="space-y-3">
               {places.map((place, i) => (
                 <div
                   key={place.name}
-                  className="group rounded-xl border border-stone-100 p-4 transition hover:border-stone-300 hover:bg-stone-50"
+                  className={`group rounded-xl border p-4 transition hover:border-stone-300 hover:bg-stone-50 ${
+                    i === 0
+                      ? "border-[#1a1f2e] bg-stone-50"
+                      : "border-stone-100"
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1f2e] text-xs text-white">
@@ -177,17 +165,56 @@ export default function PortoAlegrePage() {
                     <span className="font-medium text-stone-800">
                       {place.name}
                     </span>
+
+                    {i === 0 && (
+                      <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
+                        my pick
+                      </span>
+                    )}
                   </div>
 
                   <p className="mt-2 text-sm text-stone-500 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
-                    {place.review}
-      
+                    {place.note}
                   </p>
                 </div>
               ))}
             </div>
           </div>
+{/* Araújo Vianna */}
+<div className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
+  <a
+    href="https://araujoviannaoficial.com.br/programacao/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="block"
+  >
+    {/* Image */}
+    <div className="relative w-full h-40">
+      <Image
+        src="/araujovianna.jpg"
+        alt="Araújo Vianna programação"
+        fill
+        className="object-cover"
+      />
+    </div>
 
+    {/* Text */}
+    <div className="p-5">
+      <h3 className="text-lg text-stone-800 mb-1">
+        Araújo Vianna
+      </h3>
+
+      <p className="text-stone-600 mb-2">
+        One of the main venues in the city — concerts, shows and events
+        throughout the year.
+      </p>
+
+      <span className="text-sm text-stone-400">
+        View agenda →
+      </span>
+    </div>
+  </a>
+</div>
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-xl text-stone-800">
               Tonight in the city
