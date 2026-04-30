@@ -4,7 +4,11 @@ import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-
+export const metadata = {
+  title: "Interpreter Porto Alegre | Business Guide & Local Support",
+  description:
+    "Local interpreter in Porto Alegre for business visitors. Meetings, company visits, and smooth communication in Brazil.",
+};
 function Weather() {
   const [data, setData] = useState<any>(null);
 
@@ -106,8 +110,8 @@ export default function PortoAlegrePage() {
         <div className="space-y-8 md:col-span-2">
           <div className="rounded-3xl bg-white p-8">
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
-              Porto Alegre without the friction
-            </h1>
+  Interpreter in Porto Alegre for Business Visitors
+</h1>
 
             <p className="max-w-2xl text-stone-600">
               Changes in latitude, changes in attitude. It sounds easy — until
