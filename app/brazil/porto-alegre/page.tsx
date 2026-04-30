@@ -76,13 +76,30 @@ export default function PortoAlegrePage() {
           </div>
 
           {open && (
-            <>
-              <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Profile</a>
-              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl">WhatsApp</a>
-              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Email</a>
-              
-            </>
-          )}
+  <>
+    <a
+      href="/hosts/armijn"
+      className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+    >
+      Profile
+    </a>
+
+    <a
+      href="https://wa.me/+5551997783369"
+      target="_blank"
+      className="absolute right-36 top-20 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+    >
+      WhatsApp
+    </a>
+
+    <a
+      href="mailto:armijnvandijk@gmail.com"
+      className="absolute right-24 top-36 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+    >
+      Email
+    </a>
+  </>
+)}
         </div>
 
         {/* LEFT */}
