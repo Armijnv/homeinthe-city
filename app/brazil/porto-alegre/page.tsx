@@ -121,21 +121,66 @@ export default function PortoAlegrePage() {
       Weather today
     </h3>
     <p className="text-stone-600">
-      Warm and humid most of the year. Expect quick weather changes —
+      Warm and humid most of the year. Expect quick changes —
       sunshine, then rain within the same day.
     </p>
   </div>
 
-  {/* Exhibitions */}
-  <div className="bg-white p-6 rounded-2xl">
-    <h3 className="text-lg text-stone-800 mb-2">
-      Exhibitions right now
-    </h3>
-    <p className="text-stone-600">
-      MARGS — rotating Brazilian art exhibitions  
-      Fundação Iberê Camargo — modern art by the river  
-      Santander Cultural — smaller curated shows in the center
-    </p>
+  {/* MARGS */}
+  <div className="bg-white rounded-2xl overflow-hidden">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/3/3f/MARGS_Porto_Alegre.jpg"
+      alt="MARGS museum Porto Alegre"
+      className="w-full h-40 object-cover"
+    />
+    <div className="p-5">
+      <h3 className="text-lg text-stone-800 mb-1">
+        MARGS
+      </h3>
+      <p className="text-sm text-stone-500 mb-2">
+        Museu de Arte do Rio Grande do Sul
+      </p>
+      <p className="text-stone-600">
+        Rotating exhibitions of Brazilian art in a historic building
+        in the center.
+      </p>
+    </div>
+  </div>
+
+  {/* Iberê Camargo */}
+  <div className="bg-white rounded-2xl overflow-hidden">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/6/6c/Fundacao_Ibere_Camargo.jpg"
+      alt="Fundação Iberê Camargo"
+      className="w-full h-40 object-cover"
+    />
+    <div className="p-5">
+      <h3 className="text-lg text-stone-800 mb-1">
+        Fundação Iberê Camargo
+      </h3>
+      <p className="text-stone-600">
+        Modern art museum by the river. Calm, minimal architecture
+        and strong exhibitions.
+      </p>
+    </div>
+  </div>
+
+  {/* Santander Cultural */}
+  <div className="bg-white rounded-2xl overflow-hidden">
+    <img
+      src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Santander_Cultural_Porto_Alegre.jpg"
+      alt="Santander Cultural Porto Alegre"
+      className="w-full h-40 object-cover"
+    />
+    <div className="p-5">
+      <h3 className="text-lg text-stone-800 mb-1">
+        Santander Cultural
+      </h3>
+      <p className="text-stone-600">
+        Smaller curated exhibitions, often contemporary and
+        well worth a quick visit.
+      </p>
+    </div>
   </div>
 
   {/* Cinema */}
@@ -145,18 +190,7 @@ export default function PortoAlegrePage() {
     </h3>
     <p className="text-stone-600">
       Best options: GNC Praia de Belas or Iguatemi.
-      Comfortable, safe and easy to reach after work.
-    </p>
-  </div>
-
-  {/* Catamaran */}
-  <div className="bg-white p-6 rounded-2xl">
-    <h3 className="text-lg text-stone-800 mb-2">
-      Catamaran to Guaíba
-    </h3>
-    <p className="text-stone-600">
-      A simple way to step out of the city. Cross the water,
-      see the skyline, and slow things down for an hour.
+      Comfortable, safe and easy after work.
     </p>
   </div>
 
@@ -176,6 +210,8 @@ export default function PortoAlegrePage() {
       Meet your local host
     </a>
   </div>
+
+</div>
 
 </div>
       </div>
