@@ -81,21 +81,21 @@ export default function PortoAlegrePage() {
         </div>
 
         {/* LEFT */}
-        <div className="md:col-span-2 space-y-8">
-          <div className="bg-white p-8 rounded-3xl">
-            <p className="text-stone-500 text-sm uppercase tracking-widest mb-4">
-              Your local guide · Wherever business takes you
-            </p>
+        <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-6">
+  Porto Alegre without the friction
+</h1>
 
-            <h1 className="text-4xl md:text-6xl font-light text-stone-800 mb-4">
-              Porto Alegre without the friction
-            </h1>
+<p className="text-stone-600 max-w-2xl">
+  Changes in latitude, changes in attitude. It sounds easy — until you land somewhere new and nothing quite works the way you expect.
+</p>
 
-            <p className="text-stone-600 max-w-2xl">
-              A practical city for business visitors — relaxed, spread out, and easier than it looks.
-              If you know where to go.
-            </p>
-          </div>
+<p className="text-stone-600 max-w-2xl mt-4">
+  Porto Alegre is a relaxed city, but not always an obvious one. Things take time, conversations take effort, and small details slow you down.
+</p>
+
+<p className="text-stone-600 max-w-2xl mt-4">
+  I help you move through it smoothly — meetings, places, decisions — so you can focus on why you came here in the first place.
+</p>
 
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-xl mb-2 text-stone-800">Restaurant highlight</h3>
