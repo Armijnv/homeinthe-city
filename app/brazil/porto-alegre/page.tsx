@@ -208,7 +208,16 @@ export default function PortoAlegrePage() {
           className="object-contain"
         />
       </div>
-{/* Top 5 places */}
+        <h4 className="text-stone-800">Hard Rock Café</h4>
+        <p className="text-sm text-stone-500">
+          Easy option, live music and central location
+        </p>
+      </div>
+    </a>
+
+  </div>
+</div>
+      {/* Top 5 places */}
           <div className="rounded-2xl bg-white p-6">
             <div className="mb-5">
               <h3 className="text-xl text-stone-800">
@@ -253,16 +262,7 @@ export default function PortoAlegrePage() {
             </div>
           </div>
       <div>
-        <h4 className="text-stone-800">Hard Rock Café</h4>
-        <p className="text-sm text-stone-500">
-          Easy option, live music and central location
-        </p>
-      </div>
-    </a>
-
-  </div>
-</div>
-          
+    
 
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-xl text-stone-800">
