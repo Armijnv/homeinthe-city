@@ -39,24 +39,25 @@ function getWeatherLabel(code: number) {
 
 const places = [
   {
-    name: "Capincho",
-    note: "Modern local food, relaxed but sharp.",
+    name: "Boxfim",
+    note: "Good brazilian type burger, the borrucia is my favorite.",
   },
   {
     name: "Le Bateau Ivre",
-    note: "Classic, quiet, good for conversations.",
+    note: "Classic, quiet, good for romantic evening out.",
   },
   {
-    name: "Spoiler",
-    note: "Casual, creative, easy evening.",
+
+    name: "Sambo",
+    note: "Really nice sushi with plenty of other options.",
   },
   {
-    name: "Press Café",
-    note: "Reliable, central, good for meetings.",
+    name: "Barranco",
+    note: "On a sunny day in spring or fall there is no better place than the garden at Barranco.",
   },
   {
-    name: "Iberê Café",
-    note: "Best view in the city. Slow it down.",
+    name: "Madre",
+    note: "Complete lunch buffet with a great selection of dishes.",
   },
 ];
 
