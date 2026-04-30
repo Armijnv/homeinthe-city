@@ -13,12 +13,18 @@ export default function Header() {
             height={64}
             priority
           />
-          <span className="text-white font-medium tracking-tight text-lg">
-            home in the city
-          </span>
+
+          <div className="flex flex-col">
+            <span className="text-white font-medium tracking-tight text-lg">
+              home in the city
+            </span>
+
+            <span className="hidden md:block text-[10px] text-white/50 tracking-widest uppercase">
+              Your local guide · Wherever business takes you
+            </span>
+          </div>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
           <Link href="/brazil/porto-alegre" className="hover:text-white">
             Porto Alegre
@@ -35,7 +41,6 @@ export default function Header() {
           </a>
         </nav>
 
-        {/* Mobile menu */}
         <details className="relative md:hidden">
           <summary className="flex cursor-pointer list-none flex-col gap-1">
             <span className="w-6 h-[2px] bg-white"></span>

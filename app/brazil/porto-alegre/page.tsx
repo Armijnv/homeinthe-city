@@ -101,11 +101,45 @@ export default function PortoAlegrePage() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-xl mb-2 text-stone-800">Restaurant highlight</h3>
-            <p className="text-stone-600">
-              Good places for a quiet client lunch or a proper dinner after work.
-            </p>
-          </div>
+  <h3 className="text-xl text-stone-800 mb-4">
+    5 places I’d go this week
+  </h3>
+
+  <ul className="space-y-3">
+    {[
+      {
+        name: "Capincho",
+        note: "Modern local food, relaxed but sharp.",
+      },
+      {
+        name: "Le Bateau Ivre",
+        note: "Classic, quiet, good for conversations.",
+      },
+      {
+        name: "Spoiler",
+        note: "Casual, creative, easy evening.",
+      },
+      {
+        name: "Press Café",
+        note: "Reliable, central, good for meetings.",
+      },
+      {
+        name: "Iberê Café",
+        note: "Best view in the city, slow it down.",
+      },
+    ].map((place, i) => (
+      <li key={i} className="group cursor-default">
+        <span className="text-stone-800">
+          {place.name}
+        </span>
+
+        <div className="text-sm text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity">
+          {place.note}
+        </div>
+      </li>
+    ))}
+  </ul>
+</div>
 
           <div className="bg-white p-6 rounded-2xl">
             <h3 className="text-xl mb-2 text-stone-800">Tonight in the city</h3>
