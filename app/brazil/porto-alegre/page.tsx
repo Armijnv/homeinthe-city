@@ -1,5 +1,5 @@
 "use client";
-
+import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -136,111 +136,29 @@ export default function PortoAlegrePage() {
   <Weather />
 </div>
 
-          {/* MARGS */}
-<div className="bg-white rounded-2xl overflow-hidden">
-  <a
-    href="https://margs.rs.gov.br/jose-vera-margs/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {/* Image */}
-    <div className="relative w-full h-48">
-      <Image
-        src="/margs.jpg"
-        alt="José Verá exhibition at MARGS"
-        fill
-        className="object-cover"
-      />
-    </div>
+          <MuseumCard
+  href="https://margs.rs.gov.br/jose-vera-margs/"
+  image="/margs.jpg"
+  title="MARGS — José Verá"
+  dates="April → July 2026"
+  description="A strong contemporary exhibition rooted in Guarani culture, right in the city center."
+/>
 
-    {/* Text */}
-    <div className="p-5">
-      <h3 className="text-lg text-stone-800 mb-1">
-        MARGS — José Verá
-      </h3>
+<MuseumCard
+  href="https://iberecamargo.org.br/exposicao/erro-de-imagem-a-imagem/"
+  image="/ibere.jpg"
+  title="Iberê Camargo — Erró"
+  dates="March → August 2026"
+  description="Bold, visual and political work in one of the most striking buildings by the river."
+/>
 
-      <p className="text-sm text-stone-500 mb-2">
-        April → July 2026
-      </p>
-
-      <p className="text-stone-600">
-        A strong contemporary exhibition rooted in Guarani culture.
-        Right in the city center and easy to combine with a walk or lunch.
-      </p>
-    </div>
-  </a>
-</div>
-
-          {/* Iberê */}
-<div className="bg-white rounded-2xl overflow-hidden">
-  <a
-    href="https://iberecamargo.org.br/exposicao/erro-de-imagem-a-imagem/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {/* Image */}
-    <div className="relative h-40">
-      <Image
-        src="/ibere.jpg"
-        alt="Erró exhibition at Fundação Iberê Camargo"
-        fill
-        className="object-cover"
-      />
-    </div>
-
-    {/* Text */}
-    <div className="p-5">
-      <h3 className="text-lg text-stone-800 mb-1">
-        Iberê Camargo — Erró
-      </h3>
-
-      <p className="text-sm text-stone-500 mb-2">
-        March → August 2026
-      </p>
-
-      <p className="text-stone-600">
-        A bold, visually dense exhibition mixing pop culture,
-        narrative painting and political themes — set in one of
-        the city’s most striking buildings by the river.
-      </p>
-    </div>
-  </a>
-</div>
-
-          {/* Santander */}
-<div className="bg-white rounded-2xl overflow-hidden">
-  <a
-    href="https://farolsantander.com.br/poa/exposicao/viva-volpi-arte-para-brincar-em-breve"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    {/* Image */}
-    <div className="relative h-40">
-      <Image
-        src="/santander.jpg"
-        alt="Viva Volpi exhibition"
-        fill
-        className="object-cover"
-      />
-    </div>
-
-    {/* Text */}
-    <div className="p-5">
-      <h3 className="text-lg text-stone-800 mb-1">
-        Farol Santander — Viva Volpi
-      </h3>
-
-      <p className="text-sm text-stone-500 mb-2">
-        Feb → May 2026
-      </p>
-
-      <p className="text-stone-600">
-        A lighter, more playful exhibition — interactive and easy to enjoy.
-        Good option if you want something cultural without spending hours.
-      </p>
-    </div>
-  </a>
-</div>
+<MuseumCard
+  href="https://farolsantander.com.br/poa/exposicao/viva-volpi-arte-para-brincar-em-breve"
+  image="/santander.jpg"
+  title="Farol Santander — Viva Volpi"
+  dates="Feb → May 2026"
+  description="A lighter, playful and interactive exhibition — easy to enjoy after work."
+/>
 
           {/* CTA */}
           <div className="bg-white p-6 rounded-2xl">
