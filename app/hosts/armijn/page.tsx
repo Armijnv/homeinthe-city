@@ -1,5 +1,25 @@
 import Image from "next/image";
-
+export const metadata = {
+  title: "Interpreter in Porto Alegre | Armijn van Dijk",
+  description:
+    "Local interpreter in Porto Alegre helping international business visitors with meetings, company visits and communication.",
+  openGraph: {
+    title: "Interpreter in Porto Alegre | Armijn van Dijk",
+    description:
+      "Local interpreter in Porto Alegre helping international business visitors with meetings and communication.",
+    url: "https://homeinthe.city/hosts/armijn",
+    siteName: "Home in the City",
+    images: [
+      {
+        url: "/me.png",
+        width: 800,
+        height: 800,
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+};
 export default function ArmijnHostPage() {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
