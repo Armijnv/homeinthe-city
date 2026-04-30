@@ -189,14 +189,14 @@ export default function PortoAlegrePage() {
     className="block"
   >
     {/* Image */}
-    <div className="relative w-full h-40">
-      <Image
-        src="/araujovianna.jpg"
-        alt="Araújo Vianna programação"
-        fill
-        className="object-cover"
-      />
-    </div>
+<div className="relative w-full h-40 bg-white">
+  <Image
+    src="/araujovianna.jpg"
+    alt="Araújo Vianna programação"
+    fill
+    className="object-contain"
+  />
+</div>
 
     {/* Text */}
     <div className="p-5">
