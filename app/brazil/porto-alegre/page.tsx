@@ -107,25 +107,24 @@ export default function PortoAlegrePage() {
           </div>
 
           {/* MARGS */}
-<div className="bg-white rounded-2xl overflow-hidden p-5">
+<div className="bg-white rounded-2xl overflow-hidden">
   <a
     href="https://margs.rs.gov.br/jose-vera-margs/"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex gap-4 items-start"
   >
     {/* Image */}
-    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+    <div className="relative w-full h-48">
       <Image
         src="/margs.jpg"
         alt="José Verá exhibition at MARGS"
         fill
-        className="object-cover rounded-lg"
+        className="object-cover"
       />
     </div>
 
     {/* Text */}
-    <div>
+    <div className="p-5">
       <h3 className="text-lg text-stone-800 mb-1">
         MARGS — José Verá
       </h3>
