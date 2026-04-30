@@ -3,7 +3,38 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+function Weather() {
+  const [data, setData] = useState<any>(null);
 
+  useEffect(() => {
+    fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=-30.03&longitude=-51.23&current=temperature_2m,weather_code"
+    )
+      .then((res) => res.json())
+      .then((json) => setData(json.current));
+  }, []);
+
+  if (!data) {
+    return <p className="text-stone-400">Loading weather...</p>;
+  }
+
+  return (
+    <p className="text-stone-600">
+      {Math.round(data.temperature_2m)}°C ·{" "}
+      {getWeatherLabel(data.weather_code)}
+    </p>
+  );
+}
+
+function getWeatherLabel(code: number) {
+  if (code === 0) return "clear sky";
+  if (code <= 3) return "partly cloudy";
+  if (code <= 48) return "cloudy";
+  if (code <= 67) return "rain";
+  if (code <= 77) return "snow";
+  if (code <= 99) return "storm";
+  return "unknown";
+}
 export default function PortoAlegrePage() {
   const [open, setOpen] = useState(false);
   const [canUseMenu, setCanUseMenu] = useState(true);
@@ -99,12 +130,11 @@ export default function PortoAlegrePage() {
         <div className="space-y-6 pt-24 md:pt-0">
 
           {/* Weather */}
-          <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-lg mb-2 text-stone-800">Weather today</h3>
-            <p className="text-stone-600">
-              Warm, humid, and unpredictable. Expect sun and rain in the same day.
-            </p>
-          </div>
+<div className="bg-white p-6 rounded-2xl">
+  <h3 className="text-lg mb-2 text-stone-800">Weather today</h3>
+
+  <Weather />
+</div>
 
           {/* MARGS */}
 <div className="bg-white rounded-2xl overflow-hidden">
