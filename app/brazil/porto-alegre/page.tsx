@@ -113,52 +113,71 @@ export default function PortoAlegrePage() {
         </div>
 
         {/* RIGHT */}
-        <div className="space-y-6 pt-24 md:pt-0">
-          <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-lg text-stone-800 mb-2">
-              Weather today
-            </h3>
-            <p className="text-stone-600">
-              Porto Alegre changes quickly — check the day before planning
-              outdoor meetings or a walk around the city.
-            </p>
-          </div>
+<div className="space-y-6 pt-24 md:pt-0">
 
-          <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-lg text-stone-800 mb-2">
-              Cinema today
-            </h3>
-            <p className="text-stone-600">
-              A simple guide to what is playing tonight will come here.
-            </p>
-          </div>
+  {/* Weather */}
+  <div className="bg-white p-6 rounded-2xl">
+    <h3 className="text-lg text-stone-800 mb-2">
+      Weather today
+    </h3>
+    <p className="text-stone-600">
+      Warm and humid most of the year. Expect quick weather changes —
+      sunshine, then rain within the same day.
+    </p>
+  </div>
 
-          <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-lg text-stone-800 mb-2">
-              Catamaran to Guaíba
-            </h3>
-            <p className="text-stone-600">
-              One of the easiest escapes from the city: cross the water, see the
-              skyline, and slow down for an hour.
-            </p>
-          </div>
+  {/* Exhibitions */}
+  <div className="bg-white p-6 rounded-2xl">
+    <h3 className="text-lg text-stone-800 mb-2">
+      Exhibitions right now
+    </h3>
+    <p className="text-stone-600">
+      MARGS — rotating Brazilian art exhibitions  
+      Fundação Iberê Camargo — modern art by the river  
+      Santander Cultural — smaller curated shows in the center
+    </p>
+  </div>
 
-          <div className="bg-white p-6 rounded-2xl">
-            <h3 className="text-lg text-stone-800 mb-2">
-              Quick contact
-            </h3>
-            <p className="text-stone-600 mb-4">
-              Coming to Porto Alegre and need help?
-            </p>
-            <a
-              href="https://wa.me/+5551997783369"
-              target="_blank"
-              className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-            >
-              WhatsApp me
-            </a>
-          </div>
-        </div>
+  {/* Cinema */}
+  <div className="bg-white p-6 rounded-2xl">
+    <h3 className="text-lg text-stone-800 mb-2">
+      Cinema tonight
+    </h3>
+    <p className="text-stone-600">
+      Best options: GNC Praia de Belas or Iguatemi.
+      Comfortable, safe and easy to reach after work.
+    </p>
+  </div>
+
+  {/* Catamaran */}
+  <div className="bg-white p-6 rounded-2xl">
+    <h3 className="text-lg text-stone-800 mb-2">
+      Catamaran to Guaíba
+    </h3>
+    <p className="text-stone-600">
+      A simple way to step out of the city. Cross the water,
+      see the skyline, and slow things down for an hour.
+    </p>
+  </div>
+
+  {/* CTA */}
+  <div className="bg-white p-6 rounded-2xl">
+    <h3 className="text-lg text-stone-800 mb-2">
+      Need help in the city?
+    </h3>
+    <p className="text-stone-600 mb-4">
+      Business visit, meetings or just getting around — I can help.
+    </p>
+
+    <a
+      href="/hosts/armijn"
+      className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+    >
+      Meet your local host
+    </a>
+  </div>
+
+</div>
       </div>
     </div>
   );
