@@ -4,11 +4,7 @@ import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-export const metadata = {
-  title: "Interpreter Porto Alegre | Business Guide & Local Support",
-  description:
-    "Local interpreter in Porto Alegre for business visitors. Meetings, company visits, and smooth communication in Brazil.",
-};
+
 function Weather() {
   const [data, setData] = useState<any>(null);
 
@@ -61,7 +57,6 @@ export default function PortoAlegrePage() {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-
         {/* Profile image */}
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
           <div
@@ -80,42 +75,36 @@ export default function PortoAlegrePage() {
           </div>
 
           {open && (
-  <>
-    <a
-      href="/hosts/armijn"
-      className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
-    >
-      Profile
-    </a>
-
-    <a
-      href="https://wa.me/+5551997783369"
-      target="_blank"
-      className="absolute right-36 top-20 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
-    >
-      WhatsApp
-    </a>
-
-    <a
-      href="mailto:armijnvandijk@gmail.com"
-      className="absolute right-24 top-36 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
-    >
-      Email
-    </a>
-  </>
-)}
+            <>
+              <a href="/hosts/armijn" className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100">
+                Profile
+              </a>
+              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-20 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100">
+                WhatsApp
+              </a>
+              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-24 top-36 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100">
+                Email
+              </a>
+            </>
+          )}
         </div>
 
         {/* LEFT */}
         <div className="space-y-8 md:col-span-2">
           <div className="rounded-3xl bg-white p-8">
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
-  Interpreter in Porto Alegre for Business Visitors
-</h1>
+              Interpreter in Porto Alegre for Business Visitors
+            </h1>
 
             <p className="max-w-2xl text-stone-600">
               Changes in latitude, changes in attitude. It sounds easy — until
               you land somewhere new and nothing quite works the way you expect.
+            </p>
+
+            <p className="mt-4 max-w-2xl text-stone-600">
+              I provide on-site interpreting in Porto Alegre for foreign business
+              visitors — helping with meetings, company visits and daily
+              communication.
             </p>
 
             <p className="mt-4 max-w-2xl text-stone-600">
