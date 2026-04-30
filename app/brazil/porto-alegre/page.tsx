@@ -80,7 +80,7 @@ export default function PortoAlegrePage() {
               <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Profile</a>
               <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl">WhatsApp</a>
               <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Email</a>
-              <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm shadow-xl">Top 5</a>
+              
             </>
           )}
         </div>
