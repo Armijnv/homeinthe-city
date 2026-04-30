@@ -16,9 +16,7 @@ function Weather() {
       .then((json) => setData(json.current));
   }, []);
 
-  if (!data) {
-    return <p className="text-stone-400">Loading weather...</p>;
-  }
+  if (!data) return <p className="text-stone-400">Loading weather...</p>;
 
   return (
     <p className="text-stone-600">
@@ -38,26 +36,11 @@ function getWeatherLabel(code: number) {
 }
 
 const places = [
-  {
-    name: "Boxfim",
-    note: "Good Brazilian-style burger. The Borrucia is my favorite.",
-  },
-  {
-    name: "Le Bateau Ivre",
-    note: "Classic, quiet, and good for a romantic evening out.",
-  },
-  {
-    name: "Sambo",
-    note: "Really nice sushi, with plenty of other options too.",
-  },
-  {
-    name: "Barranco",
-    note: "On a sunny day in spring or fall, there is no better place than the garden at Barranco.",
-  },
-  {
-    name: "Madre",
-    note: "Complete lunch buffet with a great selection of dishes.",
-  },
+  { name: "Boxfim", note: "Good Brazilian-style burger. The Borrucia is my favorite." },
+  { name: "Le Bateau Ivre", note: "Classic, quiet, and good for a romantic evening out." },
+  { name: "Sambo", note: "Really nice sushi, with plenty of other options too." },
+  { name: "Barranco", note: "On a sunny day in spring or fall, there is no better place than the garden at Barranco." },
+  { name: "Madre", note: "Complete lunch buffet with a great selection of dishes." },
 ];
 
 export default function PortoAlegrePage() {
@@ -74,16 +57,14 @@ export default function PortoAlegrePage() {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+
         {/* Profile image */}
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
           <div
             className="relative h-20 w-20 cursor-pointer md:h-28 md:w-28"
             onClick={() => {
-              if (canUseMenu) {
-                setOpen(!open);
-              } else {
-                window.location.href = "/hosts/armijn";
-              }
+              if (canUseMenu) setOpen(!open);
+              else window.location.href = "/hosts/armijn";
             }}
           >
             <Image
@@ -96,18 +77,10 @@ export default function PortoAlegrePage() {
 
           {open && (
             <>
-              <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
-                Profile
-              </a>
-              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
-                WhatsApp
-              </a>
-              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl">
-                Email
-              </a>
-              <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm shadow-xl">
-                Top 5
-              </a>
+              <a href="/hosts/armijn" className="absolute right-32 top-0 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Profile</a>
+              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-16 rounded-full bg-white px-4 py-2 text-sm shadow-xl">WhatsApp</a>
+              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-20 top-32 rounded-full bg-white px-4 py-2 text-sm shadow-xl">Email</a>
+              <a href="/brazil/porto-alegre/restaurants" className="absolute right-0 top-40 whitespace-nowrap rounded-full bg-white px-4 py-2 text-sm shadow-xl">Top 5</a>
             </>
           )}
         </div>
@@ -136,93 +109,47 @@ export default function PortoAlegrePage() {
             </p>
           </div>
 
-          
-{/* Live events */}
-<div className="bg-white p-6 rounded-2xl">
-  <h3 className="text-xl text-stone-800 mb-4">
-    Live events this week
-  </h3>
+          {/* Live events */}
+          <div className="rounded-2xl bg-white p-6">
+            <h3 className="mb-4 text-xl text-stone-800">Live events this week</h3>
 
-  <div className="space-y-4">
+            <div className="space-y-4">
+              <a href="https://araujoviannaoficial.com.br/programacao/" target="_blank" className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
+                  <Image src="/araujovianna.jpg" alt="Araújo Vianna" width={70} height={40} className="object-contain" />
+                </div>
+                <div>
+                  <h4 className="text-stone-800">Araújo Vianna</h4>
+                  <p className="text-sm text-stone-500">Concerts and major shows in the city</p>
+                </div>
+              </a>
 
-    {/* Araújo Vianna */}
-    <a
-      href="https://araujoviannaoficial.com.br/programacao/"
-      target="_blank"
-      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
-    >
-      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
-        <Image
-          src="/araujovianna.jpg"
-          alt="Araújo Vianna"
-          width={70}
-          height={40}
-          className="object-contain"
-        />
-      </div>
+              <a href="https://opiniaopoa.com.br/agenda/" target="_blank" className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
+                  <Image src="/opiniao.jpg" alt="Opinião" width={70} height={40} className="object-contain" />
+                </div>
+                <div>
+                  <h4 className="text-stone-800">Opinião</h4>
+                  <p className="text-sm text-stone-500">Live music, more alternative and local scene</p>
+                </div>
+              </a>
 
-      <div>
-        <h4 className="text-stone-800">Araújo Vianna</h4>
-        <p className="text-sm text-stone-500">
-          Concerts and major shows in the city
-        </p>
-      </div>
-    </a>
+              <a href="https://www.hardrockcafe.com/location/porto-alegre/" target="_blank" className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50">
+                <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
+                  <Image src="/hardrock.jpg" alt="Hard Rock Cafe" width={70} height={40} className="object-contain" />
+                </div>
+                <div>
+                  <h4 className="text-stone-800">Hard Rock Café</h4>
+                  <p className="text-sm text-stone-500">Easy option, live music and central location</p>
+                </div>
+              </a>
+            </div>
+          </div>
 
-    {/* Opinião */}
-    <a
-      href="https://opiniaopoa.com.br/agenda/"
-      target="_blank"
-      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
-    >
-      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
-        <Image
-          src="/opiniao.jpg"
-          alt="Opinião"
-          width={70}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-
-      <div>
-        <h4 className="text-stone-800">Opinião</h4>
-        <p className="text-sm text-stone-500">
-          Live music, more alternative and local scene
-        </p>
-      </div>
-    </a>
-
-    {/* Hard Rock */}
-    <a
-      href="https://www.hardrockcafe.com/location/porto-alegre/"
-      target="_blank"
-      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
-    >
-      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
-        <Image
-          src="/hardrock.jpg"
-          alt="Hard Rock Cafe"
-          width={70}
-          height={40}
-          className="object-contain"
-        />
-      </div>
-        <h4 className="text-stone-800">Hard Rock Café</h4>
-        <p className="text-sm text-stone-500">
-          Easy option, live music and central location
-        </p>
-      </div>
-    </a>
-
-  </div>
-</div>
-      {/* Top 5 places */}
+          {/* Top 5 places */}
           <div className="rounded-2xl bg-white p-6">
             <div className="mb-5">
-              <h3 className="text-xl text-stone-800">
-                5 places I’d go this week
-              </h3>
+              <h3 className="text-xl text-stone-800">5 places I’d go this week</h3>
               <p className="mt-1 text-sm text-stone-500">
                 Not a ranking. Just places I’d actually recommend right now.
               </p>
@@ -233,20 +160,14 @@ export default function PortoAlegrePage() {
                 <div
                   key={place.name}
                   className={`group rounded-xl border p-4 transition hover:border-stone-300 hover:bg-stone-50 ${
-                    i === 0
-                      ? "border-[#1a1f2e] bg-stone-50"
-                      : "border-stone-100"
+                    i === 0 ? "border-[#1a1f2e] bg-stone-50" : "border-stone-100"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1f2e] text-xs text-white">
                       {i + 1}
                     </span>
-
-                    <span className="font-medium text-stone-800">
-                      {place.name}
-                    </span>
-
+                    <span className="font-medium text-stone-800">{place.name}</span>
                     {i === 0 && (
                       <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
                         my pick
@@ -261,13 +182,9 @@ export default function PortoAlegrePage() {
               ))}
             </div>
           </div>
-      <div>
-    
 
           <div className="rounded-2xl bg-white p-6">
-            <h3 className="mb-2 text-xl text-stone-800">
-              Need help in the city?
-            </h3>
+            <h3 className="mb-2 text-xl text-stone-800">Need help in the city?</h3>
             <p className="mb-4 text-stone-600">
               Business visit, meetings or just getting around — I can help.
             </p>
