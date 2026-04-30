@@ -107,15 +107,40 @@ export default function PortoAlegrePage() {
           </div>
 
           {/* MARGS */}
-          <div className="bg-white rounded-2xl overflow-hidden">
-            <div className="relative h-40">
-              <Image src="/margs.jpg" alt="MARGS" fill className="object-cover" />
-            </div>
-            <div className="p-5">
-              <h3 className="text-lg text-stone-800">MARGS</h3>
-              <p className="text-stone-600">Classic and rotating Brazilian art exhibitions.</p>
-            </div>
-          </div>
+<div className="bg-white rounded-2xl overflow-hidden p-5">
+  <a
+    href="https://margs.rs.gov.br/jose-vera-margs/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="flex gap-4 items-start"
+  >
+    {/* Image */}
+    <div className="relative w-24 h-24 md:w-28 md:h-28 flex-shrink-0">
+      <Image
+        src="/margs.jpg"
+        alt="José Verá exhibition at MARGS"
+        fill
+        className="object-cover rounded-lg"
+      />
+    </div>
+
+    {/* Text */}
+    <div>
+      <h3 className="text-lg text-stone-800 mb-1">
+        MARGS — José Verá
+      </h3>
+
+      <p className="text-sm text-stone-500 mb-2">
+        April → July 2026
+      </p>
+
+      <p className="text-stone-600">
+        A strong contemporary exhibition rooted in Guarani culture.
+        Right in the city center and easy to combine with a walk or lunch.
+      </p>
+    </div>
+  </a>
+</div>
 
           {/* Iberê */}
           <div className="bg-white rounded-2xl overflow-hidden">
