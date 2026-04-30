@@ -180,40 +180,87 @@ export default function PortoAlegrePage() {
               ))}
             </div>
           </div>
-{/* Araújo Vianna */}
-<div className="bg-white rounded-2xl overflow-hidden hover:shadow-lg transition-shadow">
-  <a
-    href="https://araujoviannaoficial.com.br/programacao/"
-    target="_blank"
-    rel="noopener noreferrer"
-    className="block"
-  >
-    {/* Image */}
-<div className="relative w-full h-40 bg-white flex items-center justify-center">
-  <Image
-    src="/araujovianna.jpg"
-    alt="Araújo Vianna programação"
-    width={200}
-    height={80}
-    className="object-contain"
-  />
-</div>
-    {/* Text */}
-    <div className="p-5">
-      <h3 className="text-lg text-stone-800 mb-1">
-        Araújo Vianna
-      </h3>
+{/* Live events */}
+<div className="bg-white p-6 rounded-2xl">
+  <h3 className="text-xl text-stone-800 mb-4">
+    Live events this week
+  </h3>
 
-      <p className="text-stone-600 mb-2">
-        One of the main venues in the city — concerts, shows and events
-        throughout the year.
-      </p>
+  <div className="space-y-4">
 
-      <span className="text-sm text-stone-400">
-        View agenda →
-      </span>
-    </div>
-  </a>
+    {/* Araújo Vianna */}
+    <a
+      href="https://araujoviannaoficial.com.br/programacao/"
+      target="_blank"
+      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
+    >
+      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
+        <Image
+          src="/araujovianna.jpg"
+          alt="Araújo Vianna"
+          width={70}
+          height={40}
+          className="object-contain"
+        />
+      </div>
+
+      <div>
+        <h4 className="text-stone-800">Araújo Vianna</h4>
+        <p className="text-sm text-stone-500">
+          Concerts and major shows in the city
+        </p>
+      </div>
+    </a>
+
+    {/* Opinião */}
+    <a
+      href="https://opiniaopoa.com.br/agenda/"
+      target="_blank"
+      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
+    >
+      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
+        <Image
+          src="/opiniao.jpg"
+          alt="Opinião"
+          width={70}
+          height={40}
+          className="object-contain"
+        />
+      </div>
+
+      <div>
+        <h4 className="text-stone-800">Opinião</h4>
+        <p className="text-sm text-stone-500">
+          Live music, more alternative and local scene
+        </p>
+      </div>
+    </a>
+
+    {/* Hard Rock */}
+    <a
+      href="https://www.hardrockcafe.com/location/porto-alegre/"
+      target="_blank"
+      className="flex items-center gap-4 p-3 rounded-xl hover:bg-stone-50 transition"
+    >
+      <div className="w-20 h-20 bg-white flex items-center justify-center rounded-lg">
+        <Image
+          src="/hardrock.jpg"
+          alt="Hard Rock Cafe"
+          width={70}
+          height={40}
+          className="object-contain"
+        />
+      </div>
+
+      <div>
+        <h4 className="text-stone-800">Hard Rock Café</h4>
+        <p className="text-sm text-stone-500">
+          Easy option, live music and central location
+        </p>
+      </div>
+    </a>
+
+  </div>
 </div>
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-xl text-stone-800">
