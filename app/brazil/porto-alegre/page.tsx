@@ -60,7 +60,7 @@ export default function PortoAlegrePage() {
       .fetch(cityQuery, { slug: "porto-alegre" })
       .then((data) => setCity(data));
   }, []);
-
+console.log(city);
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
