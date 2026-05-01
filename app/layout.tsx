@@ -8,7 +8,10 @@ import Image from "next/image";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Home in the City",
+  title: {
+    default: "Home in the City",
+    template: "%s | Home in the City",
+  },
   description:
     "Your local guide and support for business visitors in cities across Brazil and beyond.",
 };
