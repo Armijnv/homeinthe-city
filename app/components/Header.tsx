@@ -55,6 +55,14 @@ export default function Header() {
               Contact
             </a>
           </nav>
+        <div className="flex items-center gap-2 ml-4">
+  <Link href="/brazil/porto-alegre">
+    <span className="text-sm">🇬🇧</span>
+  </Link>
+  <Link href="/pt/brasil/porto-alegre">
+    <span className="text-sm">🇧🇷</span>
+  </Link>
+</div>
         </details>
       </div>
     </header>
