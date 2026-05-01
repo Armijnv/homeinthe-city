@@ -99,31 +99,31 @@ export default function PortoAlegrePage() {
           <div className="rounded-3xl bg-white p-8">
             
 <div className="mb-4">
-  <Link href="/pt/brasil/porto-alegre" className="text-sm text-stone-500 underline">
-    Português
+  <Link href="/brazil/porto-alegre" className="text-sm text-stone-500 underline">
+    English
   </Link>
 </div>
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
-  {city?.headline_en || "Interpreter in Porto Alegre for Business Meetings & Company Visits"}
+  {city?.headline_pt || "Intérprete em Porto Alegre para reuniões e visitas a empresas"}
 </h1>
 
-            <p className="max-w-2xl text-stone-600">
-  {city?.intro_en || "Your local guide in Porto Alegre for business visits."}
+           <p className="max-w-2xl text-stone-600">
+  {city?.intro_pt || `Vai visitar Porto Alegre a negócios e precisa de alguém que entenda a língua e o contexto?
+
+Ofereço interpretação presencial para reuniões, visitas a empresas e comunicação do dia a dia — para você focar no negócio, não na tradução.`}
 </p>
-
+<p className="mt-4 max-w-2xl text-stone-600">
+  Evite mal-entendidos, ganhe tempo nas reuniões e ofereça uma melhor experiência para o seu visitante.
+</p>
             <p className="mt-4 max-w-2xl text-stone-600">
-              Visiting Porto Alegre for business and need someone who understands both language and context?
-
-I provide on-site interpreting for meetings, factory visits and day-to-day communication — so you can focus on the deal, not the translation.
+              Ajudo você a avançar mais rápido e evitar mal-entendidos em conversas importantes — seja em negociações, visitas ou primeiros contatos.
             </p>
 
             <p className="mt-4 max-w-2xl text-stone-600">
-              I help you move faster and avoid misunderstandings in conversations that matter — whether it’s a negotiation, a site visit or a first introduction.
+              Conhecimento local, comunicação clara e abordagem prática — é isso que faz a diferença.
             </p>
 
-            <p className="mt-4 max-w-2xl text-stone-600">
-             Local knowledge, clear communication, and a practical approach — that’s what makes the difference.
-            </p>
+            
           </div>
 
           <div className="rounded-2xl bg-white p-6">
@@ -199,19 +199,19 @@ I provide on-site interpreting for meetings, factory visits and day-to-day commu
           </div>
 
           <div className="rounded-2xl bg-white p-6">
-            <h3 className="mb-2 text-xl text-stone-800">Need help in the city?</h3>
-            <p className="mb-4 text-stone-600">
-              Business visit, meetings or just getting around — I can help.
-            </p>
+  <h3 className="mb-2 text-xl text-stone-800">Precisa de ajuda na cidade?</h3>
+  <p className="mb-4 text-stone-600">
+    Visita de negócios, reuniões ou deslocamento — posso ajudar.
+  </p>
 
-            <a
-  href="https://wa.me/+5551997783369"
-  target="_blank"
-  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
->
-  {city?.cta_en || "Talk to me on WhatsApp"}
-</a>
-          </div>
+  <a
+    href="https://wa.me/+5551997783369"
+    target="_blank"
+    className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+  >
+    {city?.cta_pt || "Fale comigo no WhatsApp"}
+  </a>
+</div>
         </div>
 
         <div className="space-y-6 pt-24 md:pt-0">
@@ -244,19 +244,19 @@ I provide on-site interpreting for meetings, factory visits and day-to-day commu
             description="A lighter, playful and interactive exhibition — easy to enjoy after work."
           />
 
-          <div className="rounded-2xl bg-white p-6">
-            <h3 className="mb-2 text-lg text-stone-800">Quick contact</h3>
-            <p className="mb-4 text-stone-600">
-              Visiting Porto Alegre and need help?
-            </p>
-            <a
-              href="https://wa.me/+5551997783369"
-              target="_blank"
-              className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-            >
-              WhatsApp me
-            </a>
-          </div>
+      <div className="rounded-2xl bg-white p-6">
+  <h3 className="mb-2 text-lg text-stone-800">Vai receber alguém do exterior?</h3>
+  <p className="mb-4 text-stone-600">
+    Se sua empresa vai receber um cliente, parceiro ou fornecedor estrangeiro em Porto Alegre, eu posso ajudar com interpretação, comunicação e apoio local.
+  </p>
+  <a
+    href="https://wa.me/+5551997783369"
+    target="_blank"
+    className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+  >
+    Fale comigo no WhatsApp
+  </a>
+</div>
         </div>
       </div>
     </div>
