@@ -5,6 +5,8 @@ export default function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-[#1a1f2e] px-8 py-4">
       <div className="flex items-center justify-between">
+
+        {/* LEFT: logo */}
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/logo.png"
@@ -25,6 +27,7 @@ export default function Header() {
           </div>
         </Link>
 
+        {/* DESKTOP NAV */}
         <nav className="hidden md:flex items-center gap-8 text-sm text-white/70">
           <Link href="/brazil/porto-alegre" className="hover:text-white">
             Porto Alegre
@@ -39,8 +42,19 @@ export default function Header() {
           >
             Contact
           </a>
+
+          {/* FLAGS */}
+          <div className="flex items-center gap-2 ml-2">
+            <Link href="/brazil/porto-alegre">
+              <span>🇬🇧</span>
+            </Link>
+            <Link href="/pt/brasil/porto-alegre">
+              <span>🇧🇷</span>
+            </Link>
+          </div>
         </nav>
 
+        {/* MOBILE MENU */}
         <details className="relative md:hidden">
           <summary className="flex cursor-pointer list-none flex-col gap-1">
             <span className="w-6 h-[2px] bg-white"></span>
@@ -49,21 +63,20 @@ export default function Header() {
           </summary>
 
           <nav className="absolute right-0 mt-6 flex w-48 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
-            <a href="/brazil/porto-alegre">Porto Alegre</a>
-            <a href="/hosts/armijn">Your Host</a>
+            <Link href="/brazil/porto-alegre">Porto Alegre</Link>
+            <Link href="/hosts/armijn">Your Host</Link>
             <a href="https://wa.me/+5551997783369" target="_blank">
               Contact
             </a>
+
+            {/* FLAGS */}
+            <div className="flex gap-2 pt-2">
+              <Link href="/brazil/porto-alegre">🇬🇧</Link>
+              <Link href="/pt/brasil/porto-alegre">🇧🇷</Link>
+            </div>
           </nav>
-        <div className="flex items-center gap-2 ml-4">
-  <Link href="/brazil/porto-alegre">
-    <span className="text-sm">🇬🇧</span>
-  </Link>
-  <Link href="/pt/brasil/porto-alegre">
-    <span className="text-sm">🇧🇷</span>
-  </Link>
-</div>
         </details>
+
       </div>
     </header>
   );
