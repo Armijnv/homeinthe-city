@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   },
   description:
     "On-site interpreter in Porto Alegre for business visitors. Meetings, factory visits, local support. English, Dutch, Portuguese.",
-};S
+};
 export default function RootLayout({
   children,
 }: {
