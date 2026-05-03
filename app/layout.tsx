@@ -9,13 +9,12 @@ const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Home in the City",
+    default: "Interpreter Porto Alegre | Business Interpreter Brazil",
     template: "%s | Home in the City",
   },
   description:
-    "Your local guide and support for business visitors in cities across Brazil and beyond.",
-};
-
+    "On-site interpreter in Porto Alegre for business visitors. Meetings, factory visits, local support. English, Dutch, Portuguese.",
+};S
 export default function RootLayout({
   children,
 }: {
