@@ -20,7 +20,7 @@ function Weather() {
       .then((json) => setData(json.current));
   }, []);
 
-  if (!data) return <p className="text-stone-400">Loading weather...</p>;
+  if (!data) return <p className="text-stone-400">Weer laden...</p>;
 
   return (
     <p className="text-stone-600">
@@ -30,12 +30,12 @@ function Weather() {
 }
 
 function getWeatherLabel(code: number) {
-  if (code === 0) return "clear sky";
-  if (code <= 3) return "partly cloudy";
-  if (code <= 48) return "cloudy";
-  if (code <= 67) return "rain";
+  if (code === 0) return "heldere lucht";
+  if (code <= 3) return "gedeeltelijk bewolkt";
+  if (code <= 48) return "bewolkt";
+  if (code <= 67) return "regen";
   if (code <= 99) return "storm";
-  return "unknown";
+  return "onbekend";
 }
 
 /* ---------- PAGE ---------- */
@@ -60,85 +60,63 @@ export default function PortoAlegrePage() {
           >
             <Image
               src="/me.png"
-              alt="Seu guia local"
+              alt="Jouw lokale gids"
               fill
               className="rounded-full border-4 border-white object-cover shadow-xl"
             />
           </div>
 
           {open && (
-  <>
-    <a
-      href="/hosts/armijn"
-      className="absolute right-32 top-2 bg-white px-4 py-2 rounded-full text-sm shadow-xl"
-    >
-      Perfil
-    </a>
-
-    <a
-      href="https://wa.me/+5551997783369"
-      target="_blank"
-      className="absolute right-36 top-20 bg-white px-4 py-2 rounded-full text-sm shadow-xl"
-    >
-      WhatsApp
-    </a>
-
-    <a
-      href="mailto:armijnvandijk@gmail.com"
-      className="absolute right-24 top-36 bg-white px-4 py-2 rounded-full text-sm shadow-xl"
-    >
-      Email
-    </a>
-  </>
-)}
+            <>
+              <a href="/hosts/armijn" className="absolute right-32 top-2 bg-white px-4 py-2 rounded-full text-sm shadow-xl">
+                Profiel
+              </a>
+              <a href="https://wa.me/+5551997783369" target="_blank" className="absolute right-36 top-20 bg-white px-4 py-2 rounded-full text-sm shadow-xl">
+                WhatsApp
+              </a>
+              <a href="mailto:armijnvandijk@gmail.com" className="absolute right-24 top-36 bg-white px-4 py-2 rounded-full text-sm shadow-xl">
+                Email
+              </a>
+            </>
+          )}
         </div>
 
         {/* LEFT */}
         <div className="space-y-8 md:col-span-2">
 
-          {/* SWITCH */}
+          {/* FLAGS */}
           <div className="mb-4 flex gap-3 text-xl">
-  <Link href="/brazil/porto-alegre" title="English">
-    🇬🇧
-  </Link>
-
-  <Link href="/pt/brasil/porto-alegre" title="Português">
-    🇧🇷
-  </Link>
-
-  <Link href="/nl/brazilie/porto-alegre" title="Nederlands">
-    🇳🇱
-  </Link>
-</div>
+            <Link href="/brazil/porto-alegre">🇬🇧</Link>
+            <Link href="/pt/brasil/porto-alegre">🇧🇷</Link>
+            <Link href="/nl/brazilie/porto-alegre">🇳🇱</Link>
+          </div>
 
           {/* HERO */}
           <div className="rounded-3xl bg-white p-8">
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
-              {city?.headline_pt || "Intérprete em Porto Alegre"}
+              {city?.headline_nl || "Tolk in Porto Alegre voor zakelijke bezoeken"}
             </h1>
 
             <p className="max-w-2xl text-stone-600">
-              {city?.intro_pt || "Seu apoio local em visitas de negócios."}
+              {city?.intro_nl || "Jouw lokale ondersteuning in Porto Alegre voor zakelijke bezoeken."}
             </p>
           </div>
 
           {/* LIVE EVENTS */}
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-4 text-xl text-stone-800">
-              Música ao vivo esta semana
+              Zin in live muziek?
             </h3>
-
-            {/* (your existing venues stay unchanged) */}
           </div>
 
-          {/* RESTAURANTS (FIXED) */}
+          {/* RESTAURANTS */}
           <div className="rounded-2xl bg-white p-6">
             <h3 className="text-xl text-stone-800 mb-2">
-              5 lugares onde eu iria esta semana
+              5 plekken waar ik deze week zou eten
             </h3>
 
             <p className="text-sm text-stone-500 mb-4">
-              Não é ranking. São lugares que eu realmente recomendo.
+              Geen ranking. Gewoon plekken waar ik zelf ga.
             </p>
 
             <div className="space-y-3">
@@ -165,13 +143,13 @@ export default function PortoAlegrePage() {
 
                     {place.favorite && (
                       <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
-                        minha escolha
+                        mijn keuze
                       </span>
                     )}
                   </div>
 
                   <p className="mt-2 text-sm text-stone-500">
-                    {place.note_pt}
+                    {place.note_nl}
                   </p>
                 </a>
               ))}
@@ -181,11 +159,11 @@ export default function PortoAlegrePage() {
           {/* CTA */}
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-xl text-stone-800">
-              Precisa de ajuda na cidade?
+              Hulp nodig in de stad?
             </h3>
 
             <p className="mb-4 text-stone-600">
-              Visitas de negócios, reuniões ou deslocamento — posso ajudar.
+              Zakelijke bezoeken, meetings of gewoon wegwijs worden — ik help je.
             </p>
 
             <a
@@ -193,7 +171,7 @@ export default function PortoAlegrePage() {
               target="_blank"
               className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white"
             >
-              {city?.cta_pt || "Fale comigo"}
+              {city?.cta_nl || "Stuur me een bericht"}
             </a>
           </div>
         </div>
@@ -202,7 +180,7 @@ export default function PortoAlegrePage() {
         <div className="space-y-6 pt-24 md:pt-0">
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-lg text-stone-800">
-              Clima hoje
+              Weer vandaag
             </h3>
             <Weather />
           </div>
@@ -211,8 +189,8 @@ export default function PortoAlegrePage() {
             href="https://margs.rs.gov.br/jose-vera-margs/"
             image="/margs.jpg"
             title="MARGS — José Verá"
-            dates="Abril → Julho 2026"
-            description="Exposição contemporânea forte no centro da cidade."
+            dates="April → Juli 2026"
+            description="Sterke hedendaagse tentoonstelling in het centrum."
           />
         </div>
       </div>
