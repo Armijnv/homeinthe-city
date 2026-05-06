@@ -8,6 +8,10 @@ import { useEffect, useState } from "react";
 
 type Lang = "en" | "pt" | "nl";
 
+/* ======================================================
+   WEATHER COMPONENT
+====================================================== */
+
 function Weather() {
   const [data, setData] = useState<any>(null);
 
@@ -23,6 +27,10 @@ function Weather() {
 
   return <p className="text-stone-600">{Math.round(data.temperature_2m)}°C</p>;
 }
+
+/* ======================================================
+   CITY PAGE TEMPLATE
+====================================================== */
 
 export default function CityPage({ lang }: { lang: Lang }) {
   const [city, setCity] = useState<any>(null);
@@ -40,6 +48,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
       foodText: "Simple places I actually go to — not a long list.",
       helpTitle: "Need help in the city?",
       weatherTitle: "Weather today",
+      museumTitle: "Museums & exhibitions",
       pick: "my pick",
       cta: "Talk to me",
       profile: "Profile",
@@ -51,6 +60,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
       foodText: "Lugares simples que eu realmente recomendo.",
       helpTitle: "Precisa de ajuda na cidade?",
       weatherTitle: "Clima hoje",
+      museumTitle: "Museus e exposições",
       pick: "minha escolha",
       cta: "Fale comigo",
       profile: "Perfil",
@@ -62,6 +72,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
       foodText: "Geen lange lijst, gewoon plekken waar ik zelf ga.",
       helpTitle: "Hulp nodig in de stad?",
       weatherTitle: "Weer vandaag",
+      museumTitle: "Musea & tentoonstellingen",
       pick: "mijn keuze",
       cta: "Stuur me een bericht",
       profile: "Profiel",
@@ -73,15 +84,21 @@ export default function CityPage({ lang }: { lang: Lang }) {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+
+        {/* ======================================================
+            FLOATING HOST PHOTO / CONTACT MENU
+        ====================================================== */}
+
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
           <div
             className="relative h-20 w-20 cursor-pointer md:h-28 md:w-28"
             onClick={() => setOpen(!open)}
           >
             <Image
-              src="/me.png"
-              alt="Your local host"
-              fill
+  src="/me.png"
+  alt="Your local host"
+  fill
+  sizes="(max-width: 768px) 80px, 112px"
               className="rounded-full border-4 border-white object-cover shadow-xl"
             />
           </div>
@@ -89,7 +106,14 @@ export default function CityPage({ lang }: { lang: Lang }) {
           {open && (
             <>
               <a
-                href="/hosts/armijn"
+                
+  href={
+    lang === "pt"
+      ? "/pt/hosts/armijn"
+      : lang === "nl"
+      ? "/nl/hosts/armijn"
+      : "/hosts/armijn"
+  }
                 className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
               >
                 {t.profile}
@@ -113,18 +137,22 @@ export default function CityPage({ lang }: { lang: Lang }) {
           )}
         </div>
 
+        {/* ======================================================
+            LEFT COLUMN
+        ====================================================== */}
+
         <div className="space-y-8 md:col-span-2">
+
+          {/* LANGUAGE FLAGS */}
           <div className="flex gap-3 text-xl">
-            <a href="/brazil/porto-alegre" title="English">
-              🇬🇧
-            </a>
-            <a href="/pt/brasil/porto-alegre" title="Português">
-              🇧🇷
-            </a>
-            <a href="/nl/brazilie/porto-alegre" title="Nederlands">
-              🇳🇱
-            </a>
+            <a href="/brazil/porto-alegre" title="English">🇬🇧</a>
+            <a href="/pt/brasil/porto-alegre" title="Português">🇧🇷</a>
+            <a href="/nl/brazilie/porto-alegre" title="Nederlands">🇳🇱</a>
           </div>
+
+          {/* ======================================================
+              HERO / INTRO
+          ====================================================== */}
 
           <div className="rounded-3xl bg-white p-8">
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
@@ -136,43 +164,21 @@ export default function CityPage({ lang }: { lang: Lang }) {
               {city?.[`intro_${lang}`] ||
                 "Your local guide in Porto Alegre for business visits."}
             </p>
-          </div>
 
-          <div className="rounded-2xl bg-white p-6">
-            <h2 className="mb-2 text-xl text-stone-800">{t.liveTitle}</h2>
-            <p className="mb-4 text-stone-500">{t.liveText}</p>
-
-            <div className="space-y-4">
-              {city?.venues?.map((venue: any) => (
-                <a
-                  key={venue.name}
-                  href={venue.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50"
-                >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
-                    {venue.image?.asset?.url && (
-                      <Image
-                        src={venue.image.asset.url}
-                        alt={venue.name}
-                        width={70}
-                        height={40}
-                        className="object-contain"
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <h4 className="text-stone-800">{venue.name}</h4>
-                    <p className="text-sm text-stone-500">
-                      {venue[`text_${lang}`]}
-                    </p>
-                  </div>
-                </a>
-              ))}
+            <div className="mt-6 space-y-4">
+              {city?.[`introBlocks_${lang}`]?.map(
+                (block: string, index: number) => (
+                  <p key={index} className="max-w-2xl text-stone-600">
+                    {block}
+                  </p>
+                )
+              )}
             </div>
           </div>
+
+          {/* ======================================================
+              RESTAURANTS
+          ====================================================== */}
 
           <div className="rounded-2xl bg-white p-6">
             <h2 className="mb-2 text-xl text-stone-800">{t.foodTitle}</h2>
@@ -215,6 +221,50 @@ export default function CityPage({ lang }: { lang: Lang }) {
             </div>
           </div>
 
+          {/* ======================================================
+              LIVE MUSIC VENUES
+          ====================================================== */}
+
+          <div className="rounded-2xl bg-white p-6">
+            <h2 className="mb-2 text-xl text-stone-800">{t.liveTitle}</h2>
+            <p className="mb-4 text-stone-500">{t.liveText}</p>
+
+            <div className="space-y-4">
+              {city?.venues?.map((venue: any) => (
+                <a
+                  key={venue.name}
+                  href={venue.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50"
+                >
+                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
+                    {venue.image?.asset?.url && (
+                      <Image
+                        src={venue.image.asset.url}
+                        alt={venue.name}
+                        width={70}
+                        height={40}
+                        className="object-contain"
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-stone-800">{venue.name}</h4>
+                    <p className="text-sm text-stone-500">
+                      {venue[`text_${lang}`]}
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* ======================================================
+              HELP / CTA
+          ====================================================== */}
+
           <div className="rounded-2xl bg-white p-6">
             <h2 className="mb-2 text-xl text-stone-800">{t.helpTitle}</h2>
 
@@ -228,34 +278,38 @@ export default function CityPage({ lang }: { lang: Lang }) {
           </div>
         </div>
 
+        {/* ======================================================
+            RIGHT COLUMN
+        ====================================================== */}
+
         <div className="space-y-6 pt-24 md:pt-0">
-  <div className="rounded-2xl bg-white p-6">
-    <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
-    <Weather />
-  </div>
 
-  {/* MUSEUM HEADER */}
-  <div className="rounded-2xl bg-white p-6">
-    <h3 className="mb-4 text-lg text-stone-800">
-      {lang === "en" && "Museums & exhibitions"}
-      {lang === "pt" && "Museus e exposições"}
-      {lang === "nl" && "Musea & tentoonstellingen"}
-    </h3>
+          {/* WEATHER */}
+          <div className="rounded-2xl bg-white p-6">
+            <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
+            <Weather />
+          </div>
 
-    <div className="space-y-6">
-      {city?.museums?.map((museum: any) => (
-        <MuseumCard
-          key={museum.title}
-          href={museum.link}
-          image={museum.image?.asset?.url}
-          title={museum.title}
-          dates={museum[`dates_${lang}`]}
-          description={museum[`description_${lang}`]}
-        />
-      ))}
-    </div>
-  </div>
-</div>
+          {/* MUSEUMS / EXHIBITIONS */}
+          <div>
+            <h2 className="mb-4 text-xl text-stone-800 md:text-lg">
+              {t.museumTitle}
+            </h2>
+
+            <div className="space-y-6">
+              {city?.museums?.map((museum: any) => (
+                <MuseumCard
+                  key={museum.title}
+                  href={museum.link}
+                  image={museum.image?.asset?.url}
+                  title={museum.title}
+                  dates={museum[`dates_${lang}`]}
+                  description={museum[`description_${lang}`]}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

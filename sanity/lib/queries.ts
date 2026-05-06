@@ -12,6 +12,10 @@ export const cityQuery = `
     intro_pt,
     intro_nl,
 
+    introBlocks_en,
+    introBlocks_pt,
+    introBlocks_nl,
+
     cta_en,
     cta_pt,
     cta_nl,
@@ -52,6 +56,55 @@ export const cityQuery = `
           url
         }
       }
+    }
+  }
+`;
+
+export const hostQuery = `
+  *[_type == "host" && slug.current == $slug][0]{
+    name,
+
+    eyebrow_en,
+    eyebrow_pt,
+    eyebrow_nl,
+
+    headline_en,
+    headline_pt,
+    headline_nl,
+
+    intro_en,
+    intro_pt,
+    intro_nl,
+
+    servicesTitle_en,
+    servicesTitle_pt,
+    servicesTitle_nl,
+
+    aboutTitle_en,
+    aboutTitle_pt,
+    aboutTitle_nl,
+
+    about_en,
+    about_pt,
+    about_nl,
+
+    whatsapp,
+    email,
+
+    photo{
+      asset->{
+        url
+      }
+    },
+
+    services[]{
+      title_en,
+      title_pt,
+      title_nl,
+
+      description_en,
+      description_pt,
+      description_nl
     }
   }
 `;

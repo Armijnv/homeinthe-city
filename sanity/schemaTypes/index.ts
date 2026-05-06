@@ -1,3 +1,4 @@
-import {city} from './city'
+import { city } from "./city";
+import { host } from "./host";
 
-export const schemaTypes = [city]
+export const schemaTypes = [city, host];
