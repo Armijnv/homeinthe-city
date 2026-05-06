@@ -85,13 +85,31 @@ export default function Header() {
         ====================================================== */}
 
         <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
-          <Link href="/brazil/porto-alegre" className="hover:text-white">
-            Porto Alegre
-          </Link>
+          <Link
+  href={
+    pathname.startsWith("/pt")
+      ? "/pt/brasil/porto-alegre"
+      : pathname.startsWith("/nl")
+      ? "/nl/brazilie/porto-alegre"
+      : "/brazil/porto-alegre"
+  }
+  className="hover:text-white"
+>
+  Porto Alegre
+</Link>
 
-          <Link href="/hosts/armijn" className="hover:text-white">
-            Your Host
-          </Link>
+<Link
+  href={
+    pathname.startsWith("/pt")
+      ? "/pt/hosts/armijn"
+      : pathname.startsWith("/nl")
+      ? "/nl/hosts/armijn"
+      : "/hosts/armijn"
+  }
+  className="hover:text-white"
+>
+  Your Host
+</Link>
 
           <a
             href="https://wa.me/+5551997783369"
@@ -137,18 +155,30 @@ export default function Header() {
             <nav className="absolute right-0 mt-6 flex w-52 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
 
               <Link
-                href="/brazil/porto-alegre"
-                onClick={() => setOpen(false)}
-              >
-                Porto Alegre
-              </Link>
+  href={
+    pathname.startsWith("/pt")
+      ? "/pt/brasil/porto-alegre"
+      : pathname.startsWith("/nl")
+      ? "/nl/brazilie/porto-alegre"
+      : "/brazil/porto-alegre"
+  }
+  onClick={() => setOpen(false)}
+>
+  Porto Alegre
+</Link>
 
-              <Link
-                href="/hosts/armijn"
-                onClick={() => setOpen(false)}
-              >
-                Your Host
-              </Link>
+<Link
+  href={
+    pathname.startsWith("/pt")
+      ? "/pt/hosts/armijn"
+      : pathname.startsWith("/nl")
+      ? "/nl/hosts/armijn"
+      : "/hosts/armijn"
+  }
+  onClick={() => setOpen(false)}
+>
+  Your Host
+</Link>
 
               <a
                 href="https://wa.me/+5551997783369"
