@@ -3,9 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export default function Header() {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
 
   const englishPath =
     pathname.includes("/pt/hosts/")
@@ -53,6 +55,7 @@ export default function Header() {
   return (
     <header className="fixed left-0 right-0 top-0 z-50 bg-[#1a1f2e] px-8 py-4">
       <div className="flex items-center justify-between">
+
         {/* ======================================================
             LOGO / BRAND
         ====================================================== */}
@@ -119,41 +122,75 @@ export default function Header() {
             MOBILE MENU
         ====================================================== */}
 
-        <details className="relative md:hidden">
-          <summary className="flex cursor-pointer list-none flex-col gap-1">
+        <div className="relative md:hidden">
+
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex cursor-pointer flex-col gap-1"
+          >
             <span className="h-[2px] w-6 bg-white"></span>
             <span className="h-[2px] w-6 bg-white"></span>
             <span className="h-[2px] w-6 bg-white"></span>
-          </summary>
+          </button>
 
-          <nav className="absolute right-0 mt-6 flex w-52 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
-            <Link href="/brazil/porto-alegre">Porto Alegre</Link>
-            <Link href="/hosts/armijn">Your Host</Link>
+          {open && (
+            <nav className="absolute right-0 mt-6 flex w-52 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
 
-            <a
-              href="https://wa.me/+5551997783369"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Contact
-            </a>
-
-            {/* LANGUAGE FLAGS */}
-            <div className="flex gap-3 pt-2 text-xl">
-              <Link href={englishPath} title="English">
-                🇬🇧
+              <Link
+                href="/brazil/porto-alegre"
+                onClick={() => setOpen(false)}
+              >
+                Porto Alegre
               </Link>
 
-              <Link href={portuguesePath} title="Português">
-                🇧🇷
+              <Link
+                href="/hosts/armijn"
+                onClick={() => setOpen(false)}
+              >
+                Your Host
               </Link>
 
-              <Link href={dutchPath} title="Nederlands">
-                🇳🇱
-              </Link>
-            </div>
-          </nav>
-        </details>
+              <a
+                href="https://wa.me/+5551997783369"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+              >
+                Contact
+              </a>
+
+              {/* LANGUAGE FLAGS */}
+              <div className="flex gap-3 pt-2 text-xl">
+
+                <Link
+                  href={englishPath}
+                  title="English"
+                  onClick={() => setOpen(false)}
+                >
+                  🇬🇧
+                </Link>
+
+                <Link
+                  href={portuguesePath}
+                  title="Português"
+                  onClick={() => setOpen(false)}
+                >
+                  🇧🇷
+                </Link>
+
+                <Link
+                  href={dutchPath}
+                  title="Nederlands"
+                  onClick={() => setOpen(false)}
+                >
+                  🇳🇱
+                </Link>
+
+              </div>
+            </nav>
+          )}
+
+        </div>
       </div>
     </header>
   );
