@@ -15,7 +15,8 @@ const portoAlegre = [
 
 export default function GlobeComponent() {
   const globeRef = useRef<any>(null);
-  const [supported, setSupported] = useState(true);
+  const [supported, setSupported] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     try {
@@ -24,11 +25,11 @@ export default function GlobeComponent() {
         canvas.getContext("webgl") ||
         canvas.getContext("experimental-webgl");
 
-      if (!gl) {
-        setSupported(false);
-      }
+      setSupported(!!gl);
     } catch {
       setSupported(false);
+    } finally {
+      setChecked(true);
     }
   }, []);
 
@@ -48,12 +49,20 @@ export default function GlobeComponent() {
     globeRef.current.controls().autoRotateSpeed = 0.2;
   }
 
-  if (!supported) {
+  if (!checked) {
     return null;
   }
 
+  if (!supported) {
+    return (
+      <div className="flex h-[360px] w-[360px] items-center justify-center rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
+        Porto Alegre
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full h-full">
+    <div className="h-full w-full">
       <Globe
         ref={globeRef}
         width={700}
