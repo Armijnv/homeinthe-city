@@ -48,13 +48,21 @@ export default function HomePage({ lang }: { lang: Lang }) {
 
   return (
     <div className="min-h-screen bg-[#1a1f2e]">
-      <section className="relative flex min-h-screen flex-col overflow-hidden bg-[#1a1f2e] px-6 pt-24 pb-12 md:px-10 lg:flex-row-reverse lg:items-center lg:justify-between lg:px-20">
+      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-12 md:px-10 lg:flex lg:items-center lg:justify-between lg:px-20">
+
+        {/* ======================================================
+            GLOBE
+        ====================================================== */}
+
+        <div className="absolute left-1/2 top-[55%] z-10 -translate-x-1/2 -translate-y-1/2 scale-[0.55] opacity-90 md:top-[52%] md:scale-[0.82] lg:left-[28%] lg:top-1/2 lg:scale-110">
+          <GlobeComponent />
+        </div>
 
         {/* ======================================================
             HERO TEXT
         ====================================================== */}
 
-        <div className="relative z-20 mx-auto max-w-xl text-center md:pt-8 lg:mx-0 lg:w-1/2 lg:text-left">
+        <div className="relative z-20 mx-auto max-w-xl text-center lg:ml-auto lg:mr-0 lg:w-1/2 lg:text-left">
           <p className="mb-4 text-xs uppercase tracking-[0.25em] text-stone-400 sm:text-sm">
             {t.eyebrow}
           </p>
@@ -66,8 +74,8 @@ export default function HomePage({ lang }: { lang: Lang }) {
           </h1>
 
           <p className="mx-auto mb-7 max-w-lg rounded-2xl bg-[#1a1f2e]/45 px-4 py-3 text-base leading-relaxed text-stone-300 backdrop-blur-sm sm:text-lg lg:mx-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
-  {t.intro}
-</p>
+            {t.intro}
+          </p>
 
           <Link
             href={t.href}
@@ -75,16 +83,6 @@ export default function HomePage({ lang }: { lang: Lang }) {
           >
             {t.cta}
           </Link>
-        </div>
-
-        {/* ======================================================
-            GLOBE
-        ====================================================== */}
-
-        <div className="relative z-10 mt-10 flex h-[360px] w-full items-center justify-center sm:h-[430px] md:h-[520px] lg:mt-0 lg:h-[620px] lg:w-1/2">
-          <div className="scale-[0.62] sm:scale-[0.78] md:scale-[0.95] lg:scale-110">
-            <GlobeComponent />
-          </div>
         </div>
       </section>
     </div>
