@@ -5,7 +5,11 @@ import { cityQuery } from "@/sanity/lib/queries";
 import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import PortoMap from "@/app/components/PortoMap";
+import dynamic from "next/dynamic";
+
+const PortoMap = dynamic(() => import("@/app/components/PortoMap"), {
+  ssr: false,
+});
 type Lang = "en" | "pt" | "nl";
 
 /* ======================================================
