@@ -47,7 +47,7 @@ export default function PortoMap({
   lang: Lang;
 }) {
   return (
-    <div className="rounded-3xl bg-white p-6">
+    <div className="relative z-0 rounded-3xl bg-white p-6">
       <div className="mb-4">
         <h2 className="text-2xl text-stone-800">Porto Alegre map</h2>
 
@@ -56,12 +56,12 @@ export default function PortoMap({
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl">
+      <div className="relative z-0 overflow-hidden rounded-2xl">
         <MapContainer
           center={[-30.0346, -51.2177]}
           zoom={13}
           scrollWheelZoom={false}
-          className="h-[500px] w-full"
+          className="z-0 h-[500px] w-full"
         >
           <TileLayer
             attribution='&copy; OpenStreetMap contributors'
@@ -87,8 +87,7 @@ export default function PortoMap({
                     </div>
 
                     <p className="text-sm">
-                      {place[`description_${lang}`] ||
-                        place.description_en}
+                      {place[`description_${lang}`] || place.description_en}
                     </p>
 
                     {place.googleMaps && (
