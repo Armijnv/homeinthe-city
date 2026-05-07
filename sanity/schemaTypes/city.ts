@@ -6,6 +6,10 @@ export const city = defineType({
   type: "document",
 
   fields: [
+    /* ======================================================
+       BASIC CITY INFO
+    ====================================================== */
+
     defineField({
       name: "name_en",
       title: "Name (English)",
@@ -33,6 +37,10 @@ export const city = defineType({
         maxLength: 96,
       },
     }),
+
+    /* ======================================================
+       HERO / INTRO CONTENT
+    ====================================================== */
 
     defineField({
       name: "headline_en",
@@ -91,150 +99,35 @@ export const city = defineType({
       of: [{ type: "text" }],
     }),
 
-    defineField({
-      name: "cta_en",
-      title: "CTA Text (English)",
-      type: "string",
-    }),
+    /* ======================================================
+       MAP PLACES
+    ====================================================== */
 
     defineField({
-      name: "cta_pt",
-      title: "CTA Text (Portuguese)",
-      type: "string",
-    }),
-
-    defineField({
-      name: "cta_nl",
-      title: "CTA Text (Dutch)",
-      type: "string",
-    }),
-
-    defineField({
-      name: "restaurants",
-      title: "Restaurants",
+      name: "mapPlaces",
+      title: "Map Places",
       type: "array",
       of: [
         {
           type: "object",
           fields: [
+            { name: "name", title: "Name", type: "string" },
+
             {
-              name: "name",
-              title: "Name",
+              name: "category",
+              title: "Category",
               type: "string",
-            },
-
-            {
-              name: "note_en",
-              title: "Note (English)",
-              type: "string",
-            },
-
-            {
-              name: "note_pt",
-              title: "Note (Portuguese)",
-              type: "string",
-            },
-
-            {
-              name: "note_nl",
-              title: "Note (Dutch)",
-              type: "string",
-            },
-
-            {
-              name: "favorite",
-              title: "My pick",
-              type: "boolean",
-            },
-
-            {
-              name: "link",
-              title: "Website / Google Maps",
-              type: "url",
-            },
-          ],
-        },
-      ],
-    }),
-
-    defineField({
-      name: "venues",
-      title: "Live Music Venues",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            {
-              name: "name",
-              title: "Name",
-              type: "string",
-            },
-
-            {
-              name: "text_en",
-              title: "Text (English)",
-              type: "string",
-            },
-
-            {
-              name: "text_pt",
-              title: "Text (Portuguese)",
-              type: "string",
-            },
-
-            {
-              name: "text_nl",
-              title: "Text (Dutch)",
-              type: "string",
-            },
-
-            {
-              name: "link",
-              title: "Website",
-              type: "url",
-            },
-
-            {
-              name: "image",
-              title: "Image",
-              type: "image",
-            },
-          ],
-        },
-      ],
-    }),
-
-    defineField({
-      name: "museums",
-      title: "Museums / Exhibitions",
-      type: "array",
-      of: [
-        {
-          type: "object",
-          fields: [
-            {
-              name: "title",
-              title: "Title",
-              type: "string",
-            },
-
-            {
-              name: "dates_en",
-              title: "Dates (English)",
-              type: "string",
-            },
-
-            {
-              name: "dates_pt",
-              title: "Dates (Portuguese)",
-              type: "string",
-            },
-
-            {
-              name: "dates_nl",
-              title: "Dates (Dutch)",
-              type: "string",
+              options: {
+                list: [
+                  { title: "Restaurant", value: "restaurant" },
+                  { title: "Museum", value: "museum" },
+                  { title: "Live Music", value: "liveMusic" },
+                  { title: "Coffee", value: "coffee" },
+                  { title: "Business", value: "business" },
+                  { title: "Walk", value: "walk" },
+                  { title: "Other", value: "other" },
+                ],
+              },
             },
 
             {
@@ -255,17 +148,136 @@ export const city = defineType({
               type: "string",
             },
 
+            { name: "latitude", title: "Latitude", type: "number" },
+            { name: "longitude", title: "Longitude", type: "number" },
+
             {
-              name: "link",
-              title: "Exhibition link",
+              name: "googleMaps",
+              title: "Google Maps Link",
               type: "url",
             },
 
             {
-              name: "image",
-              title: "Image",
-              type: "image",
+              name: "website",
+              title: "Website",
+              type: "url",
             },
+
+            {
+              name: "favorite",
+              title: "My pick",
+              type: "boolean",
+            },
+          ],
+        },
+      ],
+    }),
+
+    /* ======================================================
+       CTA TEXT
+    ====================================================== */
+
+    defineField({
+      name: "cta_en",
+      title: "CTA Text (English)",
+      type: "string",
+    }),
+
+    defineField({
+      name: "cta_pt",
+      title: "CTA Text (Portuguese)",
+      type: "string",
+    }),
+
+    defineField({
+      name: "cta_nl",
+      title: "CTA Text (Dutch)",
+      type: "string",
+    }),
+
+    /* ======================================================
+       RESTAURANTS
+    ====================================================== */
+
+    defineField({
+      name: "restaurants",
+      title: "Restaurants",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "name", title: "Name", type: "string" },
+            { name: "note_en", title: "Note (English)", type: "string" },
+            { name: "note_pt", title: "Note (Portuguese)", type: "string" },
+            { name: "note_nl", title: "Note (Dutch)", type: "string" },
+            { name: "favorite", title: "My pick", type: "boolean" },
+            { name: "link", title: "Website / Google Maps", type: "url" },
+          ],
+        },
+      ],
+    }),
+
+    /* ======================================================
+       LIVE MUSIC VENUES
+    ====================================================== */
+
+    defineField({
+      name: "venues",
+      title: "Live Music Venues",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "name", title: "Name", type: "string" },
+            { name: "text_en", title: "Text (English)", type: "string" },
+            { name: "text_pt", title: "Text (Portuguese)", type: "string" },
+            { name: "text_nl", title: "Text (Dutch)", type: "string" },
+            { name: "link", title: "Website", type: "url" },
+            { name: "image", title: "Image", type: "image" },
+          ],
+        },
+      ],
+    }),
+
+    /* ======================================================
+       MUSEUMS / EXHIBITIONS
+    ====================================================== */
+
+    defineField({
+      name: "museums",
+      title: "Museums / Exhibitions",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "title", title: "Title", type: "string" },
+            { name: "dates_en", title: "Dates (English)", type: "string" },
+            { name: "dates_pt", title: "Dates (Portuguese)", type: "string" },
+            { name: "dates_nl", title: "Dates (Dutch)", type: "string" },
+
+            {
+              name: "description_en",
+              title: "Description (English)",
+              type: "string",
+            },
+
+            {
+              name: "description_pt",
+              title: "Description (Portuguese)",
+              type: "string",
+            },
+
+            {
+              name: "description_nl",
+              title: "Description (Dutch)",
+              type: "string",
+            },
+
+            { name: "link", title: "Exhibition link", type: "url" },
+            { name: "image", title: "Image", type: "image" },
           ],
         },
       ],

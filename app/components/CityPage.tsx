@@ -5,7 +5,7 @@ import { cityQuery } from "@/sanity/lib/queries";
 import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
+import PortoMap from "@/app/components/PortoMap";
 type Lang = "en" | "pt" | "nl";
 
 /* ======================================================
@@ -175,7 +175,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
               )}
             </div>
           </div>
-
+<PortoMap places={city?.mapPlaces} lang={lang} />
           {/* ======================================================
               RESTAURANTS
           ====================================================== */}
