@@ -1,3 +1,4 @@
+import GlobeComponent from "./Globe";
 import Link from "next/link";
 
 type Lang = "en" | "pt" | "nl";
@@ -50,10 +51,12 @@ export default function HomePage({ lang }: { lang: Lang }) {
       <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-12 md:px-10 lg:flex lg:items-center lg:justify-between lg:px-20">
 
         {/* ======================================================
-            TEMPORARY GLOBE TEST PLACEHOLDER
+            GLOBE
         ====================================================== */}
 
-        <div className="absolute left-1/2 top-[55%] z-10 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 opacity-40 md:top-[52%] md:h-[520px] md:w-[520px] lg:left-[28%] lg:top-1/2 lg:h-[620px] lg:w-[620px]" />
+        <div className="absolute left-1/2 top-[55%] z-10 -translate-x-1/2 -translate-y-1/2 scale-[0.55] opacity-90 md:top-[52%] md:scale-[0.82] lg:left-[28%] lg:top-1/2 lg:scale-110">
+          <GlobeComponent />
+        </div>
 
         {/* ======================================================
             HERO TEXT
