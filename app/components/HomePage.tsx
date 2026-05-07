@@ -73,9 +73,9 @@ export default function HomePage({ lang }: { lang: Lang }) {
             <span className="text-stone-300">{t.titleLine2}</span>
           </h1>
 
-          <p className="mx-auto mb-7 max-w-lg rounded-2xl bg-[#1a1f2e]/45 px-4 py-3 text-base leading-relaxed text-stone-300 backdrop-blur-sm sm:text-lg lg:mx-0 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
-            {t.intro}
-          </p>
+          <p className="mx-auto mb-7 max-w-lg text-base leading-relaxed text-stone-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] sm:text-lg lg:mx-0 lg:drop-shadow-none">
+  {t.intro}
+</p>
 
           <Link
             href={t.href}
