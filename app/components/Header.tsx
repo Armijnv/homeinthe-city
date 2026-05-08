@@ -7,8 +7,16 @@ import { usePathname } from "next/navigation";
 export default function Header() {
   const pathname = usePathname();
 
+  /* ======================================================
+     LANGUAGE PATHS
+  ====================================================== */
+
   const englishPath =
-    pathname.includes("/pt/hosts/")
+    pathname === "/pt/interprete-porto-alegre"
+      ? "/interpreter-porto-alegre"
+      : pathname === "/nl/tolk-porto-alegre"
+      ? "/interpreter-porto-alegre"
+      : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/hosts")
       : pathname.includes("/nl/hosts/")
       ? pathname.replace("/nl/hosts", "/hosts")
@@ -21,7 +29,11 @@ export default function Header() {
       : pathname;
 
   const portuguesePath =
-    pathname.includes("/nl/hosts/")
+    pathname === "/interpreter-porto-alegre"
+      ? "/pt/interprete-porto-alegre"
+      : pathname === "/nl/tolk-porto-alegre"
+      ? "/pt/interprete-porto-alegre"
+      : pathname.includes("/nl/hosts/")
       ? pathname.replace("/nl/hosts", "/pt/hosts")
       : pathname.includes("/hosts/")
       ? `/pt${pathname}`
@@ -36,7 +48,11 @@ export default function Header() {
       : pathname;
 
   const dutchPath =
-    pathname.includes("/pt/hosts/")
+    pathname === "/interpreter-porto-alegre"
+      ? "/nl/tolk-porto-alegre"
+      : pathname === "/pt/interprete-porto-alegre"
+      ? "/nl/tolk-porto-alegre"
+      : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/nl/hosts")
       : pathname.includes("/hosts/")
       ? `/nl${pathname}`
@@ -61,6 +77,12 @@ export default function Header() {
     : pathname.startsWith("/nl")
     ? "/nl/hosts/armijn"
     : "/hosts/armijn";
+
+  const interpreterPath = pathname.startsWith("/pt")
+    ? "/pt/interprete-porto-alegre"
+    : pathname.startsWith("/nl")
+    ? "/nl/tolk-porto-alegre"
+    : "/interpreter-porto-alegre";
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 bg-[#1a1f2e] px-8 py-4">
@@ -96,6 +118,10 @@ export default function Header() {
         <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
           <Link href={portoAlegrePath} className="hover:text-white">
             Porto Alegre
+          </Link>
+
+          <Link href={interpreterPath} className="hover:text-white">
+            Interpreter
           </Link>
 
           <Link href={hostPath} className="hover:text-white">
@@ -139,6 +165,8 @@ export default function Header() {
 
           <nav className="absolute right-0 mt-6 flex w-52 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
             <Link href={portoAlegrePath}>Porto Alegre</Link>
+
+            <Link href={interpreterPath}>Interpreter</Link>
 
             <Link href={hostPath}>Your Host</Link>
 
