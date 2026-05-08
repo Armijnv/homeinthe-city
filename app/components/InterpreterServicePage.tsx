@@ -4,121 +4,52 @@ import Link from "next/link";
 
 type Lang = "en" | "pt" | "nl";
 
-/* ======================================================
-   CONTENT
-====================================================== */
+type ServicePageData = {
+  eyebrow_en?: string;
+  eyebrow_pt?: string;
+  eyebrow_nl?: string;
 
-const content = {
-  en: {
-    eyebrow: "Porto Alegre · Brazil",
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
 
-    title: "Interpreter in Porto Alegre for Business Meetings",
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
 
-    intro:
-      "I help international business visitors communicate clearly and move comfortably through Porto Alegre during meetings, factory visits and company introductions.",
+  sections?: {
+    title_en?: string;
+    title_pt?: string;
+    title_nl?: string;
+    text_en?: string;
+    text_pt?: string;
+    text_nl?: string;
+  }[];
 
-    servicesTitle: "Services",
+  pricingTitle_en?: string;
+  pricingTitle_pt?: string;
+  pricingTitle_nl?: string;
 
-    services: [
-      "On-site interpreting during meetings",
-      "Factory and supplier visits",
-      "Local business coordination",
-      "Airport pickup and transport guidance",
-      "Restaurant and city recommendations",
-      "English · Portuguese · Dutch",
-    ],
+  pricingItems?: {
+    label_en?: string;
+    label_pt?: string;
+    label_nl?: string;
+    detail_en?: string;
+    detail_pt?: string;
+    detail_nl?: string;
+  }[];
 
-    supportTitle: "Local support that goes beyond translation",
+  ctaTitle_en?: string;
+  ctaTitle_pt?: string;
+  ctaTitle_nl?: string;
 
-    supportText:
-      "Business trips run smoother when someone local helps bridge both the language and the culture. I assist visitors during negotiations, technical visits and day-to-day logistics so communication stays relaxed and efficient.",
+  ctaText_en?: string;
+  ctaText_pt?: string;
+  ctaText_nl?: string;
 
-    translationTitle: "Translation & local coordination",
-
-    translationText:
-      "Besides interpreting during meetings, I can also help with practical communication, written translations and local coordination before or during your stay in Porto Alegre.",
-
-    ctaTitle: "Coming to Porto Alegre?",
-
-    ctaText:
-      "Send me your dates and meeting schedule and I’ll let you know how I can help.",
-
-    button: "Contact on WhatsApp",
-  },
-
-  pt: {
-    eyebrow: "Porto Alegre · Brasil",
-
-    title: "Intérprete em Porto Alegre para reuniões de negócios",
-
-    intro:
-      "Ajudo visitantes internacionais a se comunicarem com clareza e se movimentarem com tranquilidade por Porto Alegre durante reuniões, visitas técnicas e apresentações empresariais.",
-
-    servicesTitle: "Serviços",
-
-    services: [
-      "Interpretação presencial em reuniões",
-      "Visitas a fábricas e fornecedores",
-      "Coordenação local para negócios",
-      "Recepção no aeroporto e orientação de transporte",
-      "Recomendações de restaurantes e da cidade",
-      "Inglês · Português · Holandês",
-    ],
-
-    supportTitle: "Apoio local que vai além da tradução",
-
-    supportText:
-      "Viagens de negócios funcionam melhor quando alguém local ajuda a conectar idioma e cultura. Auxilio visitantes em negociações, visitas técnicas e logística diária para manter a comunicação leve e eficiente.",
-
-    translationTitle: "Tradução e coordenação local",
-
-    translationText:
-      "Além da interpretação durante reuniões, também posso ajudar com comunicação prática, traduções escritas e coordenação local antes ou durante sua estadia em Porto Alegre.",
-
-    ctaTitle: "Vindo para Porto Alegre?",
-
-    ctaText:
-      "Envie suas datas e agenda de reuniões e eu aviso como posso ajudar.",
-
-    button: "Contato no WhatsApp",
-  },
-
-  nl: {
-    eyebrow: "Porto Alegre · Brazilië",
-
-    title: "Tolk in Porto Alegre voor zakelijke meetings",
-
-    intro:
-      "Ik help internationale zakenbezoekers helder communiceren en zich comfortabel door Porto Alegre bewegen tijdens meetings, fabrieksbezoeken en bedrijfsintroducties.",
-
-    servicesTitle: "Diensten",
-
-    services: [
-      "Tolkdiensten tijdens meetings",
-      "Bezoeken aan fabrieken en leveranciers",
-      "Lokale zakelijke coördinatie",
-      "Airport pickup en transporthulp",
-      "Restaurant- en stadstips",
-      "Engels · Portugees · Nederlands",
-    ],
-
-    supportTitle: "Lokale ondersteuning die verder gaat dan vertalen",
-
-    supportText:
-      "Zakenreizen verlopen soepeler wanneer iemand lokaal helpt de brug te slaan tussen taal en cultuur. Ik ondersteun bezoekers tijdens onderhandelingen, technische bezoeken en dagelijkse logistiek zodat communicatie ontspannen en efficiënt blijft.",
-
-    translationTitle: "Vertaling & lokale coördinatie",
-
-    translationText:
-      "Naast tolken tijdens meetings kan ik ook helpen met praktische communicatie, geschreven vertalingen en lokale coördinatie voor of tijdens uw verblijf in Porto Alegre.",
-
-    ctaTitle: "Komt u naar Porto Alegre?",
-
-    ctaText:
-      "Stuur uw data en meetingschema door en ik laat weten hoe ik kan helpen.",
-
-    button: "Contact via WhatsApp",
-  },
+  button_en?: string;
+  button_pt?: string;
+  button_nl?: string;
 };
 
 /* ======================================================
@@ -127,11 +58,11 @@ const content = {
 
 export default function InterpreterServicePage({
   lang,
+  page,
 }: {
   lang: Lang;
+  page: ServicePageData;
 }) {
-  const t = content[lang];
-
   return (
     <main className="min-h-screen bg-stone-50 px-6 pt-32 pb-20">
       <div className="mx-auto max-w-3xl">
@@ -142,61 +73,64 @@ export default function InterpreterServicePage({
 
         <div className="mb-12">
           <p className="mb-4 text-sm uppercase tracking-[0.25em] text-stone-500">
-            {t.eyebrow}
+            {page[`eyebrow_${lang}`]}
           </p>
 
           <h1 className="mb-6 text-5xl font-light leading-tight text-stone-800">
-            {t.title}
+            {page[`title_${lang}`]}
           </h1>
 
           <p className="max-w-2xl text-lg leading-relaxed text-stone-600">
-            {t.intro}
+            {page[`intro_${lang}`]}
           </p>
         </div>
 
         {/* ======================================================
-            SERVICES
+            SECTIONS
         ====================================================== */}
 
-        <div className="mb-12 rounded-3xl bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-2xl text-stone-800">
-            {t.servicesTitle}
-          </h2>
+        <div className="space-y-12">
+          {page.sections?.map((section, index) => (
+            <div key={index} className="rounded-3xl bg-white p-8 shadow-sm">
+              <h2 className="mb-6 text-2xl text-stone-800">
+                {section[`title_${lang}`]}
+              </h2>
 
-          <div className="space-y-4 text-stone-600">
-            {t.services.map((service) => (
-              <p key={service}>• {service}</p>
-            ))}
+              <p className="leading-relaxed text-stone-600">
+                {section[`text_${lang}`]}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* ======================================================
+            PRICING
+        ====================================================== */}
+
+        {page.pricingItems && page.pricingItems.length > 0 && (
+          <div className="my-12 rounded-3xl bg-white p-8 shadow-sm">
+            <h2 className="mb-6 text-2xl text-stone-800">
+              {page[`pricingTitle_${lang}`]}
+            </h2>
+
+            <div className="space-y-4">
+              {page.pricingItems.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex flex-col justify-between gap-1 border-b border-stone-100 pb-4 last:border-b-0 last:pb-0 sm:flex-row"
+                >
+                  <span className="font-medium text-stone-800">
+                    {item[`label_${lang}`]}
+                  </span>
+
+                  <span className="text-stone-600">
+                    {item[`detail_${lang}`]}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-
-        {/* ======================================================
-            SUPPORT
-        ====================================================== */}
-
-        <div className="mb-12 rounded-3xl bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-2xl text-stone-800">
-            {t.supportTitle}
-          </h2>
-
-          <p className="leading-relaxed text-stone-600">
-            {t.supportText}
-          </p>
-        </div>
-
-        {/* ======================================================
-            TRANSLATION / COORDINATION
-        ====================================================== */}
-
-        <div className="mb-12 rounded-3xl bg-white p-8 shadow-sm">
-          <h2 className="mb-6 text-2xl text-stone-800">
-            {t.translationTitle}
-          </h2>
-
-          <p className="leading-relaxed text-stone-600">
-            {t.translationText}
-          </p>
-        </div>
+        )}
 
         {/* ======================================================
             CTA
@@ -204,18 +138,18 @@ export default function InterpreterServicePage({
 
         <div className="rounded-3xl bg-[#1a1f2e] p-8 text-white">
           <h2 className="mb-4 text-3xl font-light">
-            {t.ctaTitle}
+            {page[`ctaTitle_${lang}`]}
           </h2>
 
           <p className="mb-6 max-w-xl text-stone-300">
-            {t.ctaText}
+            {page[`ctaText_${lang}`]}
           </p>
 
           <Link
             href="https://wa.me/5551997783369"
             className="inline-block rounded-full bg-white px-6 py-4 text-sm text-stone-900 transition hover:bg-stone-200"
           >
-            {t.button}
+            {page[`button_${lang}`]}
           </Link>
         </div>
       </div>

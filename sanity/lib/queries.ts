@@ -1,3 +1,7 @@
+/* ======================================================
+   CITY QUERY
+====================================================== */
+
 export const cityQuery = `
   *[_type == "city" && slug.current == $slug][0]{
     name_en,
@@ -16,17 +20,17 @@ export const cityQuery = `
     introBlocks_pt,
     introBlocks_nl,
 
-           mapPlaces[]{
+    mapPlaces[]{
       name,
       category,
       description_en,
       description_pt,
       description_nl,
+      detail_en,
+      detail_pt,
+      detail_nl,
       latitude,
       longitude,
-      detail_en,
-detail_pt,
-detail_nl,
       googleMaps,
       website,
       favorite,
@@ -39,11 +43,78 @@ detail_nl,
 
     cta_en,
     cta_pt,
-    cta_nl,
-
-    
+    cta_nl
   }
 `;
+
+/* ======================================================
+   SERVICE PAGE QUERY
+====================================================== */
+
+export const servicePageQuery = `
+  *[_type == "servicePage" && slug.current == $slug][0]{
+    name,
+    slug,
+
+    seoTitle_en,
+    seoTitle_pt,
+    seoTitle_nl,
+
+    seoDescription_en,
+    seoDescription_pt,
+    seoDescription_nl,
+
+    eyebrow_en,
+    eyebrow_pt,
+    eyebrow_nl,
+
+    title_en,
+    title_pt,
+    title_nl,
+
+    intro_en,
+    intro_pt,
+    intro_nl,
+
+    sections[]{
+      title_en,
+      title_pt,
+      title_nl,
+      text_en,
+      text_pt,
+      text_nl
+    },
+
+    pricingTitle_en,
+    pricingTitle_pt,
+    pricingTitle_nl,
+
+    pricingItems[]{
+      label_en,
+      label_pt,
+      label_nl,
+      detail_en,
+      detail_pt,
+      detail_nl
+    },
+
+    ctaTitle_en,
+    ctaTitle_pt,
+    ctaTitle_nl,
+
+    ctaText_en,
+    ctaText_pt,
+    ctaText_nl,
+
+    button_en,
+    button_pt,
+    button_nl
+  }
+`;
+
+/* ======================================================
+   HOST QUERY
+====================================================== */
 
 export const hostQuery = `
   *[_type == "host" && slug.current == $slug][0]{

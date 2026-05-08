@@ -1,11 +1,23 @@
 import InterpreterServicePage from "@/app/components/InterpreterServicePage";
 
-export const metadata = {
-  title: "Tolk in Porto Alegre voor zakelijke meetings",
-  description:
-    "Nederlandse, Engelse en Portugese tolk in Porto Alegre voor zakelijke meetings, bedrijfsbezoeken en lokale ondersteuning.",
-};
+import { client } from "@/sanity/lib/client";
+import { servicePageQuery } from "@/sanity/lib/queries";
 
-export default function Page() {
-  return <InterpreterServicePage lang="nl" />;
+export async function generateMetadata() {
+  const page = await client.fetch(servicePageQuery, {
+    slug: "interpreter-porto-alegre",
+  });
+
+  return {
+    title: page?.seoTitle_nl,
+    description: page?.seoDescription_nl,
+  };
+}
+
+export default async function Page() {
+  const page = await client.fetch(servicePageQuery, {
+    slug: "interpreter-porto-alegre",
+  });
+
+  return <InterpreterServicePage lang="nl" page={page} />;
 }

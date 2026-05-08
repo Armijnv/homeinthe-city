@@ -1,11 +1,23 @@
 import InterpreterServicePage from "@/app/components/InterpreterServicePage";
 
-export const metadata = {
-  title: "Interpreter in Porto Alegre for Business Meetings",
-  description:
-    "English, Dutch and Portuguese interpreter in Porto Alegre for factory visits, business meetings and local coordination.",
-};
+import { client } from "@/sanity/lib/client";
+import { servicePageQuery } from "@/sanity/lib/queries";
 
-export default function Page() {
-  return <InterpreterServicePage lang="en" />;
+export async function generateMetadata() {
+  const page = await client.fetch(servicePageQuery, {
+    slug: "interpreter-porto-alegre",
+  });
+
+  return {
+    title: page?.seoTitle_en,
+    description: page?.seoDescription_en,
+  };
+}
+
+export default async function Page() {
+  const page = await client.fetch(servicePageQuery, {
+    slug: "interpreter-porto-alegre",
+  });
+
+  return <InterpreterServicePage lang="en" page={page} />;
 }
