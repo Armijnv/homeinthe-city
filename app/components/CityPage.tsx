@@ -2,15 +2,45 @@
 
 import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
-import MuseumCard from "@/app/components/MuseumCard";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-const PortoMap = dynamic(() => import("@/app/components/PortoMap"), {
-  ssr: false,
-});
+const PortoMap = dynamic(
+  () => import("@/app/components/PortoMap").then((mod) => mod.default),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-3xl bg-white p-6">
+        <div className="h-[500px] rounded-2xl bg-stone-100" />
+      </div>
+    ),
+  }
+);
+
 type Lang = "en" | "pt" | "nl";
+
+type MapPlace = {
+  name: string;
+  category?: string;
+  description_en?: string;
+  description_pt?: string;
+  description_nl?: string;
+  detail_en?: string;
+detail_pt?: string;
+detail_nl?: string;
+  
+  latitude?: number;
+  longitude?: number;
+  googleMaps?: string;
+  website?: string;
+  favorite?: boolean;
+  image?: {
+    asset?: {
+      url?: string;
+    };
+  };
+};
 
 /* ======================================================
    WEATHER COMPONENT
@@ -33,6 +63,79 @@ function Weather() {
 }
 
 /* ======================================================
+   PLACE SECTION
+====================================================== */
+
+function PlaceSection({
+  title,
+  text,
+  places,
+  lang,
+  pickLabel,
+}: {
+  title: string;
+  text: string;
+  places: MapPlace[];
+  lang: Lang;
+  pickLabel: string;
+}) {
+  if (!places.length) return null;
+
+  return (
+    <div className="rounded-2xl bg-white p-6">
+      <h2 className="mb-2 text-xl text-stone-800">{title}</h2>
+      <p className="mb-4 text-sm text-stone-500">{text}</p>
+
+      <div className="space-y-4">
+        {places.map((place) => (
+          <a
+            key={place.name}
+            href={place.googleMaps || place.website || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex gap-4 rounded-xl border border-stone-100 p-4 transition hover:border-stone-300 hover:bg-stone-50"
+          >
+            {place.image?.asset?.url && (
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-stone-100">
+                <Image
+                  src={place.image.asset.url}
+                  alt={place.name}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
+              </div>
+            )}
+
+            <div>
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <h3 className="font-medium text-stone-800">{place.name}</h3>
+
+                {place.favorite && (
+                  <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
+                    {pickLabel}
+                  </span>
+                )}
+              </div>
+
+              {(place[`detail_${lang}`] || place.detail_en) && (
+  <p className="mb-1 text-xs uppercase tracking-widest text-stone-400">
+    {place[`detail_${lang}`] || place.detail_en}
+  </p>
+)}
+
+<p className="text-sm text-stone-500">
+  {place[`description_${lang}`] || place.description_en}
+</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ======================================================
    CITY PAGE TEMPLATE
 ====================================================== */
 
@@ -46,37 +149,58 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
   const labels = {
     en: {
-      liveTitle: "Feel like some live music?",
-      liveText: "A few places where something is almost always happening.",
-      foodTitle: "Where I’d eat this week",
-      foodText: "Simple places I actually go to — not a long list.",
+      restaurantsTitle: "Where I’d eat this week",
+      restaurantsText: "Simple places I actually go to — not a long list.",
+      museumsTitle: "Museums & exhibitions",
+      museumsText: "Cultural places worth visiting while you are in the city.",
+      venuesTitle: "Feel like some live music?",
+      venuesText: "A few places where something is almost always happening.",
+      cafesTitle: "Coffee stops",
+      cafesText: "Good places for coffee, conversation or a short break.",
+      businessTitle: "Useful for business visitors",
+      businessText: "Places that can help make a work trip smoother.",
+      walksTitle: "Walks & city moments",
+      walksText: "Easy places to walk, breathe and understand the city.",
       helpTitle: "Need help in the city?",
       weatherTitle: "Weather today",
-      museumTitle: "Museums & exhibitions",
       pick: "my pick",
       cta: "Talk to me",
       profile: "Profile",
     },
     pt: {
-      liveTitle: "Quer ouvir música ao vivo?",
-      liveText: "Alguns lugares onde sempre acontece algo.",
-      foodTitle: "Onde eu comeria esta semana",
-      foodText: "Lugares simples que eu realmente recomendo.",
+      restaurantsTitle: "Onde eu comeria esta semana",
+      restaurantsText: "Lugares simples que eu realmente recomendo.",
+      museumsTitle: "Museus e exposições",
+      museumsText: "Lugares culturais que valem a visita na cidade.",
+      venuesTitle: "Quer ouvir música ao vivo?",
+      venuesText: "Alguns lugares onde sempre acontece algo.",
+      cafesTitle: "Cafés",
+      cafesText: "Bons lugares para café, conversa ou uma pausa rápida.",
+      businessTitle: "Útil para visitantes de negócios",
+      businessText: "Lugares que podem facilitar uma viagem de trabalho.",
+      walksTitle: "Caminhadas e momentos na cidade",
+      walksText: "Lugares fáceis para caminhar, respirar e entender a cidade.",
       helpTitle: "Precisa de ajuda na cidade?",
       weatherTitle: "Clima hoje",
-      museumTitle: "Museus e exposições",
       pick: "minha escolha",
       cta: "Fale comigo",
       profile: "Perfil",
     },
     nl: {
-      liveTitle: "Zin in live muziek?",
-      liveText: "Een paar plekken waar altijd wel iets gebeurt.",
-      foodTitle: "Waar ik deze week zou eten",
-      foodText: "Geen lange lijst, gewoon plekken waar ik zelf ga.",
+      restaurantsTitle: "Waar ik deze week zou eten",
+      restaurantsText: "Geen lange lijst, gewoon plekken waar ik zelf ga.",
+      museumsTitle: "Musea & tentoonstellingen",
+      museumsText: "Culturele plekken die de moeite waard zijn in de stad.",
+      venuesTitle: "Zin in live muziek?",
+      venuesText: "Een paar plekken waar altijd wel iets gebeurt.",
+      cafesTitle: "Koffiestops",
+      cafesText: "Goede plekken voor koffie, gesprek of een korte pauze.",
+      businessTitle: "Handig voor zakelijke bezoekers",
+      businessText: "Plekken die een zakenreis makkelijker kunnen maken.",
+      walksTitle: "Wandelen & stadsmomenten",
+      walksText: "Makkelijke plekken om te wandelen, ademen en de stad te voelen.",
       helpTitle: "Hulp nodig in de stad?",
       weatherTitle: "Weer vandaag",
-      museumTitle: "Musea & tentoonstellingen",
       pick: "mijn keuze",
       cta: "Stuur me een bericht",
       profile: "Profiel",
@@ -84,11 +208,18 @@ export default function CityPage({ lang }: { lang: Lang }) {
   };
 
   const t = labels[lang];
+  const places: MapPlace[] = city?.mapPlaces || [];
+
+  const restaurants = places.filter((place) => place.category === "restaurant");
+  const museums = places.filter((place) => place.category === "museum");
+  const venues = places.filter((place) => place.category === "liveMusic");
+  const cafes = places.filter((place) => place.category === "coffee");
+  const business = places.filter((place) => place.category === "business");
+  const walks = places.filter((place) => place.category === "walk");
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-
         {/* ======================================================
             FLOATING HOST PHOTO / CONTACT MENU
         ====================================================== */}
@@ -99,10 +230,10 @@ export default function CityPage({ lang }: { lang: Lang }) {
             onClick={() => setOpen(!open)}
           >
             <Image
-  src="/me.png"
-  alt="Your local host"
-  fill
-  sizes="(max-width: 768px) 80px, 112px"
+              src="/me.png"
+              alt="Your local host"
+              fill
+              sizes="(max-width: 768px) 80px, 112px"
               className="rounded-full border-4 border-white object-cover shadow-xl"
             />
           </div>
@@ -110,14 +241,13 @@ export default function CityPage({ lang }: { lang: Lang }) {
           {open && (
             <>
               <a
-                
-  href={
-    lang === "pt"
-      ? "/pt/hosts/armijn"
-      : lang === "nl"
-      ? "/nl/hosts/armijn"
-      : "/hosts/armijn"
-  }
+                href={
+                  lang === "pt"
+                    ? "/pt/hosts/armijn"
+                    : lang === "nl"
+                    ? "/nl/hosts/armijn"
+                    : "/hosts/armijn"
+                }
                 className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
               >
                 {t.profile}
@@ -146,12 +276,17 @@ export default function CityPage({ lang }: { lang: Lang }) {
         ====================================================== */}
 
         <div className="space-y-8 md:col-span-2">
-
           {/* LANGUAGE FLAGS */}
           <div className="flex gap-3 text-xl">
-            <a href="/brazil/porto-alegre" title="English">🇬🇧</a>
-            <a href="/pt/brasil/porto-alegre" title="Português">🇧🇷</a>
-            <a href="/nl/brazilie/porto-alegre" title="Nederlands">🇳🇱</a>
+            <a href="/brazil/porto-alegre" title="English">
+              🇬🇧
+            </a>
+            <a href="/pt/brasil/porto-alegre" title="Português">
+              🇧🇷
+            </a>
+            <a href="/nl/brazilie/porto-alegre" title="Nederlands">
+              🇳🇱
+            </a>
           </div>
 
           {/* ======================================================
@@ -179,91 +314,56 @@ export default function CityPage({ lang }: { lang: Lang }) {
               )}
             </div>
           </div>
-<PortoMap places={city?.mapPlaces} lang={lang} />
-          {/* ======================================================
-              RESTAURANTS
-          ====================================================== */}
-
-          <div className="rounded-2xl bg-white p-6">
-            <h2 className="mb-2 text-xl text-stone-800">{t.foodTitle}</h2>
-            <p className="mb-4 text-sm text-stone-500">{t.foodText}</p>
-
-            <div className="space-y-3">
-              {city?.restaurants?.map((place: any, i: number) => (
-                <a
-                  key={place.name}
-                  href={place.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`block rounded-xl border p-4 transition hover:border-stone-300 hover:bg-stone-50 ${
-                    place.favorite
-                      ? "border-[#1a1f2e] bg-stone-50"
-                      : "border-stone-100"
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#1a1f2e] text-xs text-white">
-                      {i + 1}
-                    </span>
-
-                    <span className="font-medium text-stone-800">
-                      {place.name}
-                    </span>
-
-                    {place.favorite && (
-                      <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
-                        {t.pick}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-2 text-sm text-stone-500">
-                    {place[`note_${lang}`]}
-                  </p>
-                </a>
-              ))}
-            </div>
-          </div>
 
           {/* ======================================================
-              LIVE MUSIC VENUES
+              MAP
           ====================================================== */}
 
-          <div className="rounded-2xl bg-white p-6">
-            <h2 className="mb-2 text-xl text-stone-800">{t.liveTitle}</h2>
-            <p className="mb-4 text-stone-500">{t.liveText}</p>
+          <PortoMap places={places} lang={lang} />
 
-            <div className="space-y-4">
-              {city?.venues?.map((venue: any) => (
-                <a
-                  key={venue.name}
-                  href={venue.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 rounded-xl p-3 transition hover:bg-stone-50"
-                >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-white">
-                    {venue.image?.asset?.url && (
-                      <Image
-                        src={venue.image.asset.url}
-                        alt={venue.name}
-                        width={70}
-                        height={40}
-                        className="object-contain"
-                      />
-                    )}
-                  </div>
+          {/* ======================================================
+              MAP PLACE SECTIONS
+          ====================================================== */}
 
-                  <div>
-                    <h4 className="text-stone-800">{venue.name}</h4>
-                    <p className="text-sm text-stone-500">
-                      {venue[`text_${lang}`]}
-                    </p>
-                  </div>
-                </a>
-              ))}
-            </div>
-          </div>
+          <PlaceSection
+            title={t.restaurantsTitle}
+            text={t.restaurantsText}
+            places={restaurants}
+            lang={lang}
+            pickLabel={t.pick}
+          />
+
+          <PlaceSection
+            title={t.venuesTitle}
+            text={t.venuesText}
+            places={venues}
+            lang={lang}
+            pickLabel={t.pick}
+          />
+
+          <PlaceSection
+            title={t.cafesTitle}
+            text={t.cafesText}
+            places={cafes}
+            lang={lang}
+            pickLabel={t.pick}
+          />
+
+          <PlaceSection
+            title={t.businessTitle}
+            text={t.businessText}
+            places={business}
+            lang={lang}
+            pickLabel={t.pick}
+          />
+
+          <PlaceSection
+            title={t.walksTitle}
+            text={t.walksText}
+            places={walks}
+            lang={lang}
+            pickLabel={t.pick}
+          />
 
           {/* ======================================================
               HELP / CTA
@@ -287,7 +387,6 @@ export default function CityPage({ lang }: { lang: Lang }) {
         ====================================================== */}
 
         <div className="space-y-6 pt-24 md:pt-0">
-
           {/* WEATHER */}
           <div className="rounded-2xl bg-white p-6">
             <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
@@ -295,24 +394,13 @@ export default function CityPage({ lang }: { lang: Lang }) {
           </div>
 
           {/* MUSEUMS / EXHIBITIONS */}
-          <div>
-            <h2 className="mb-4 text-xl text-stone-800 md:text-lg">
-              {t.museumTitle}
-            </h2>
-
-            <div className="space-y-6">
-              {city?.museums?.map((museum: any) => (
-                <MuseumCard
-                  key={museum.title}
-                  href={museum.link}
-                  image={museum.image?.asset?.url}
-                  title={museum.title}
-                  dates={museum[`dates_${lang}`]}
-                  description={museum[`description_${lang}`]}
-                />
-              ))}
-            </div>
-          </div>
+          <PlaceSection
+            title={t.museumsTitle}
+            text={t.museumsText}
+            places={museums}
+            lang={lang}
+            pickLabel={t.pick}
+          />
         </div>
       </div>
     </div>

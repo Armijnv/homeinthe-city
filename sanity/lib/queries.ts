@@ -16,7 +16,7 @@ export const cityQuery = `
     introBlocks_pt,
     introBlocks_nl,
 
-        mapPlaces[]{
+           mapPlaces[]{
       name,
       category,
       description_en,
@@ -24,9 +24,17 @@ export const cityQuery = `
       description_nl,
       latitude,
       longitude,
+      detail_en,
+detail_pt,
+detail_nl,
       googleMaps,
       website,
-      favorite
+      favorite,
+      image{
+        asset->{
+          url
+        }
+      }
     },
 
     cta_en,

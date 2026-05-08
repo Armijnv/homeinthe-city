@@ -148,6 +148,22 @@ export const city = defineType({
               type: "string",
             },
 
+            {
+  name: "detail_en",
+  title: "Detail (English)",
+  type: "string",
+},
+{
+  name: "detail_pt",
+  title: "Detail (Portuguese)",
+  type: "string",
+},
+{
+  name: "detail_nl",
+  title: "Detail (Dutch)",
+  type: "string",
+},
+
             { name: "latitude", title: "Latitude", type: "number" },
             { name: "longitude", title: "Longitude", type: "number" },
 
@@ -162,6 +178,12 @@ export const city = defineType({
               title: "Website",
               type: "url",
             },
+
+            {
+  name: "image",
+  title: "Image",
+  type: "image",
+},
 
             {
               name: "favorite",
