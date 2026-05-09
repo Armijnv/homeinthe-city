@@ -91,6 +91,11 @@ export default function PortoMap({
     { id: "business", label: "Business" },
     { id: "walk", label: "Walks" },
   ];
+const mapText = {
+  en: "Choose a category, see five local picks, then use the map for the exact place.",
+  pt: "Escolha uma categoria, veja cinco indicações locais e depois use o mapa para encontrar o lugar exato.",
+  nl: "Kies een categorie, bekijk vijf lokale tips en gebruik daarna de kaart voor de exacte plek.",
+};
 
   const visiblePlaces = places
     .filter((place) => place.category === activeCategory)
@@ -102,8 +107,7 @@ export default function PortoMap({
         <h2 className="text-2xl text-stone-800">Porto Alegre map</h2>
 
         <p className="text-sm text-stone-500">
-          Choose a category, see five local picks, then use the map for the
-          exact place.
+          {mapText[lang]}
         </p>
       </div>
 
