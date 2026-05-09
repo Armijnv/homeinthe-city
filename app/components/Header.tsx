@@ -136,7 +136,10 @@ export default function Header() {
             LOGO / BRAND
         ====================================================== */}
 
-        <Link href="/" className="flex items-center gap-3">
+        <Link
+  href={lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/"}
+  className="flex items-center gap-3"
+></Link><Link href="/" className="flex items-center gap-3">
           <Image
             src="/logo.png"
             alt="Home in the City logo"
