@@ -40,6 +40,8 @@ export default function Header() {
 
   const t = labels[lang];
 
+  const homePath = lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/";
+
   /* ======================================================
      LANGUAGE PATHS
   ====================================================== */
@@ -136,10 +138,7 @@ export default function Header() {
             LOGO / BRAND
         ====================================================== */}
 
-        <Link
-  href={lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/"}
-  className="flex items-center gap-3"
-></Link><Link href="/" className="flex items-center gap-3">
+        <Link href={homePath} className="flex items-center gap-3">
           <Image
             src="/logo.png"
             alt="Home in the City logo"
