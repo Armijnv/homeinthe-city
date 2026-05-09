@@ -325,45 +325,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
               MAP PLACE SECTIONS
           ====================================================== */}
 
-          <PlaceSection
-            title={t.restaurantsTitle}
-            text={t.restaurantsText}
-            places={restaurants}
-            lang={lang}
-            pickLabel={t.pick}
-          />
-
-          <PlaceSection
-            title={t.venuesTitle}
-            text={t.venuesText}
-            places={venues}
-            lang={lang}
-            pickLabel={t.pick}
-          />
-
-          <PlaceSection
-            title={t.cafesTitle}
-            text={t.cafesText}
-            places={cafes}
-            lang={lang}
-            pickLabel={t.pick}
-          />
-
-          <PlaceSection
-            title={t.businessTitle}
-            text={t.businessText}
-            places={business}
-            lang={lang}
-            pickLabel={t.pick}
-          />
-
-          <PlaceSection
-            title={t.walksTitle}
-            text={t.walksText}
-            places={walks}
-            lang={lang}
-            pickLabel={t.pick}
-          />
+          
 
           {/* ======================================================
               HELP / CTA
@@ -393,14 +355,8 @@ export default function CityPage({ lang }: { lang: Lang }) {
             <Weather />
           </div>
 
-          {/* MUSEUMS / EXHIBITIONS */}
-          <PlaceSection
-            title={t.museumsTitle}
-            text={t.museumsText}
-            places={museums}
-            lang={lang}
-            pickLabel={t.pick}
-          />
+          
+          
         </div>
       </div>
     </div>
