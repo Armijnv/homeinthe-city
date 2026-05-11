@@ -27,9 +27,8 @@ type MapPlace = {
   description_pt?: string;
   description_nl?: string;
   detail_en?: string;
-detail_pt?: string;
-detail_nl?: string;
-  
+  detail_pt?: string;
+  detail_nl?: string;
   latitude?: number;
   longitude?: number;
   googleMaps?: string;
@@ -119,14 +118,14 @@ function PlaceSection({
               </div>
 
               {(place[`detail_${lang}`] || place.detail_en) && (
-  <p className="mb-1 text-xs uppercase tracking-widest text-stone-400">
-    {place[`detail_${lang}`] || place.detail_en}
-  </p>
-)}
+                <p className="mb-1 text-xs uppercase tracking-widest text-stone-400">
+                  {place[`detail_${lang}`] || place.detail_en}
+                </p>
+              )}
 
-<p className="text-sm text-stone-500">
-  {place[`description_${lang}`] || place.description_en}
-</p>
+              <p className="text-sm text-stone-500">
+                {place[`description_${lang}`] || place.description_en}
+              </p>
             </div>
           </a>
         ))}
@@ -218,7 +217,14 @@ export default function CityPage({ lang }: { lang: Lang }) {
   const walks = places.filter((place) => place.category === "walk");
 
   return (
-    <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
+    <div className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
+      {/* ======================================================
+          CITY BACKGROUND IMAGE
+      ====================================================== */}
+
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[url('/porto-alegre-river.jpg')] bg-cover bg-center opacity-80" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-[#1a1f2e]/30 via-white/45 to-stone-50" />
+
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         {/* ======================================================
             FLOATING HOST PHOTO / CONTACT MENU
@@ -293,7 +299,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
               HERO / INTRO
           ====================================================== */}
 
-          <div className="rounded-3xl bg-white p-8">
+          <div className="rounded-3xl bg-white/95 p-8 shadow-xl shadow-black/10 backdrop-blur-sm">
             <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
               {city?.[`headline_${lang}`] ||
                 "Interpreter in Porto Alegre for Business Meetings"}
@@ -325,13 +331,11 @@ export default function CityPage({ lang }: { lang: Lang }) {
               MAP PLACE SECTIONS
           ====================================================== */}
 
-          
-
           {/* ======================================================
               HELP / CTA
           ====================================================== */}
 
-          <div className="rounded-2xl bg-white p-6">
+          <div className="rounded-2xl bg-white p-6 shadow-sm">
             <h2 className="mb-2 text-xl text-stone-800">{t.helpTitle}</h2>
 
             <a
@@ -350,13 +354,10 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
         <div className="space-y-6 pt-24 md:pt-0">
           {/* WEATHER */}
-          <div className="rounded-2xl bg-white p-6">
+          <div className="rounded-2xl bg-white/95 p-6 shadow-xl shadow-black/10 backdrop-blur-sm">
             <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
             <Weather />
           </div>
-
-          
-          
         </div>
       </div>
     </div>
