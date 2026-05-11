@@ -20,6 +20,24 @@ const PortoMap = dynamic(
 
 type Lang = "en" | "pt" | "nl";
 
+type SidebarCard = {
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+
+  text_en?: string;
+  text_pt?: string;
+  text_nl?: string;
+
+  button_en?: string;
+  button_pt?: string;
+  button_nl?: string;
+
+  href_en?: string;
+  href_pt?: string;
+  href_nl?: string;
+};
+
 type MapPlace = {
   name: string;
   category?: string;
@@ -88,13 +106,10 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
   const t = labels[lang];
   const places: MapPlace[] = city?.mapPlaces || [];
+  const sidebarCards: SidebarCard[] = city?.sidebarCards || [];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-16">
-      {/* ======================================================
-          DESKTOP CITY BACKGROUND
-      ====================================================== */}
-
       <div className="pointer-events-none fixed inset-0 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
       <div className="pointer-events-none fixed inset-0 hidden bg-white/45 md:block" />
 
@@ -195,6 +210,28 @@ export default function CityPage({ lang }: { lang: Lang }) {
             <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
             <Weather />
           </div>
+
+          {sidebarCards.map((card, index) => (
+            <div
+              key={index}
+              className="rounded-2xl bg-white/95 p-6 shadow-xl shadow-black/10 backdrop-blur-sm"
+            >
+              <h3 className="mb-3 text-lg text-stone-800">
+                {card[`title_${lang}`]}
+              </h3>
+
+              <p className="mb-5 text-sm leading-relaxed text-stone-600">
+                {card[`text_${lang}`]}
+              </p>
+
+              <a
+                href={card[`href_${lang}`]}
+                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+              >
+                {card[`button_${lang}`]}
+              </a>
+            </div>
+          ))}
         </div>
       </div>
     </div>
