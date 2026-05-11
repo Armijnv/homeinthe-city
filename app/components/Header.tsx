@@ -7,10 +7,6 @@ import { usePathname } from "next/navigation";
 export default function Header() {
   const pathname = usePathname();
 
-  /* ======================================================
-     LANGUAGE
-  ====================================================== */
-
   const lang = pathname.startsWith("/pt")
     ? "pt"
     : pathname.startsWith("/nl")
@@ -41,10 +37,6 @@ export default function Header() {
   const t = labels[lang];
 
   const homePath = lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/";
-
-  /* ======================================================
-     LANGUAGE PATHS
-  ====================================================== */
 
   const englishPath =
     pathname === "/pt/interprete-porto-alegre"
@@ -119,10 +111,6 @@ export default function Header() {
     ? "/nl/tolk-porto-alegre"
     : "/interpreter-porto-alegre";
 
-  /* ======================================================
-     MENU CLOSE
-  ====================================================== */
-
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;
 
@@ -132,12 +120,8 @@ export default function Header() {
   }
 
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 bg-[#1a1f2e] px-8 py-4">
+    <header className="fixed left-0 right-0 top-0 z-50 bg-[#1a1f2e] px-6 py-4 md:px-8">
       <div className="flex items-center justify-between">
-        {/* ======================================================
-            LOGO / BRAND
-        ====================================================== */}
-
         <Link href={homePath} className="flex items-center gap-3">
           <Image
             src="/logo.png"
@@ -152,17 +136,13 @@ export default function Header() {
               home in the city
             </span>
 
-            <span className="hidden text-[10px] uppercase tracking-widest text-white/50 md:block">
+            <span className="hidden text-[10px] uppercase tracking-widest text-white/50 xl:block">
               {t.tagline}
             </span>
           </div>
         </Link>
 
-        {/* ======================================================
-            DESKTOP NAVIGATION
-        ====================================================== */}
-
-        <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
+        <nav className="hidden items-center gap-8 text-sm text-white/70 xl:flex">
           <Link href={portoAlegrePath} className="hover:text-white">
             Porto Alegre
           </Link>
@@ -185,26 +165,14 @@ export default function Header() {
           </a>
 
           <div className="ml-2 flex items-center gap-2 text-lg">
-            <Link href={englishPath} title="English">
-              🇬🇧
-            </Link>
-
-            <Link href={portuguesePath} title="Português">
-              🇧🇷
-            </Link>
-
-            <Link href={dutchPath} title="Nederlands">
-              🇳🇱
-            </Link>
+            <Link href={englishPath}>🇬🇧</Link>
+            <Link href={portuguesePath}>🇧🇷</Link>
+            <Link href={dutchPath}>🇳🇱</Link>
           </div>
         </nav>
 
-        {/* ======================================================
-            MOBILE MENU - SAFER NATIVE VERSION
-        ====================================================== */}
-
         <details
-          className="relative md:hidden"
+          className="relative xl:hidden"
           onClick={closeMenuOnLinkClick}
         >
           <summary className="flex cursor-pointer list-none flex-col gap-1 [&::-webkit-details-marker]:hidden">
@@ -213,11 +181,9 @@ export default function Header() {
             <span className="h-[2px] w-6 bg-white"></span>
           </summary>
 
-          <nav className="absolute right-0 mt-6 flex w-52 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl">
+          <nav className="absolute right-0 mt-6 flex w-64 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-2xl">
             <Link href={portoAlegrePath}>Porto Alegre</Link>
-
             <Link href={interpreterPath}>{t.interpreter}</Link>
-
             <Link href={hostPath}>{t.host}</Link>
 
             <a
@@ -228,18 +194,27 @@ export default function Header() {
               {t.contact}
             </a>
 
+            <div className="border-t border-white/10 pt-4">
+              <p className="mb-3 text-xs uppercase tracking-widest text-white/40">
+                Explore Porto Alegre
+              </p>
+
+              <div className="flex flex-col gap-3 text-white/80">
+                <Link href={portoAlegrePath + '#restaurants'}>
+                  Restaurants
+                </Link>
+                <Link href={portoAlegrePath + '#coffee'}>Coffee</Link>
+                <Link href={portoAlegrePath + '#business'}>
+                  Business Spots
+                </Link>
+                <Link href={portoAlegrePath + '#walks'}>Walks</Link>
+              </div>
+            </div>
+
             <div className="flex gap-3 pt-2 text-xl">
-              <Link href={englishPath} title="English">
-                🇬🇧
-              </Link>
-
-              <Link href={portuguesePath} title="Português">
-                🇧🇷
-              </Link>
-
-              <Link href={dutchPath} title="Nederlands">
-                🇳🇱
-              </Link>
+              <Link href={englishPath}>🇬🇧</Link>
+              <Link href={portuguesePath}>🇧🇷</Link>
+              <Link href={dutchPath}>🇳🇱</Link>
             </div>
           </nav>
         </details>
