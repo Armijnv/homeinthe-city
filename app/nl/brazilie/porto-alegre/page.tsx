@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
 
-/* ======================================================
-   CITY PAGE METADATA / SEO
-====================================================== */
-
 export const metadata: Metadata = {
   title: "Tolk in Porto Alegre | Nederlandse Zakelijke Ondersteuning",
   description:
@@ -20,10 +16,13 @@ export const metadata: Metadata = {
   },
 };
 
-/* ======================================================
-   CITY PAGE
-====================================================== */
-
 export default function Page() {
-  return <CityPage lang="nl" />;
+  return (
+    <>
+      <div className="pointer-events-none fixed inset-0 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
+      <div className="pointer-events-none fixed inset-0 hidden bg-white/45 md:block" />
+
+      <CityPage lang="nl" />
+    </>
+  );
 }
