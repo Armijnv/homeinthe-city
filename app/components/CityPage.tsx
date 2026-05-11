@@ -222,7 +222,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
           CITY BACKGROUND IMAGE
       ====================================================== */}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[url('/porto-alegre-river.jpg')] bg-cover bg-center opacity-80" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[url('/porto-alegre-desktop-background.jpg')] hidden md:block bg-cover bg-center opacity-80" />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-[#1a1f2e]/30 via-white/45 to-stone-50" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
