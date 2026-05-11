@@ -90,6 +90,8 @@ export default function PortoMap({
     { id: "liveMusic", label: "Music" },
     { id: "business", label: "Business" },
     { id: "walk", label: "Walks" },
+    { id: "yoga", label: "Yoga schools" },
+{ id: "organicFair", label: "Organic fairs" },
   ];
 const mapText = {
   en: "Choose a category, see five local picks, then use the map for the exact place.",
@@ -112,10 +114,24 @@ const mapText = {
       </div>
 
       {/* ======================================================
-          CATEGORY BUTTONS
+          CATEGORY FILTER
       ====================================================== */}
 
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
+      <div className="mb-5 flex flex-col gap-3 md:flex-row md:flex-wrap">
+        <select
+  value={activeCategory}
+  onChange={(event) => {
+    setActiveCategory(event.target.value);
+    setSelectedPlace(null);
+  }}
+  className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 md:hidden"
+>
+  {categories.map((category) => (
+    <option key={category.id} value={category.id}>
+      {category.label}
+    </option>
+  ))}
+</select>
         {categories.map((category) => (
           <button
             key={category.id}
@@ -123,7 +139,7 @@ const mapText = {
               setActiveCategory(category.id);
               setSelectedPlace(null);
             }}
-            className={`shrink-0 rounded-full px-4 py-2 text-sm transition ${
+            className={`hidden shrink-0 rounded-full px-4 py-2 text-sm transition md:inline-block ${
               activeCategory === category.id
                 ? "bg-[#1a1f2e] text-white"
                 : "border border-stone-300 text-stone-700 hover:bg-stone-100"
@@ -137,7 +153,11 @@ const mapText = {
       {/* ======================================================
           ACTIVE CATEGORY CARDS
       ====================================================== */}
-
+       {visiblePlaces.length === 0 && (
+  <p className="mb-5 rounded-2xl bg-stone-50 p-4 text-sm text-stone-500">
+    Places coming soon.
+  </p>
+)}
       <div className="mb-5 grid gap-4 md:grid-cols-2">
         {visiblePlaces.map((place) => (
           <button
