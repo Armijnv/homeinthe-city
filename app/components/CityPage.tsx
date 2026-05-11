@@ -217,13 +217,13 @@ export default function CityPage({ lang }: { lang: Lang }) {
   const walks = places.filter((place) => place.category === "walk");
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-16 md:bg-stone-50">
+    <div className="relative min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-16">
       {/* ======================================================
-          CITY BACKGROUND IMAGE
+          CITY BACKGROUND IMAGE - DESKTOP / TABLET ONLY
       ====================================================== */}
 
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[url('/porto-alegre-desktop-background.jpg')] hidden md:block bg-cover bg-center opacity-80" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b from-[#1a1f2e]/30 via-white/45 to-stone-50" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 hidden h-screen bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center opacity-75 md:block" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 hidden h-screen bg-gradient-to-b from-[#1a1f2e]/10 via-white/10 to-stone-50/35 md:block" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         {/* ======================================================
