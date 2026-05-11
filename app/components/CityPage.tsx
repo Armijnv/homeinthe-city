@@ -106,10 +106,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
   const sidebarCards: SidebarCard[] = city?.sidebarCards || [];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-24">
-      <div className="pointer-events-none fixed inset-0 -z-20 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
-      <div className="pointer-events-none fixed inset-0 -z-10 hidden bg-white/45 md:block" />
-
+    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-24 md:bg-transparent">
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
           <div
