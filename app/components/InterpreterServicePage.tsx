@@ -52,10 +52,6 @@ type ServicePageData = {
   button_nl?: string;
 };
 
-/* ======================================================
-   PAGE
-====================================================== */
-
 export default function InterpreterServicePage({
   lang,
   page,
@@ -66,11 +62,6 @@ export default function InterpreterServicePage({
   return (
     <main className="min-h-screen bg-stone-50 px-6 pt-32 pb-20">
       <div className="mx-auto max-w-3xl">
-
-        {/* ======================================================
-            HERO
-        ====================================================== */}
-
         <div className="mb-12">
           <p className="mb-4 text-sm uppercase tracking-[0.25em] text-stone-500">
             {page[`eyebrow_${lang}`]}
@@ -83,11 +74,39 @@ export default function InterpreterServicePage({
           <p className="max-w-2xl text-lg leading-relaxed text-stone-600">
             {page[`intro_${lang}`]}
           </p>
-        </div>
 
-        {/* ======================================================
-            SECTIONS
-        ====================================================== */}
+          {lang === "nl" && (
+            <div className="mt-8 rounded-3xl bg-white p-8 shadow-sm">
+              <h2 className="mb-4 text-2xl text-stone-800">
+                Nederlandse tolk in Porto Alegre
+              </h2>
+
+              <div className="space-y-4 leading-relaxed text-stone-600">
+                <p>
+                  Ik woon al meer dan 25 jaar in Brazilië en ondersteun
+                  Nederlandse en buitenlandse ondernemers tijdens zakelijke
+                  bezoeken in Porto Alegre.
+                </p>
+
+                <p>
+                  Dat kan gaan van meetings en fabrieksbezoeken tot hulp bij
+                  lokale communicatie, planning en begeleiding tijdens een
+                  zakenreis in Brazilië.
+                </p>
+
+                <p>
+                  Naast vertalen help ik ook praktisch ter plaatse zodat
+                  afspraken vlotter verlopen en communicatie met Braziliaanse
+                  bedrijven eenvoudiger wordt.
+                </p>
+
+                <p className="font-medium text-stone-700">
+                  Nederlands · Engels · Portugees
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="space-y-12">
           {page.sections?.map((section, index) => (
@@ -102,10 +121,6 @@ export default function InterpreterServicePage({
             </div>
           ))}
         </div>
-
-        {/* ======================================================
-            PRICING
-        ====================================================== */}
 
         {page.pricingItems && page.pricingItems.length > 0 && (
           <div className="my-12 rounded-3xl bg-white p-8 shadow-sm">
@@ -131,10 +146,6 @@ export default function InterpreterServicePage({
             </div>
           </div>
         )}
-
-        {/* ======================================================
-            CTA
-        ====================================================== */}
 
         <div className="rounded-3xl bg-[#1a1f2e] p-8 text-white">
           <h2 className="mb-4 text-3xl font-light">
