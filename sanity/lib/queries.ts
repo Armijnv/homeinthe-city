@@ -41,6 +41,24 @@ export const cityQuery = `
       }
     },
 
+    sidebarCards[]{
+      title_en,
+      title_pt,
+      title_nl,
+
+      text_en,
+      text_pt,
+      text_nl,
+
+      button_en,
+      button_pt,
+      button_nl,
+
+      href_en,
+      href_pt,
+      href_nl
+    },
+
     cta_en,
     cta_pt,
     cta_nl
