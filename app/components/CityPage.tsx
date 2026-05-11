@@ -90,8 +90,13 @@ export default function CityPage({ lang }: { lang: Lang }) {
   const places: MapPlace[] = city?.mapPlaces || [];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-16 md:bg-[url('/porto-alegre-desktop-background.jpg')] md:bg-fixed md:bg-cover md:bg-center">
-      <div className="pointer-events-none absolute inset-0 hidden bg-white/45 md:block" />
+    <div className="relative min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-16">
+      {/* ======================================================
+          DESKTOP CITY BACKGROUND
+      ====================================================== */}
+
+      <div className="pointer-events-none fixed inset-0 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
+      <div className="pointer-events-none fixed inset-0 hidden bg-white/45 md:block" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
