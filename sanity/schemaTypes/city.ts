@@ -125,71 +125,61 @@ export const city = defineType({
                   { title: "Coffee", value: "coffee" },
                   { title: "Business", value: "business" },
                   { title: "Walk", value: "walk" },
+                  { title: "Yoga", value: "yoga" },
+                  { title: "Organic Fair", value: "organicFair" },
                   { title: "Other", value: "other" },
                 ],
               },
             },
 
-            {
-              name: "description_en",
-              title: "Description (English)",
-              type: "string",
-            },
+            { name: "description_en", title: "Description (English)", type: "string" },
+            { name: "description_pt", title: "Description (Portuguese)", type: "string" },
+            { name: "description_nl", title: "Description (Dutch)", type: "string" },
 
-            {
-              name: "description_pt",
-              title: "Description (Portuguese)",
-              type: "string",
-            },
-
-            {
-              name: "description_nl",
-              title: "Description (Dutch)",
-              type: "string",
-            },
-
-            {
-  name: "detail_en",
-  title: "Detail (English)",
-  type: "string",
-},
-{
-  name: "detail_pt",
-  title: "Detail (Portuguese)",
-  type: "string",
-},
-{
-  name: "detail_nl",
-  title: "Detail (Dutch)",
-  type: "string",
-},
+            { name: "detail_en", title: "Detail (English)", type: "string" },
+            { name: "detail_pt", title: "Detail (Portuguese)", type: "string" },
+            { name: "detail_nl", title: "Detail (Dutch)", type: "string" },
 
             { name: "latitude", title: "Latitude", type: "number" },
             { name: "longitude", title: "Longitude", type: "number" },
 
-            {
-              name: "googleMaps",
-              title: "Google Maps Link",
-              type: "url",
-            },
+            { name: "googleMaps", title: "Google Maps Link", type: "url" },
+            { name: "website", title: "Website", type: "url" },
+            { name: "image", title: "Image", type: "image" },
+            { name: "favorite", title: "My pick", type: "boolean" },
+          ],
+        },
+      ],
+    }),
 
-            {
-              name: "website",
-              title: "Website",
-              type: "url",
-            },
+    /* ======================================================
+       SIDEBAR CARDS
+    ====================================================== */
 
-            {
-  name: "image",
-  title: "Image",
-  type: "image",
-},
+    defineField({
+      name: "sidebarCards",
+      title: "Sidebar Cards",
+      type: "array",
+      description: "Small cards shown in the right column of the city page.",
+      of: [
+        {
+          type: "object",
+          fields: [
+            { name: "title_en", title: "Title (English)", type: "string" },
+            { name: "title_pt", title: "Title (Portuguese)", type: "string" },
+            { name: "title_nl", title: "Title (Dutch)", type: "string" },
 
-            {
-              name: "favorite",
-              title: "My pick",
-              type: "boolean",
-            },
+            { name: "text_en", title: "Text (English)", type: "text" },
+            { name: "text_pt", title: "Text (Portuguese)", type: "text" },
+            { name: "text_nl", title: "Text (Dutch)", type: "text" },
+
+            { name: "button_en", title: "Button (English)", type: "string" },
+            { name: "button_pt", title: "Button (Portuguese)", type: "string" },
+            { name: "button_nl", title: "Button (Dutch)", type: "string" },
+
+            { name: "href_en", title: "Link (English)", type: "string" },
+            { name: "href_pt", title: "Link (Portuguese)", type: "string" },
+            { name: "href_nl", title: "Link (Dutch)", type: "string" },
           ],
         },
       ],
@@ -216,7 +206,5 @@ export const city = defineType({
       title: "CTA Text (Dutch)",
       type: "string",
     }),
-
-        
   ],
 });
