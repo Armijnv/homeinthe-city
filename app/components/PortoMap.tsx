@@ -4,7 +4,7 @@ import "leaflet/dist/leaflet.css";
 
 import L from "leaflet";
 import Image from "next/image";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { useEffect, useRef, useState } from "react";
 
 type Lang = "en" | "pt" | "nl";
@@ -85,8 +85,10 @@ export default function PortoMap({
   const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
 
-  function selectPlace(place: MapPlace) {
+  function selectPlace(place: MapPlace, shouldScroll = true) {
     setSelectedPlace(place);
+
+    if (!shouldScroll) return;
 
     window.setTimeout(() => {
       mapSectionRef.current?.scrollIntoView({
@@ -232,9 +234,18 @@ export default function PortoMap({
                 key={place.name}
                 position={[place.latitude, place.longitude]}
                 eventHandlers={{
-                  click: () => setSelectedPlace(place),
+                  click: () => selectPlace(place, false),
                 }}
-              />
+              >
+                <Popup>
+                  <div className="min-w-[140px]">
+                    <p className="font-medium text-stone-900">{place.name}</p>
+                    {place.neighborhood && (
+                      <p className="text-xs text-stone-500">{place.neighborhood}</p>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
             );
           })}
 
