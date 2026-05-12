@@ -12,6 +12,7 @@ type Lang = "en" | "pt" | "nl";
 type MapPlace = {
   name: string;
   category?: string;
+  neighborhood?: string;
   description_en?: string;
   description_pt?: string;
   description_nl?: string;
@@ -172,7 +173,12 @@ export default function PortoMap({
             }`}
           >
             <div className="mb-2 flex items-center justify-between gap-2">
-              <h3 className="font-medium text-stone-800">{place.name}</h3>
+              <h3 className="font-medium text-stone-800">
+                {place.name}
+                {place.neighborhood && (
+                  <span className="font-normal text-stone-400"> · {place.neighborhood}</span>
+                )}
+              </h3>
 
               {place.favorite && (
                 <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
@@ -251,6 +257,9 @@ export default function PortoMap({
             <div className="mb-3">
               <h3 className="text-xl font-semibold text-stone-800">
                 {selectedPlace.name}
+                {selectedPlace.neighborhood && (
+                  <span className="font-normal text-stone-400"> · {selectedPlace.neighborhood}</span>
+                )}
               </h3>
 
               <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">
