@@ -96,9 +96,9 @@ export default function PortoMap({
   ];
 
   const mapText = {
-    en: "Choose a category, see four local picks, then use the map for the exact place.",
-    pt: "Escolha uma categoria, veja quatro indicações locais e depois use o mapa para encontrar o lugar exato.",
-    nl: "Kies een categorie, bekijk vier lokale tips en gebruik daarna de kaart voor de exacte plek.",
+    en: "Choose a category, explore four local picks, then open the detailed description below the map.",
+    pt: "Escolha uma categoria, veja quatro indicações locais e abra a descrição completa abaixo do mapa.",
+    nl: "Kies een categorie, bekijk vier lokale tips en open daarna de uitgebreide beschrijving onder de kaart.",
   };
 
   const visiblePlaces = places
