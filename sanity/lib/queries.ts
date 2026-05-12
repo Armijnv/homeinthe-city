@@ -23,6 +23,7 @@ export const cityQuery = `
     mapPlaces[]{
       name,
       category,
+      neighborhood,
       description_en,
       description_pt,
       description_nl,
@@ -155,7 +156,7 @@ export const hostQuery = `
     servicesTitle_nl,
 
     aboutTitle_en,
-    aboutTitle_pt,
+    about_pt,
     aboutTitle_nl,
 
     about_en,
