@@ -67,9 +67,9 @@ function Weather() {
       .then((json) => setData(json.current));
   }, []);
 
-  if (!data) return <p className="text-stone-400">Loading weather...</p>;
+  if (!data) return <p className="text-stone-500">Loading weather...</p>;
 
-  return <p className="text-stone-600">{Math.round(data.temperature_2m)}°C</p>;
+  return <p className="font-medium text-stone-700">{Math.round(data.temperature_2m)}°C</p>;
 }
 
 export default function CityPage({ lang }: { lang: Lang }) {
@@ -107,6 +107,8 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
   return (
     <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-24 md:bg-transparent">
+      <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20 pointer-events-none" />
+
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         <div className="fixed right-4 top-24 z-[70] group md:right-8">
           <div
@@ -162,13 +164,13 @@ export default function CityPage({ lang }: { lang: Lang }) {
             <a href="/nl/brazilie/porto-alegre">🇳🇱</a>
           </div>
 
-          <div className="rounded-3xl bg-white/95 p-8 shadow-xl shadow-black/10 backdrop-blur-sm">
-            <h1 className="mb-6 text-4xl font-light text-stone-800 md:text-6xl">
+          <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
+            <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
               {city?.[`headline_${lang}`] ||
                 "Interpreter in Porto Alegre for Business Meetings"}
             </h1>
 
-            <p className="max-w-2xl text-stone-600">
+            <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
               {city?.[`intro_${lang}`] ||
                 "Your local guide in Porto Alegre for business visits."}
             </p>
@@ -176,7 +178,10 @@ export default function CityPage({ lang }: { lang: Lang }) {
             <div className="mt-6 space-y-4">
               {city?.[`introBlocks_${lang}`]?.map(
                 (block: string, index: number) => (
-                  <p key={index} className="max-w-2xl text-stone-600">
+                  <p
+                    key={index}
+                    className="max-w-2xl leading-relaxed text-stone-700"
+                  >
                     {block}
                   </p>
                 )
@@ -186,8 +191,8 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
           <PortoMap places={places} lang={lang} />
 
-          <div className="rounded-2xl bg-white p-6 shadow-sm">
-            <h2 className="mb-2 text-xl text-stone-800">{t.helpTitle}</h2>
+          <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
+            <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>
 
             <a
               href="https://wa.me/+5551997783369"
@@ -200,21 +205,21 @@ export default function CityPage({ lang }: { lang: Lang }) {
         </div>
 
         <div className="space-y-6 pt-24 md:pt-0">
-          <div className="rounded-2xl bg-white/95 p-6 shadow-xl shadow-black/10 backdrop-blur-sm">
-            <h3 className="mb-2 text-lg text-stone-800">{t.weatherTitle}</h3>
+          <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+            <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
             <Weather />
           </div>
 
           {sidebarCards.map((card, index) => (
             <div
               key={index}
-              className="rounded-2xl bg-white/95 p-6 shadow-xl shadow-black/10 backdrop-blur-sm"
+              className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
             >
-              <h3 className="mb-3 text-lg text-stone-800">
+              <h3 className="mb-3 text-lg font-medium text-black">
                 {card[`title_${lang}`]}
               </h3>
 
-              <p className="mb-5 text-sm leading-relaxed text-stone-600">
+              <p className="mb-5 text-sm leading-relaxed text-stone-700">
                 {card[`text_${lang}`]}
               </p>
 
