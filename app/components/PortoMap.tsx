@@ -91,26 +91,25 @@ export default function PortoMap({
     { id: "business", label: "Business" },
     { id: "walk", label: "Walks" },
     { id: "yoga", label: "Yoga schools" },
-{ id: "organicFair", label: "Organic fairs" },
+    { id: "organicFair", label: "Organic fairs" },
   ];
-const mapText = {
-  en: "Choose a category, see five local picks, then use the map for the exact place.",
-  pt: "Escolha uma categoria, veja cinco indicações locais e depois use o mapa para encontrar o lugar exato.",
-  nl: "Kies een categorie, bekijk vijf lokale tips en gebruik daarna de kaart voor de exacte plek.",
-};
+
+  const mapText = {
+    en: "Choose a category, see four local picks, then use the map for the exact place.",
+    pt: "Escolha uma categoria, veja quatro indicações locais e depois use o mapa para encontrar o lugar exato.",
+    nl: "Kies een categorie, bekijk vier lokale tips en gebruik daarna de kaart voor de exacte plek.",
+  };
 
   const visiblePlaces = places
     .filter((place) => place.category === activeCategory)
-    .slice(0, 5);
+    .slice(0, 4);
 
   return (
     <div className="relative z-0 rounded-3xl bg-white p-5 md:p-6">
       <div className="mb-5">
         <h2 className="text-2xl text-stone-800">Porto Alegre map</h2>
 
-        <p className="text-sm text-stone-500">
-          {mapText[lang]}
-        </p>
+        <p className="text-sm text-stone-500">{mapText[lang]}</p>
       </div>
 
       {/* ======================================================
@@ -119,19 +118,20 @@ const mapText = {
 
       <div className="mb-5 flex flex-col gap-3 md:flex-row md:flex-wrap">
         <select
-  value={activeCategory}
-  onChange={(event) => {
-    setActiveCategory(event.target.value);
-    setSelectedPlace(null);
-  }}
-  className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 md:hidden"
->
-  {categories.map((category) => (
-    <option key={category.id} value={category.id}>
-      {category.label}
-    </option>
-  ))}
-</select>
+          value={activeCategory}
+          onChange={(event) => {
+            setActiveCategory(event.target.value);
+            setSelectedPlace(null);
+          }}
+          className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 md:hidden"
+        >
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.label}
+            </option>
+          ))}
+        </select>
+
         {categories.map((category) => (
           <button
             key={category.id}
@@ -153,55 +153,39 @@ const mapText = {
       {/* ======================================================
           ACTIVE CATEGORY CARDS
       ====================================================== */}
-       {visiblePlaces.length === 0 && (
-  <p className="mb-5 rounded-2xl bg-stone-50 p-4 text-sm text-stone-500">
-    Places coming soon.
-  </p>
-)}
+
+      {visiblePlaces.length === 0 && (
+        <p className="mb-5 rounded-2xl bg-stone-50 p-4 text-sm text-stone-500">
+          Places coming soon.
+        </p>
+      )}
+
       <div className="mb-5 grid gap-4 md:grid-cols-2">
         {visiblePlaces.map((place) => (
           <button
             key={place.name}
             onClick={() => setSelectedPlace(place)}
-            className={`overflow-hidden rounded-2xl border text-left transition ${
+            className={`rounded-2xl border p-4 text-left transition ${
               selectedPlace?.name === place.name
                 ? "border-[#1a1f2e] bg-stone-100 shadow-md"
                 : "border-stone-200 bg-white hover:bg-stone-50 hover:shadow-sm"
             }`}
           >
-            {place.image?.asset?.url && (
-              <div className="relative h-36 w-full bg-stone-100">
-                <Image
-                  src={place.image.asset.url}
-                  alt={place.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                />
-              </div>
-            )}
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h3 className="font-medium text-stone-800">{place.name}</h3>
 
-            <div className="p-4">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <h3 className="font-medium text-stone-800">{place.name}</h3>
-
-                {place.favorite && (
-                  <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
-                    my pick
-                  </span>
-                )}
-              </div>
-
-              {(place[`detail_${lang}`] || place.detail_en) && (
-                <p className="mb-1 text-xs uppercase tracking-widest text-stone-400">
-                  {place[`detail_${lang}`] || place.detail_en}
-                </p>
+              {place.favorite && (
+                <span className="rounded-full bg-[#1a1f2e] px-3 py-1 text-xs text-white">
+                  my pick
+                </span>
               )}
-
-              <p className="line-clamp-2 text-sm text-stone-500">
-                {place[`description_${lang}`] || place.description_en}
-              </p>
             </div>
+
+            {(place[`detail_${lang}`] || place.detail_en) && (
+              <p className="text-xs uppercase tracking-widest text-stone-400">
+                {place[`detail_${lang}`] || place.detail_en}
+              </p>
+            )}
           </button>
         ))}
       </div>
@@ -263,18 +247,18 @@ const mapText = {
             </div>
           )}
 
-          <div className="p-4">
-            <div className="mb-2">
-              <h3 className="text-lg font-semibold text-stone-800">
+          <div className="p-4 md:p-6">
+            <div className="mb-3">
+              <h3 className="text-xl font-semibold text-stone-800">
                 {selectedPlace.name}
               </h3>
 
-              <p className="text-xs uppercase tracking-widest text-stone-400">
+              <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">
                 {selectedPlace.category}
               </p>
             </div>
 
-            <p className="mb-4 text-sm text-stone-600">
+            <p className="mb-5 leading-relaxed text-stone-600">
               {selectedPlace[`description_${lang}`] ||
                 selectedPlace.description_en}
             </p>
