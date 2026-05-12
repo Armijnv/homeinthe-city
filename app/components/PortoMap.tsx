@@ -240,61 +240,63 @@ export default function PortoMap({
       ====================================================== */}
 
       {selectedPlace && (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50">
-          {selectedPlace.image?.asset?.url && (
-            <div className="relative h-44 w-full bg-stone-100">
-              <Image
-                src={selectedPlace.image.asset.url}
-                alt={selectedPlace.name}
-                fill
-                sizes="100vw"
-                className="object-cover"
-              />
-            </div>
-          )}
+        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm">
+          <div className="grid gap-0 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px]">
+            <div className="p-4 md:p-6">
+              <div className="mb-3">
+                <h3 className="text-xl font-semibold text-stone-800">
+                  {selectedPlace.name}
+                  {selectedPlace.neighborhood && (
+                    <span className="font-normal text-stone-400"> · {selectedPlace.neighborhood}</span>
+                  )}
+                </h3>
 
-          <div className="p-4 md:p-6">
-            <div className="mb-3">
-              <h3 className="text-xl font-semibold text-stone-800">
-                {selectedPlace.name}
-                {selectedPlace.neighborhood && (
-                  <span className="font-normal text-stone-400"> · {selectedPlace.neighborhood}</span>
-                )}
-              </h3>
+                <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">
+                  {selectedPlace.category}
+                </p>
+              </div>
 
-              <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">
-                {selectedPlace.category}
+              <p className="mb-5 leading-relaxed text-stone-600">
+                {selectedPlace[`description_${lang}`] ||
+                  selectedPlace.description_en}
               </p>
+
+              <div className="flex flex-wrap gap-3">
+                {selectedPlace.googleMaps && (
+                  <a
+                    href={selectedPlace.googleMaps}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
+                  >
+                    Google Maps
+                  </a>
+                )}
+
+                {selectedPlace.website && (
+                  <a
+                    href={selectedPlace.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-100"
+                  >
+                    Website
+                  </a>
+                )}
+              </div>
             </div>
 
-            <p className="mb-5 leading-relaxed text-stone-600">
-              {selectedPlace[`description_${lang}`] ||
-                selectedPlace.description_en}
-            </p>
-
-            <div className="flex flex-wrap gap-3">
-              {selectedPlace.googleMaps && (
-                <a
-                  href={selectedPlace.googleMaps}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
-                >
-                  Google Maps
-                </a>
-              )}
-
-              {selectedPlace.website && (
-                <a
-                  href={selectedPlace.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-100"
-                >
-                  Website
-                </a>
-              )}
-            </div>
+            {selectedPlace.image?.asset?.url && (
+              <div className="relative order-first h-56 w-full bg-stone-100 md:order-last md:h-full md:min-h-[260px]">
+                <Image
+                  src={selectedPlace.image.asset.url}
+                  alt={selectedPlace.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 280px"
+                  className="object-cover"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}
