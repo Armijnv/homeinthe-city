@@ -80,16 +80,16 @@ export default function RootLayout({
             FOOTER
         ====================================================== */}
 
-        <footer className="bg-[#1a1f2e] px-6 py-12">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-8 text-center text-sm text-stone-400 md:flex-row md:items-end md:justify-between md:text-left">
+        <footer className="bg-[#1a1f2e] px-6 py-6">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center text-sm text-stone-400 md:flex-row md:items-end md:justify-between md:text-left">
 
             {/* FOOTER BRAND */}
-            <div className="flex flex-col items-center gap-3 md:items-start">
+            <div className="flex flex-col items-center gap-2 md:items-start">
               <Image
                 src="/logo.png"
                 alt="Home in the City logo"
-                width={44}
-                height={44}
+                width={36}
+                height={36}
                 className="opacity-80"
               />
 
@@ -103,8 +103,8 @@ export default function RootLayout({
             </div>
 
             {/* FOOTER LINKS */}
-            <div className="flex flex-col items-center gap-4 md:items-end">
-              <div className="flex flex-wrap justify-center gap-6 md:justify-end">
+            <div className="flex flex-col items-center gap-2 md:items-end">
+              <div className="flex flex-wrap justify-center gap-5 md:justify-end">
                 <Link
                   href="/brazil/porto-alegre"
                   className="hover:text-white"
