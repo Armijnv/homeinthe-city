@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Image from "next/image";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -83,6 +83,18 @@ export default function PortoMap({
 }) {
   const [activeCategory, setActiveCategory] = useState("restaurant");
   const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
+  const mapSectionRef = useRef<HTMLDivElement | null>(null);
+
+  function selectPlace(place: MapPlace) {
+    setSelectedPlace(place);
+
+    window.setTimeout(() => {
+      mapSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 80);
+  }
 
   const categories = [
     { id: "restaurant", label: "Restaurants" },
@@ -165,7 +177,7 @@ export default function PortoMap({
         {visiblePlaces.map((place) => (
           <button
             key={place.name}
-            onClick={() => setSelectedPlace(place)}
+            onClick={() => selectPlace(place)}
             className={`rounded-2xl border p-4 text-left transition ${
               selectedPlace?.name === place.name
                 ? "border-[#1a1f2e] bg-stone-100 shadow-md"
@@ -200,7 +212,7 @@ export default function PortoMap({
           MAP
       ====================================================== */}
 
-      <div className="relative z-0 overflow-hidden rounded-2xl">
+      <div ref={mapSectionRef} className="relative z-0 scroll-mt-28 overflow-hidden rounded-2xl">
         <MapContainer
           center={[-30.0346, -51.2177]}
           zoom={13}
