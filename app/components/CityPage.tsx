@@ -107,19 +107,19 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
   return (
     <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-24 md:bg-transparent">
-      <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20 pointer-events-none" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-        <div className="fixed right-4 top-24 z-[70] group md:right-8">
+        <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
           <div
-            className="relative h-20 w-20 cursor-pointer md:h-28 md:w-28"
+            className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
             onClick={() => setOpen(!open)}
           >
             <Image
               src="/me.png"
               alt="Your local host"
               fill
-              sizes="(max-width: 768px) 80px, 112px"
+              sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
               className="rounded-full border-4 border-white object-cover shadow-xl"
             />
           </div>
@@ -134,7 +134,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
                     ? "/nl/hosts/armijn"
                     : "/hosts/armijn"
                 }
-                className="absolute right-32 top-2 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+                className="absolute right-28 top-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-28 lg:right-32"
               >
                 {t.profile}
               </a>
@@ -142,14 +142,14 @@ export default function CityPage({ lang }: { lang: Lang }) {
               <a
                 href="https://wa.me/+5551997783369"
                 target="_blank"
-                className="absolute right-36 top-20 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+                className="absolute right-32 top-16 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-32 lg:right-36 lg:top-20"
               >
                 WhatsApp
               </a>
 
               <a
                 href="mailto:armijnvandijk@gmail.com"
-                className="absolute right-24 top-36 rounded-full bg-white px-4 py-2 text-sm shadow-xl hover:bg-stone-100"
+                className="absolute right-20 top-30 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
               >
                 Email
               </a>
@@ -204,7 +204,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
           </div>
         </div>
 
-        <div className="space-y-6 pt-24 md:pt-0">
+        <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
           <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
             <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
             <Weather />
