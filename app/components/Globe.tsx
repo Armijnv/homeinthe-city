@@ -41,8 +41,8 @@ export default function GlobeComponent() {
     if (!globeRef.current) return;
 
     globeRef.current.pointOfView(
-      { lat: -30.0346, lng: -51.2177, altitude: 1.8 },
-      1000
+      { lat: -30, lng: -51, altitude: 2 },
+      2000
     );
 
     globeRef.current.controls().autoRotate = true;
@@ -55,7 +55,7 @@ export default function GlobeComponent() {
 
   if (!supported) {
     return (
-      <div className="flex h-[360px] w-[360px] items-center justify-center rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
+      <div className="flex h-[420px] w-[420px] items-center justify-center rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
         Porto Alegre
       </div>
     );
@@ -76,21 +76,20 @@ export default function GlobeComponent() {
         pointLat="lat"
         pointLng="lng"
         pointAltitude={0.08}
-        pointRadius={2.2}
-        pointResolution={32}
+        pointRadius={2.5}
+        pointResolution={20}
         pointColor={() => "#ffffff"}
         onPointClick={goToPortoAlegre}
         labelsData={portoAlegre}
         labelLat="lat"
         labelLng="lng"
         labelText={() => "●"}
-        labelSize={1.1}
+        labelSize={1.5}
         labelColor={() => "#ffffff"}
         onLabelClick={goToPortoAlegre}
         ringsData={portoAlegre}
         ringLat="lat"
         ringLng="lng"
-        ringColor={() => "#f5d76e"}
         ringMaxRadius={6}
         ringPropagationSpeed={1.2}
         ringRepeatPeriod={1200}
