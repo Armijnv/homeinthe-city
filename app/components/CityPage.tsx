@@ -69,7 +69,11 @@ function Weather() {
 
   if (!data) return <p className="text-stone-500">Loading weather...</p>;
 
-  return <p className="font-medium text-stone-700">{Math.round(data.temperature_2m)}°C</p>;
+  return (
+    <p className="font-medium text-stone-700">
+      {Math.round(data.temperature_2m)}°C
+    </p>
+  );
 }
 
 export default function CityPage({ lang }: { lang: Lang }) {
@@ -106,13 +110,9 @@ export default function CityPage({ lang }: { lang: Lang }) {
   const sidebarCards: SidebarCard[] = city?.sidebarCards || [];
 
   return (
-<<<<<<< HEAD
-    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-24 md:bg-transparent">
+    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
-=======
-    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
->>>>>>> d859f36 (Update map cards and reduce picks to four)
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
         <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
           <div
@@ -153,7 +153,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
               <a
                 href="mailto:armijnvandijk@gmail.com"
-                className="absolute right-20 top-30 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
+                className="absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
               >
                 Email
               </a>
