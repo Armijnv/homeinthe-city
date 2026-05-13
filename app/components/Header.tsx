@@ -17,19 +17,22 @@ export default function Header() {
     en: {
       interpreter: "Interpreter",
       host: "Your Host",
-      contact: "Contact",
+      email: "Email",
+      contact: "WhatsApp",
       tagline: "Your local guide · Wherever business takes you",
     },
     pt: {
       interpreter: "Intérprete",
       host: "Seu anfitrião",
-      contact: "Contato",
+      email: "Email",
+      contact: "WhatsApp",
       tagline: "Seu apoio local · Onde os negócios levarem você",
     },
     nl: {
       interpreter: "Tolk",
       host: "Uw host",
-      contact: "Contact",
+      email: "Email",
+      contact: "WhatsApp",
       tagline: "Je lokale gids · Waar je zakenreis je ook brengt",
     },
   };
@@ -156,6 +159,13 @@ export default function Header() {
           </Link>
 
           <a
+            href="mailto:contact@homeinthe.city"
+            className="hover:text-white"
+          >
+            {t.email}
+          </a>
+
+          <a
             href="https://wa.me/+5551997783369"
             target="_blank"
             rel="noopener noreferrer"
@@ -185,6 +195,10 @@ export default function Header() {
             <Link href={portoAlegrePath}>Porto Alegre</Link>
             <Link href={interpreterPath}>{t.interpreter}</Link>
             <Link href={hostPath}>{t.host}</Link>
+
+            <a href="mailto:contact@homeinthe.city">
+              {t.email}
+            </a>
 
             <a
               href="https://wa.me/+5551997783369"
