@@ -39,6 +39,11 @@ export const cityQuery = `
         asset->{
           url
         }
+      },
+      video{
+        asset->{
+          url
+        }
       }
     },
 
