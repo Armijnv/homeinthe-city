@@ -108,7 +108,7 @@ export const city = defineType({
       title: "Map Places",
       type: "array",
       description:
-        "Places shown in the Porto Alegre map section. Use Business for meeting cafés, coworking spaces, business lunch spots, hotel lobbies, Wi-Fi-friendly places and practical business-trip locations.",
+        "Places shown in the Porto Alegre map section. Use Business for meeting cafés, coworking spaces, business lunch spots, hotel lobbies, Wi‑Fi-friendly places and practical business-trip locations.",
       of: [
         {
           type: "object",
@@ -151,8 +151,6 @@ export const city = defineType({
               name: "detail_en",
               title: "Short card detail (English)",
               type: "string",
-              description:
-                "Small label shown on the compact card. Example: Italian food · Moinhos de Vento, quiet café · good Wi-Fi, coworking.",
             },
             {
               name: "detail_pt",
@@ -170,8 +168,6 @@ export const city = defineType({
               title: "Full description shown under map (English)",
               type: "text",
               rows: 4,
-              description:
-                "Longer explanation shown only after a user clicks the place. Say why it is useful or worth visiting.",
             },
             {
               name: "description_pt",
@@ -192,6 +188,14 @@ export const city = defineType({
             { name: "googleMaps", title: "Google Maps Link", type: "url" },
             { name: "website", title: "Website", type: "url" },
             { name: "image", title: "Image", type: "image" },
+            {
+              name: "video",
+              title: "Video",
+              type: "file",
+              options: {
+                accept: "video/mp4",
+              },
+            },
             { name: "favorite", title: "My pick", type: "boolean" },
           ],
           preview: {
@@ -205,15 +209,10 @@ export const city = defineType({
       ],
     }),
 
-    /* ======================================================
-       SIDEBAR CARDS
-    ====================================================== */
-
     defineField({
       name: "sidebarCards",
       title: "Sidebar Cards",
       type: "array",
-      description: "Small cards shown in the right column of the city page.",
       of: [
         {
           type: "object",
@@ -237,10 +236,6 @@ export const city = defineType({
         },
       ],
     }),
-
-    /* ======================================================
-       CTA TEXT
-    ====================================================== */
 
     defineField({
       name: "cta_en",
