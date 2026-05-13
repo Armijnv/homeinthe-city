@@ -25,7 +25,7 @@ const content = {
     titleLine1: "Sinta-se em casa.",
     titleLine2: "Em qualquer cidade.",
     intro:
-      "Anfitriões locais, apoio de confiança, dicas de restaurantes e agenda cultural — para visitantes internacionais que querem mais do que um hotel.",
+      "Intérprete em Porto Alegre para visitantes de negócios. Apoio local em português, inglês e holandês para reuniões, visitas a empresas, restaurantes, deslocamentos e orientação prática na cidade.",
     simpleIntro:
       "Apoio local em Porto Alegre para visitantes internacionais: interpretação, orientação na cidade, restaurantes e ajuda prática.",
     cta: "Explorar Porto Alegre →",
