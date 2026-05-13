@@ -80,31 +80,31 @@ export default function RootLayout({
             FOOTER
         ====================================================== */}
 
-        <footer className="bg-[#1a1f2e] px-6 py-6">
-          <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center text-sm text-stone-400 md:flex-row md:items-end md:justify-between md:text-left">
+        <footer className="bg-[#1a1f2e] px-6 py-4">
+          <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center text-xs text-stone-400 md:flex-row md:items-center md:justify-between md:text-left">
 
             {/* FOOTER BRAND */}
-            <div className="flex flex-col items-center gap-2 md:items-start">
+            <div className="flex items-center gap-2">
               <Image
                 src="/logo.png"
                 alt="Home in the City logo"
-                width={36}
-                height={36}
-                className="opacity-80"
+                width={28}
+                height={28}
+                className="opacity-75"
               />
 
               <div>
-                <p className="text-white">home in the city</p>
+                <p className="text-sm text-white">home in the city</p>
 
-                <p className="mt-1 max-w-xs text-stone-500">
+                <p className="mt-0.5 hidden max-w-xs text-stone-500 sm:block">
                   Local support for business visitors who want to feel at home.
                 </p>
               </div>
             </div>
 
             {/* FOOTER LINKS */}
-            <div className="flex flex-col items-center gap-2 md:items-end">
-              <div className="flex flex-wrap justify-center gap-5 md:justify-end">
+            <div className="flex flex-col items-center gap-1 md:items-end">
+              <div className="flex flex-wrap justify-center gap-4 md:justify-end">
                 <Link
                   href="/brazil/porto-alegre"
                   className="hover:text-white"
@@ -131,7 +131,7 @@ export default function RootLayout({
                 </a>
               </div>
 
-              <span className="text-xs text-stone-600">
+              <span className="text-[11px] text-stone-600">
                 © 2026 home in the city
               </span>
             </div>
