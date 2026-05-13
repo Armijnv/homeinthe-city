@@ -152,7 +152,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
               </a>
 
               <a
-                href="mailto:armijnvandijk@gmail.com"
+                href="mailto:contact@homeinthe.city"
                 className="absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
               >
                 Email

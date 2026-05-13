@@ -110,7 +110,7 @@ export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
             </a>
 
             <a
-              href={`mailto:${host?.email || "armijnvandijk@gmail.com"}`}
+              href={`mailto:${host?.email || "armijn@homeinthe.city"}`}
               className="inline-block rounded-full border border-white/20 bg-white/10 px-8 py-4 text-center text-sm text-white transition hover:bg-white/20"
             >
               {t.email}
