@@ -9,8 +9,32 @@ export async function generateMetadata() {
   });
 
   return {
-    title: page?.seoTitle_pt,
-    description: page?.seoDescription_pt,
+    title:
+      page?.seoTitle_pt ||
+      "Intérprete em Porto Alegre para Reuniões de Negócios | Home in the City",
+
+    description:
+      page?.seoDescription_pt ||
+      "Intérprete em Porto Alegre para reuniões de negócios, visitas industriais e apoio local durante viagens corporativas no Brasil. Português · Inglês · Holandês.",
+
+    keywords: [
+      "intérprete Porto Alegre",
+      "tradutor Porto Alegre",
+      "apoio empresarial Porto Alegre",
+      "intérprete inglês português",
+      "intérprete holandês Brasil",
+      "visitas industriais Porto Alegre",
+      "viagem de negócios Brasil",
+    ],
+
+    alternates: {
+      canonical: "https://homeinthe.city/pt/interprete-porto-alegre",
+      languages: {
+        en: "https://homeinthe.city/interpreter-porto-alegre",
+        pt: "https://homeinthe.city/pt/interprete-porto-alegre",
+        nl: "https://homeinthe.city/nl/tolk-porto-alegre",
+      },
+    },
   };
 }
 
