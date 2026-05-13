@@ -194,24 +194,7 @@ export default function Header() {
               {t.contact}
             </a>
 
-            <div className="border-t border-white/10 pt-4">
-              <p className="mb-3 text-xs uppercase tracking-widest text-white/40">
-                Explore Porto Alegre
-              </p>
-
-              <div className="flex flex-col gap-3 text-white/80">
-                <Link href={portoAlegrePath + '#restaurants'}>
-                  Restaurants
-                </Link>
-                <Link href={portoAlegrePath + '#coffee'}>Coffee</Link>
-                <Link href={portoAlegrePath + '#business'}>
-                  Business Spots
-                </Link>
-                <Link href={portoAlegrePath + '#walks'}>Walks</Link>
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2 text-xl">
+            <div className="flex gap-3 border-t border-white/10 pt-4 text-xl">
               <Link href={englishPath}>🇬🇧</Link>
               <Link href={portuguesePath}>🇧🇷</Link>
               <Link href={dutchPath}>🇳🇱</Link>
