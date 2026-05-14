@@ -80,7 +80,7 @@ export default function RootLayout({
             FOOTER
         ====================================================== */}
 
-        <footer className="bg-[#1a1f2e] px-6 py-4">
+        <footer className="relative z-30 bg-[#1a1f2e] px-6 py-4">
           <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 text-center text-xs text-stone-400 md:flex-row md:items-center md:justify-between md:text-left">
 
             {/* FOOTER BRAND */}
