@@ -23,9 +23,9 @@ export const metadata: Metadata = {
     "On-site interpreter in Porto Alegre for business visitors. Meetings, factory visits, local support. English, Dutch, Portuguese.",
 
   openGraph: {
-    title: "Home in the City",
+    title: "Home in the City | Business Interpreter in Porto Alegre",
     description:
-      "Local support for international business visitors in Porto Alegre.",
+      "Home in the City provides on-site business interpretation and local support in Porto Alegre for meetings, factory visits and business travel.",
     url: "https://homeinthe.city",
     siteName: "Home in the City",
     locale: "en_US",
@@ -34,9 +34,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Home in the City",
+    title: "Home in the City | Business Interpreter in Porto Alegre",
     description:
-      "Local support for international business visitors in Porto Alegre.",
+      "On-site business interpreter in Porto Alegre. English, Portuguese and Dutch support for meetings, factory visits and business travel.",
   },
 };
 
@@ -94,10 +94,10 @@ export default function RootLayout({
               />
 
               <div>
-                <p className="text-sm text-white">home in the city</p>
+                <p className="text-sm text-white">Home in the City</p>
 
-                <p className="mt-0.5 hidden max-w-xs text-stone-500 sm:block">
-                  Local support for business visitors who want to feel at home.
+                <p className="mt-0.5 hidden max-w-sm text-stone-500 sm:block">
+                  Business interpreter in Porto Alegre · English, Portuguese & Dutch
                 </p>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function RootLayout({
                   href="/brazil/porto-alegre"
                   className="hover:text-white"
                 >
-                  Porto Alegre
+                  Interpreter Porto Alegre
                 </Link>
 
                 <a
@@ -132,7 +132,7 @@ export default function RootLayout({
               </div>
 
               <span className="text-[11px] text-stone-600">
-                © 2026 home in the city
+                © 2026 Home in the City · Business Interpreter Porto Alegre
               </span>
             </div>
           </div>
