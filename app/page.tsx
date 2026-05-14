@@ -6,9 +6,9 @@ import HomePage from "./components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Home in the City | Local Support for Business Visitors",
+  title: "Home in the City | Business Interpreter in Porto Alegre",
   description:
-    "Local support for international business visitors in Porto Alegre. Interpreting, city guidance, restaurants, events and practical help on the ground.",
+    "Home in the City provides on-site business interpretation and local support in Porto Alegre. English, Portuguese and Dutch interpreter for meetings, factory visits and business travel in southern Brazil.",
 
   alternates: {
     canonical: "https://homeinthe.city",
