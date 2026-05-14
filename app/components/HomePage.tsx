@@ -10,10 +10,10 @@ type Lang = "en" | "pt" | "nl";
 const content = {
   en: {
     eyebrow: "Your local guide · Wherever business takes you",
-    titleLine1: "Feel at home.",
-    titleLine2: "In any city.",
+    titleLine1: "Home in the City",
+    titleLine2: "Business Interpreter in Porto Alegre",
     intro:
-      "Local hosts, trusted stays, restaurant guides and cultural agendas — for international business visitors who want more than a hotel room.",
+      "English, Portuguese and Dutch interpreter for meetings, factory visits, negotiations and business travel in southern Brazil.",
     simpleIntro:
       "Local help in Porto Alegre for international business visitors: interpreting, city guidance, restaurants and practical support.",
     cta: "Explore Porto Alegre →",
@@ -22,10 +22,10 @@ const content = {
 
   pt: {
     eyebrow: "Seu apoio local · Onde os negócios levarem você",
-    titleLine1: "Sinta-se em casa.",
-    titleLine2: "Em qualquer cidade.",
+    titleLine1: "Home in the City",
+    titleLine2: "Intérprete de Negócios em Porto Alegre",
     intro:
-      "Intérprete em Porto Alegre para visitantes de negócios. Apoio local em português, inglês e holandês para reuniões, visitas a empresas, restaurantes, deslocamentos e orientação prática na cidade.",
+      "Interpretação em inglês, português e holandês para reuniões, visitas a empresas, negociações e viagens de negócios no sul do Brasil.",
     simpleIntro:
       "Apoio local em Porto Alegre para visitantes internacionais: interpretação, orientação na cidade, restaurantes e ajuda prática.",
     cta: "Explorar Porto Alegre →",
@@ -34,10 +34,10 @@ const content = {
 
   nl: {
     eyebrow: "Je lokale gids · Waar je zakenreis je ook brengt",
-    titleLine1: "Voel je thuis.",
-    titleLine2: "In elke stad.",
+    titleLine1: "Home in the City",
+    titleLine2: "Business Tolk in Porto Alegre",
     intro:
-      "Lokale hosts, vertrouwde ondersteuning, restauranttips en culturele agenda’s — voor internationale zakenbezoekers die meer willen dan alleen een hotel.",
+      "Engels, Portugees en Nederlands voor vergaderingen, fabrieksbezoeken, onderhandelingen en zakenreizen in Zuid-Brazilië.",
     simpleIntro:
       "Lokale hulp in Porto Alegre voor internationale zakenbezoekers: tolken, stadsgids, restaurants en praktische ondersteuning.",
     cta: "Ontdek Porto Alegre →",
@@ -75,7 +75,9 @@ export default function HomePage({ lang }: { lang: Lang }) {
           <h1 className="mb-5 text-4xl font-light leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.75)] sm:text-5xl md:text-6xl lg:text-7xl lg:drop-shadow-none">
             {t.titleLine1}
             <br />
-            <span className="text-stone-300">{t.titleLine2}</span>
+            <span className="text-stone-300 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+              {t.titleLine2}
+            </span>
           </h1>
 
           <p className="mb-7 max-w-lg text-base leading-relaxed text-stone-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] sm:text-lg lg:drop-shadow-none">
