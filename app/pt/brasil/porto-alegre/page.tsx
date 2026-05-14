@@ -6,9 +6,9 @@ import CityPage from "@/app/components/CityPage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Intérprete em Porto Alegre | Apoio Local para Negócios",
+  title: "Intérprete em Porto Alegre | Home in the City",
   description:
-    "Intérprete em Porto Alegre para visitantes de negócios. Apoio local em português, inglês e holandês para reuniões, visitas a empresas e comunicação na cidade.",
+    "Intérprete de negócios em Porto Alegre para reuniões, visitas a empresas e viagens corporativas. Apoio local em português, inglês e holandês para visitantes internacionais.",
 
   alternates: {
     canonical: "https://homeinthe.city/pt/brasil/porto-alegre",
