@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
 
 export const metadata: Metadata = {
-  title: "Tolk in Porto Alegre | Nederlandse Zakelijke Ondersteuning",
+  title: "Tolk Porto Alegre | Home in the City",
   description:
-    "Nederlandse tolk in Porto Alegre voor zakelijke bezoekers. Ondersteuning in Nederlands, Engels en Portugees bij meetings, bedrijfsbezoeken en lokale communicatie.",
+    "Zakelijke tolk in Porto Alegre voor meetings, bedrijfsbezoeken en zakenreizen. Ondersteuning in Nederlands, Engels en Portugees voor internationale bezoekers in Zuid-Brazilië.",
 
   alternates: {
     canonical: "https://homeinthe.city/nl/brazilie/porto-alegre",
@@ -13,6 +13,16 @@ export const metadata: Metadata = {
       pt: "https://homeinthe.city/pt/brasil/porto-alegre",
       nl: "https://homeinthe.city/nl/brazilie/porto-alegre",
     },
+  },
+
+  openGraph: {
+    title: "Tolk Porto Alegre | Home in the City",
+    description:
+      "Nederlandse zakelijke ondersteuning in Porto Alegre. Nederlands, Engels en Portugees.",
+    url: "https://homeinthe.city/nl/brazilie/porto-alegre",
+    siteName: "Home in the City",
+    locale: "nl_NL",
+    type: "website",
   },
 };
 
