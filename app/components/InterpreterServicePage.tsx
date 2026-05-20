@@ -80,6 +80,10 @@ const portugueseSeoSections = [
   },
 ];
 
+function fixKnownTypos(text?: string) {
+  return text?.replace("Brazlië", "Brazilië");
+}
+
 export default function InterpreterServicePage({
   lang,
   page,
@@ -100,7 +104,7 @@ export default function InterpreterServicePage({
           </p>
 
           <h1 className="mb-6 text-5xl font-light leading-tight text-stone-800">
-            {page[`title_${lang}`]}
+            {fixKnownTypos(page[`title_${lang}`])}
           </h1>
 
           <p className="max-w-2xl text-lg leading-relaxed text-stone-600">
