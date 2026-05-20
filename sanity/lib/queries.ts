@@ -137,6 +137,61 @@ export const servicePageQuery = `
 `;
 
 /* ======================================================
+   PROVIDER QUERY
+====================================================== */
+
+export const providerQuery = `
+  *[_type == "provider" && slug.current == $slug && status == "published"][0]{
+    name,
+    slug,
+    status,
+    roles,
+    primaryRole,
+
+    cities[]->{
+      name_en,
+      name_pt,
+      name_nl
+    },
+
+    languages[]{
+      language,
+      level,
+      services
+    },
+
+    headline_en,
+    headline_pt,
+    headline_nl,
+
+    intro_en,
+    intro_pt,
+    intro_nl,
+
+    about_en,
+    about_pt,
+    about_nl,
+
+    contactOptions{
+      email,
+      phone,
+      whatsapp,
+      website,
+      preferredContact
+    },
+
+    mainPhoto{
+      alt,
+      asset->{
+        url
+      }
+    },
+
+    verificationStatus
+  }
+`;
+
+/* ======================================================
    HOST QUERY
 ====================================================== */
 
