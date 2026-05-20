@@ -52,6 +52,34 @@ type ServicePageData = {
   button_nl?: string;
 };
 
+const portugueseSeoSections = [
+  {
+    title: "Reuniões de negócios",
+    text:
+      "Apoio empresas e visitantes estrangeiros em reuniões comerciais, apresentações, negociações e conversas presenciais em Porto Alegre. O foco é manter a comunicação clara entre português e inglês, com atenção ao contexto cultural e ao objetivo da visita.",
+  },
+  {
+    title: "Visitas técnicas e fábricas",
+    text:
+      "Também acompanho visitas técnicas, visitas a fábricas, fornecedores, parceiros locais e operações no Rio Grande do Sul. Além da interpretação, ajudo a organizar a comunicação no local para que perguntas, explicações técnicas e próximos passos fiquem claros.",
+  },
+  {
+    title: "Intérprete inglês-português",
+    text:
+      "Atuo como intérprete inglês-português em Porto Alegre para visitantes que precisam conversar com empresas brasileiras, equipes locais, fornecedores ou clientes. Quando necessário, também posso apoiar conversas em holandês.",
+  },
+  {
+    title: "Acompanhamento empresarial",
+    text:
+      "O acompanhamento empresarial inclui presença durante compromissos, deslocamentos relacionados à agenda, comunicação com contatos locais e apoio prático para que a visita de negócios aconteça com mais tranquilidade.",
+  },
+  {
+    title: "Apoio local para visitantes estrangeiros",
+    text:
+      "Para quem chega de fora do Brasil, Porto Alegre pode exigir ajuda além do idioma. Posso orientar visitantes estrangeiros com costumes locais, restaurantes, horários, deslocamentos e situações práticas durante a estadia.",
+  },
+];
+
 export default function InterpreterServicePage({
   lang,
   page,
@@ -96,6 +124,19 @@ export default function InterpreterServicePage({
               </p>
             </div>
           ))}
+
+          {lang === "pt" &&
+            portugueseSeoSections.map((section) => (
+              <div key={section.title} className="rounded-3xl bg-white p-8 shadow-sm">
+                <h2 className="mb-6 text-2xl text-stone-800">
+                  {section.title}
+                </h2>
+
+                <p className="whitespace-pre-line leading-relaxed text-stone-600">
+                  {section.text}
+                </p>
+              </div>
+            ))}
         </div>
 
         {/* ======================================================
