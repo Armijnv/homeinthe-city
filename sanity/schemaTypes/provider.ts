@@ -8,6 +8,20 @@ const roleOptions = [
   { title: "Specialist", value: "specialist" },
 ];
 
+const selfEditableFieldOptions = [
+  { title: "Name", value: "name" },
+  { title: "Slug", value: "slug" },
+  { title: "Roles", value: "roles" },
+  { title: "Primary role", value: "primaryRole" },
+  { title: "Cities", value: "cities" },
+  { title: "Languages", value: "languages" },
+  { title: "Headlines", value: "headlines" },
+  { title: "Intro text", value: "intro" },
+  { title: "About text", value: "about" },
+  { title: "Contact options", value: "contactOptions" },
+  { title: "Main photo", value: "mainPhoto" },
+];
+
 export const provider = defineType({
   name: "provider",
   title: "Provider / Person Profile",
@@ -37,13 +51,65 @@ export const provider = defineType({
       options: {
         list: [
           { title: "Draft", value: "draft" },
-          { title: "Pending Review", value: "pendingReview" },
+          { title: "Review", value: "review" },
           { title: "Published", value: "published" },
-          { title: "Hidden", value: "hidden" },
-          { title: "Suspended", value: "suspended" },
         ],
       },
       validation: (Rule) => Rule.required(),
+    }),
+
+    defineField({
+      name: "ownership",
+      title: "Ownership",
+      type: "object",
+      description:
+        "Preparation for future profile self-editing. This does not grant access by itself.",
+      fields: [
+        defineField({
+          name: "contactEmail",
+          title: "Contact Email",
+          type: "email",
+          description:
+            "Email to verify and connect with a future owner account.",
+        }),
+        defineField({
+          name: "ownerUserId",
+          title: "Future Owner User ID",
+          type: "string",
+          description:
+            "Stable auth user id once profile accounts exist. Leave empty until ownership is verified.",
+        }),
+        defineField({
+          name: "ownershipStatus",
+          title: "Ownership Status",
+          type: "string",
+          initialValue: "unclaimed",
+          options: {
+            list: [
+              { title: "Unclaimed", value: "unclaimed" },
+              { title: "Invited", value: "invited" },
+              { title: "Claimed", value: "claimed" },
+            ],
+          },
+        }),
+        defineField({
+          name: "selfEditEnabled",
+          title: "Self Editing Enabled",
+          type: "boolean",
+          initialValue: false,
+          description:
+            "Keep disabled until app authentication and document ownership checks are implemented.",
+        }),
+        defineField({
+          name: "selfEditableFields",
+          title: "Future Self-Editable Fields",
+          type: "array",
+          of: [{ type: "string" }],
+          options: { list: selfEditableFieldOptions },
+          description:
+            "Allowlist for a future profile editor. Server-side checks still need to enforce this.",
+        }),
+      ],
     }),
 
     defineField({
@@ -197,6 +263,34 @@ export const provider = defineType({
           { title: "Rejected", value: "rejected" },
         ],
       },
+    }),
+
+    defineField({
+      name: "legacyHost",
+      title: "Legacy Host Compatibility",
+      type: "object",
+      description:
+        "Links this provider profile back to the current host document while legacy host routes remain live.",
+      fields: [
+        defineField({
+          name: "slug",
+          title: "Legacy Host Slug",
+          type: "string",
+        }),
+        defineField({
+          name: "documentId",
+          title: "Legacy Host Document ID",
+          type: "string",
+        }),
+        defineField({
+          name: "keepLegacyRoutes",
+          title: "Keep Legacy Routes",
+          type: "boolean",
+          initialValue: true,
+          description:
+            "Keep enabled until provider routes replace /hosts/[slug] safely.",
+        }),
+      ],
     }),
   ],
 
