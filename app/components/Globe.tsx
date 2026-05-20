@@ -2,6 +2,8 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
+import type { MutableRefObject } from "react";
+import type { GlobeMethods } from "react-globe.gl";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
@@ -13,24 +15,33 @@ const portoAlegre = [
   },
 ];
 
+function browserSupportsWebGL() {
+  try {
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl");
+
+    return !!gl;
+  } catch {
+    return false;
+  }
+}
+
 export default function GlobeComponent() {
-  const globeRef = useRef<any>(null);
+  const globeRef = useRef<GlobeMethods | undefined>(undefined) as MutableRefObject<
+    GlobeMethods | undefined
+  >;
   const [supported, setSupported] = useState(false);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    try {
-      const canvas = document.createElement("canvas");
-      const gl =
-        canvas.getContext("webgl") ||
-        canvas.getContext("experimental-webgl");
-
-      setSupported(!!gl);
-    } catch {
-      setSupported(false);
-    } finally {
+    const id = window.setTimeout(() => {
+      setSupported(browserSupportsWebGL());
       setChecked(true);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(id);
   }, []);
 
   function goToPortoAlegre() {

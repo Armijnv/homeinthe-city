@@ -56,8 +56,29 @@ type MapPlace = {
   };
 };
 
+type CityContent = {
+  headline_en?: string;
+  headline_pt?: string;
+  headline_nl?: string;
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
+  introBlocks_en?: string[];
+  introBlocks_pt?: string[];
+  introBlocks_nl?: string[];
+  mapPlaces?: MapPlace[];
+  sidebarCards?: SidebarCard[];
+  cta_en?: string;
+  cta_pt?: string;
+  cta_nl?: string;
+};
+
+type WeatherData = {
+  temperature_2m: number;
+};
+
 function Weather() {
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<WeatherData | null>(null);
 
   useEffect(() => {
     fetch(
@@ -77,11 +98,11 @@ function Weather() {
 }
 
 export default function CityPage({ lang }: { lang: Lang }) {
-  const [city, setCity] = useState<any>(null);
+  const [city, setCity] = useState<CityContent | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    client.fetch(cityQuery, { slug: "porto-alegre" }).then(setCity);
+    client.fetch<CityContent | null>(cityQuery, { slug: "porto-alegre" }).then(setCity);
   }, []);
 
   const labels = {

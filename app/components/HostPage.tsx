@@ -7,11 +7,50 @@ import { useEffect, useState } from "react";
 
 type Lang = "en" | "pt" | "nl";
 
+type HostService = {
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+  description_en?: string;
+  description_pt?: string;
+  description_nl?: string;
+};
+
+type Host = {
+  name?: string;
+  eyebrow_en?: string;
+  eyebrow_pt?: string;
+  eyebrow_nl?: string;
+  headline_en?: string;
+  headline_pt?: string;
+  headline_nl?: string;
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
+  servicesTitle_en?: string;
+  servicesTitle_pt?: string;
+  servicesTitle_nl?: string;
+  services?: HostService[];
+  aboutTitle_en?: string;
+  aboutTitle_pt?: string;
+  aboutTitle_nl?: string;
+  about_en?: string;
+  about_pt?: string;
+  about_nl?: string;
+  whatsapp?: string;
+  email?: string;
+  photo?: {
+    asset?: {
+      url?: string;
+    };
+  };
+};
+
 export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
-  const [host, setHost] = useState<any>(null);
+  const [host, setHost] = useState<Host | null>(null);
 
   useEffect(() => {
-    client.fetch(hostQuery, { slug }).then(setHost);
+    client.fetch<Host | null>(hostQuery, { slug }).then(setHost);
   }, [slug]);
 
   const labels = {
@@ -69,7 +108,7 @@ export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
             </h2>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {host?.services?.map((service: any, index: number) => (
+              {host?.services?.map((service, index) => (
                 <div
   key={index}
   className="rounded-2xl bg-stone-50 p-4"

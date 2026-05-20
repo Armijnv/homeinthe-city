@@ -161,7 +161,7 @@ export const hostQuery = `
     servicesTitle_nl,
 
     aboutTitle_en,
-    about_pt,
+    aboutTitle_pt,
     aboutTitle_nl,
 
     about_en,
