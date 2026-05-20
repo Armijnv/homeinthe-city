@@ -6,7 +6,7 @@ import CityPage from "@/app/components/CityPage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Porto Alegre Business Interpreter | Home in the City",
+  title: "Porto Alegre Business Interpreter",
   description:
     "Business interpreter in Porto Alegre for meetings, factory visits and business travel. English, Portuguese and Dutch local support for international visitors in southern Brazil.",
 
