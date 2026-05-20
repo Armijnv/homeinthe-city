@@ -48,6 +48,16 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 Make sure the same Sanity values are configured in Vercel Project Settings
 for Production, Preview and Development before building or deploying.
 
+Run the same checks locally before pushing:
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
+
+SEO routes are handled by `app/sitemap.ts` and `app/robots.ts`.
+
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
