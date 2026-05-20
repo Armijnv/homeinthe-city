@@ -2,6 +2,20 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Copy the environment template and fill in the Sanity project id:
+
+```bash
+cp .env.example .env.local
+```
+
+Required values:
+
+```bash
+NEXT_PUBLIC_SANITY_PROJECT_ID=your-sanity-project-id
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2026-05-01
+```
+
 First, run the development server:
 
 ```bash
@@ -30,6 +44,9 @@ To learn more about Next.js, take a look at the following resources:
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
+
+Make sure the same Sanity values are configured in Vercel Project Settings
+for Production, Preview and Development before building or deploying.
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 

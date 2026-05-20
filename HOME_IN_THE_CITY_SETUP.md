@@ -1,5 +1,5 @@
 # HOME_IN_THE_CITY_SETUP.md
-Updated: 2026-05-15
+Updated: 2026-05-20
 
 ## PURPOSE
 Business interpreters / local hosts / city guides
@@ -23,6 +23,18 @@ Sanity CMS (dataset: production)
 Leaflet / react-leaflet
 react-globe.gl / three.js
 
+## REQUIRED ENVIRONMENT VARIABLES
+Local development and Vercel production builds both require these public Sanity
+values:
+
+NEXT_PUBLIC_SANITY_PROJECT_ID
+NEXT_PUBLIC_SANITY_DATASET=production
+NEXT_PUBLIC_SANITY_API_VERSION=2026-05-01
+
+Use `.env.example` as the local template. Copy it to `.env.local` and fill in
+the real Sanity project id. Keep the same values configured in Vercel Project
+Settings -> Environment Variables for Production, Preview and Development.
+
 ## INTEGRATIONS
 Vercel ↔ GitHub (OAuth)
 ChatGPT Codex Connector ↔ GitHub
@@ -32,6 +44,9 @@ Unknown PAT: "trusted"
 Status: expiring; last used within last week
 
 ## DEPLOY
+npm run lint
+npx tsc --noEmit
+npm run build
 git add .
 git commit -m "message"
 git push
