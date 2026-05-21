@@ -151,6 +151,12 @@ const profilePaths = {
   nl: "/nl/professionals",
 };
 
+const listPaths = {
+  en: "/providers",
+  pt: "/pt/profissionais",
+  nl: "/nl/professionals",
+};
+
 function localizedText(
   item: ProviderListItem | ProviderCity,
   field: "headline" | "intro" | "name",
@@ -220,6 +226,18 @@ export default function ProviderListPage({
         <p className="mb-12 max-w-2xl text-lg leading-relaxed text-stone-300">
           {t.intro}
         </p>
+
+        <nav aria-label="Language versions" className="mb-8 flex gap-3 text-xl">
+          <Link href={listPaths.en} aria-label="English provider listings">
+            🇬🇧
+          </Link>
+          <Link href={listPaths.pt} aria-label="Portuguese provider listings">
+            🇧🇷
+          </Link>
+          <Link href={listPaths.nl} aria-label="Dutch provider listings">
+            🇳🇱
+          </Link>
+        </nav>
 
         {providers.length ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -354,11 +355,23 @@ export default function ProviderPage({
         </div>
 
         <div className="md:col-span-2">
-          <div className="mb-4 flex gap-3 text-xl">
-            <a href={`${pagePaths.en}/${slug}`}>🇬🇧</a>
-            <a href={`${pagePaths.pt}/${slug}`}>🇧🇷</a>
-            <a href={`${pagePaths.nl}/${slug}`}>🇳🇱</a>
-          </div>
+          <nav
+            aria-label="Language versions"
+            className="mb-4 flex gap-3 text-xl"
+          >
+            <Link href={`${pagePaths.en}/${slug}`} aria-label="English profile">
+              🇬🇧
+            </Link>
+            <Link
+              href={`${pagePaths.pt}/${slug}`}
+              aria-label="Portuguese profile"
+            >
+              🇧🇷
+            </Link>
+            <Link href={`${pagePaths.nl}/${slug}`} aria-label="Dutch profile">
+              🇳🇱
+            </Link>
+          </nav>
 
           <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
             {roleSummary || t.profileType}
