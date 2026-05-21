@@ -55,6 +55,11 @@ const labels = {
     languages: "Languages",
     cities: "Works in",
     contact: "Contact",
+    name: "Name",
+    primaryRole: "Primary role",
+    allRoles: "All roles",
+    verification: "Verification",
+    preferredContact: "Preferred contact",
     whatsapp: "WhatsApp",
     email: "Email",
     website: "Website",
@@ -68,6 +73,11 @@ const labels = {
     languages: "Idiomas",
     cities: "Atende em",
     contact: "Contato",
+    name: "Nome",
+    primaryRole: "Função principal",
+    allRoles: "Todas as funções",
+    verification: "Verificação",
+    preferredContact: "Contato preferido",
     whatsapp: "WhatsApp",
     email: "Email",
     website: "Site",
@@ -81,6 +91,11 @@ const labels = {
     languages: "Talen",
     cities: "Werkgebied",
     contact: "Contact",
+    name: "Naam",
+    primaryRole: "Hoofdrol",
+    allRoles: "Alle rollen",
+    verification: "Verificatie",
+    preferredContact: "Voorkeurscontact",
     whatsapp: "WhatsApp",
     email: "Email",
     website: "Website",
@@ -121,6 +136,93 @@ const languageLabels: Record<string, string> = {
   other: "Other",
 };
 
+const languageLevelLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    native: "Native",
+    fluent: "Fluent",
+    professional: "Professional",
+    conversational: "Conversational",
+  },
+  pt: {
+    native: "Nativo",
+    fluent: "Fluente",
+    professional: "Profissional",
+    conversational: "Conversacional",
+  },
+  nl: {
+    native: "Moedertaal",
+    fluent: "Vloeiend",
+    professional: "Professioneel",
+    conversational: "Gespreksniveau",
+  },
+};
+
+const languageServiceLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    speaks: "Speaks",
+    interpretsFrom: "Interprets from",
+    interpretsTo: "Interprets to",
+    translatesFrom: "Translates from",
+    translatesTo: "Translates to",
+  },
+  pt: {
+    speaks: "Fala",
+    interpretsFrom: "Interpreta de",
+    interpretsTo: "Interpreta para",
+    translatesFrom: "Traduz de",
+    translatesTo: "Traduz para",
+  },
+  nl: {
+    speaks: "Spreekt",
+    interpretsFrom: "Tolkt uit",
+    interpretsTo: "Tolkt naar",
+    translatesFrom: "Vertaalt uit",
+    translatesTo: "Vertaalt naar",
+  },
+};
+
+const verificationLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    unverified: "Unverified",
+    pending: "Pending",
+    verified: "Verified",
+    rejected: "Rejected",
+  },
+  pt: {
+    unverified: "Não verificado",
+    pending: "Pendente",
+    verified: "Verificado",
+    rejected: "Rejeitado",
+  },
+  nl: {
+    unverified: "Niet geverifieerd",
+    pending: "In behandeling",
+    verified: "Geverifieerd",
+    rejected: "Afgewezen",
+  },
+};
+
+const contactLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    email: "Email",
+    phone: "Phone",
+    whatsapp: "WhatsApp",
+    website: "Website",
+  },
+  pt: {
+    email: "Email",
+    phone: "Telefone",
+    whatsapp: "WhatsApp",
+    website: "Site",
+  },
+  nl: {
+    email: "Email",
+    phone: "Telefoon",
+    whatsapp: "WhatsApp",
+    website: "Website",
+  },
+};
+
 const pagePaths = {
   en: "/providers",
   pt: "/pt/profissionais",
@@ -150,6 +252,28 @@ function localizedText(
 
 function formatList(items: string[]) {
   return items.filter(Boolean).join(" · ");
+}
+
+function localizedLanguageLevel(lang: Lang, level?: string) {
+  if (!level) return "";
+  return languageLevelLabels[lang][level] || level;
+}
+
+function localizedLanguageServices(lang: Lang, services?: string[]) {
+  return (
+    services?.map((service) => languageServiceLabels[lang][service] || service) ||
+    []
+  );
+}
+
+function localizedVerification(lang: Lang, status?: string) {
+  if (!status) return "";
+  return verificationLabels[lang][status] || status;
+}
+
+function localizedPreferredContact(lang: Lang, contact?: string) {
+  if (!contact) return "";
+  return contactLabels[lang][contact] || contact;
 }
 
 export default function ProviderPage({
@@ -192,6 +316,26 @@ export default function ProviderPage({
   const contact = provider.contactOptions;
   const photoUrl = provider.mainPhoto?.asset?.url || "/me.png";
   const photoAlt = provider.mainPhoto?.alt || provider.name || t.profileType;
+  const roleSummary = formatList([
+    primaryRole,
+    ...roles.filter((role) => role !== primaryRole),
+  ]);
+  const verificationStatus = localizedVerification(
+    lang,
+    provider.verificationStatus,
+  );
+  const preferredContact = localizedPreferredContact(
+    lang,
+    contact?.preferredContact,
+  );
+  const profileFacts = [
+    { label: t.name, value: provider.name },
+    { label: t.primaryRole, value: primaryRole },
+    { label: t.allRoles, value: formatList(roles) },
+    { label: t.cities, value: formatList(cities) },
+    { label: t.verification, value: verificationStatus },
+    { label: t.preferredContact, value: preferredContact },
+  ].filter((fact) => fact.value);
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
@@ -217,8 +361,7 @@ export default function ProviderPage({
           </div>
 
           <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
-            {formatList([primaryRole, ...roles.filter((role) => role !== primaryRole)]) ||
-              t.profileType}
+            {roleSummary || t.profileType}
           </p>
 
           <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl">
@@ -231,36 +374,49 @@ export default function ProviderPage({
             </p>
           ) : null}
 
-          <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-2">
+          {profileFacts.length ? (
+            <section className="mb-10 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {profileFacts.map((fact) => (
+                <div
+                  key={fact.label}
+                  className="rounded-2xl border border-white/10 bg-white/10 p-5"
+                >
+                  <p className="mb-2 text-xs uppercase tracking-widest text-stone-400">
+                    {fact.label}
+                  </p>
+                  <p className="leading-relaxed text-white">{fact.value}</p>
+                </div>
+              ))}
+            </section>
+          ) : null}
+
+          <div className="mb-10 grid grid-cols-1 gap-4">
             {provider.languages?.length ? (
               <section className="rounded-2xl bg-white p-6 text-stone-800">
                 <h2 className="mb-4 text-xl font-light">{t.languages}</h2>
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {provider.languages.map((language) => (
-                    <div key={`${language.language}-${language.level}`}>
+                    <div
+                      key={`${language.language}-${language.level}-${language.services?.join("-")}`}
+                      className="rounded-xl bg-stone-100 p-4"
+                    >
                       <p className="font-medium text-stone-800">
                         {language.language
                           ? languageLabels[language.language] ||
                             language.language
                           : ""}
                       </p>
-                      <p className="text-sm capitalize text-stone-600">
-                        {[language.level, ...(language.services || [])]
+                      <p className="mt-1 text-sm text-stone-600">
+                        {[
+                          localizedLanguageLevel(lang, language.level),
+                          ...localizedLanguageServices(lang, language.services),
+                        ]
                           .filter(Boolean)
                           .join(" · ")}
                       </p>
                     </div>
                   ))}
                 </div>
-              </section>
-            ) : null}
-
-            {cities.length ? (
-              <section className="rounded-2xl bg-white/10 p-6">
-                <h2 className="mb-4 text-xl font-light">{t.cities}</h2>
-                <p className="leading-relaxed text-stone-300">
-                  {formatList(cities)}
-                </p>
               </section>
             ) : null}
           </div>
@@ -275,8 +431,8 @@ export default function ProviderPage({
           ) : null}
 
           {contact?.email || contact?.whatsapp || contact?.website ? (
-            <section>
-              <h2 className="sr-only">{t.contact}</h2>
+            <section className="rounded-2xl border border-white/10 bg-white/10 p-6">
+              <h2 className="mb-4 text-2xl font-light">{t.contact}</h2>
               <div className="flex flex-col gap-4 sm:flex-row">
                 {contact.whatsapp ? (
                   <a
