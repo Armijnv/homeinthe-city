@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { client } from "@/sanity/lib/client";
 
 type MatchedProvider = {
@@ -50,7 +51,15 @@ export default async function Page() {
               Matched provider
             </p>
             {provider?.name ? (
-              <p className="text-lg text-white">{provider.name}</p>
+              <div>
+                <p className="text-lg text-white">{provider.name}</p>
+                <Link
+                  href="/account/profile/edit"
+                  className="mt-4 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+                >
+                  Edit provider profile
+                </Link>
+              </div>
             ) : (
               <p className="leading-relaxed text-stone-300">
                 No provider profile matches this email yet.
