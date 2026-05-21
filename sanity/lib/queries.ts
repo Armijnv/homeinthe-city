@@ -191,6 +191,44 @@ export const providerQuery = `
   }
 `;
 
+export const providerListQuery = `
+  *[_type == "provider" && status == "published"] | order(name asc){
+    name,
+    slug,
+    roles,
+    primaryRole,
+
+    cities[]->{
+      name_en,
+      name_pt,
+      name_nl
+    },
+
+    languages[]{
+      language,
+      level,
+      services
+    },
+
+    headline_en,
+    headline_pt,
+    headline_nl,
+
+    intro_en,
+    intro_pt,
+    intro_nl,
+
+    mainPhoto{
+      alt,
+      asset->{
+        url
+      }
+    },
+
+    verificationStatus
+  }
+`;
+
 /* ======================================================
    HOST QUERY
 ====================================================== */
