@@ -14,9 +14,44 @@ export const structure: StructureResolver = (S) =>
               S.documentTypeListItem("provider").title(
                 "Published Provider Profiles",
               ),
-              S.documentTypeListItem("providerSubmission").title(
-                "Provider Submissions",
-              ),
+              S.listItem()
+                .title("Provider Submissions")
+                .child(
+                  S.list()
+                    .title("Provider Submissions")
+                    .items([
+                      S.listItem()
+                        .title("Pending Review")
+                        .child(
+                          S.documentTypeList("providerSubmission")
+                            .title("Pending Review")
+                            .filter(
+                              '_type == "providerSubmission" && status == "review"',
+                            ),
+                        ),
+                      S.listItem()
+                        .title("Approved")
+                        .child(
+                          S.documentTypeList("providerSubmission")
+                            .title("Approved")
+                            .filter(
+                              '_type == "providerSubmission" && status == "approved"',
+                            ),
+                        ),
+                      S.listItem()
+                        .title("Rejected")
+                        .child(
+                          S.documentTypeList("providerSubmission")
+                            .title("Rejected")
+                            .filter(
+                              '_type == "providerSubmission" && status == "rejected"',
+                            ),
+                        ),
+                      S.documentTypeListItem("providerSubmission").title(
+                        "All Submissions",
+                      ),
+                    ]),
+                ),
             ]),
         ),
       S.documentTypeListItem("host").title("Legacy Hosts"),

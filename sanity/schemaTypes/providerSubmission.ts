@@ -1,5 +1,7 @@
 import { defineField, defineType } from "sanity";
 
+const validationApiVersion = "2026-05-01";
+
 const statusOptions = [
   { title: "Draft", value: "draft" },
   { title: "Review", value: "review" },
@@ -39,6 +41,53 @@ const languageServiceOptions = [
   { title: "Translates from", value: "translatesFrom" },
   { title: "Translates to", value: "translatesTo" },
 ];
+
+type SubmissionStatus = "draft" | "review" | "approved" | "rejected";
+
+type ReferenceValue = {
+  _ref?: string;
+};
+
+type ProviderSubmissionDocument = {
+  _id?: string;
+  provider?: ReferenceValue;
+  ownerUserId?: string;
+  ownerEmail?: string;
+  status?: SubmissionStatus;
+};
+
+type LinkedProvider = {
+  _id?: string;
+  ownership?: {
+    ownerUserId?: string;
+    contactEmail?: string;
+  };
+};
+
+const allowedStatusTransitions: Record<SubmissionStatus, SubmissionStatus[]> = {
+  draft: ["review"],
+  review: ["approved", "rejected"],
+  approved: [],
+  rejected: [],
+};
+
+function normalizedDocumentId(id?: string) {
+  return id?.replace(/^drafts\./, "");
+}
+
+function isSubmissionStatus(status?: string): status is SubmissionStatus {
+  return statusOptions.some((option) => option.value === status);
+}
+
+function isAllowedStatusTransition(
+  previousStatus: SubmissionStatus,
+  nextStatus: SubmissionStatus,
+) {
+  return (
+    previousStatus === nextStatus ||
+    allowedStatusTransitions[previousStatus].includes(nextStatus)
+  );
+}
 
 const profileSnapshotFields = [
   defineField({
@@ -195,6 +244,82 @@ export const providerSubmission = defineType({
   name: "providerSubmission",
   title: "Provider Submission",
   type: "document",
+  validation: (Rule) =>
+    Rule.custom(async (submission, context) => {
+      const document = submission as ProviderSubmissionDocument | undefined;
+
+      if (!document) return true;
+      if (!document.provider?._ref) {
+        return "Provider submission must link to a provider.";
+      }
+      if (!isSubmissionStatus(document.status)) {
+        return "Provider submission status is invalid.";
+      }
+
+      const client = context.getClient({ apiVersion: validationApiVersion });
+      const provider = await client.fetch<LinkedProvider | null>(
+        `*[_type == "provider" && _id == $providerId][0]{
+          _id,
+          ownership{
+            ownerUserId,
+            contactEmail
+          }
+        }`,
+        { providerId: document.provider._ref },
+      );
+
+      if (!provider?._id) {
+        return "Linked provider does not exist.";
+      }
+
+      const providerOwnerUserId = provider.ownership?.ownerUserId;
+      const providerOwnerEmail = provider.ownership?.contactEmail;
+
+      if (
+        providerOwnerUserId &&
+        document.ownerUserId &&
+        providerOwnerUserId !== document.ownerUserId
+      ) {
+        return "Owner User ID must match the linked provider ownership.";
+      }
+
+      if (
+        providerOwnerEmail &&
+        document.ownerEmail &&
+        providerOwnerEmail.toLowerCase() !== document.ownerEmail.toLowerCase()
+      ) {
+        return "Owner Email must match the linked provider contact email.";
+      }
+
+      const persistedId = normalizedDocumentId(document._id);
+
+      if (!persistedId) {
+        return document.status === "draft"
+          ? true
+          : "New provider submissions must start as draft.";
+      }
+
+      const persisted = await client.fetch<{ status?: string } | null>(
+        `*[_type == "providerSubmission" && _id == $id][0]{
+          status
+        }`,
+        { id: persistedId },
+      );
+
+      if (!persisted?.status) {
+        return document.status === "draft"
+          ? true
+          : "New provider submissions must start as draft.";
+      }
+
+      if (!isSubmissionStatus(persisted.status)) {
+        return "Saved provider submission has an invalid status.";
+      }
+
+      return isAllowedStatusTransition(persisted.status, document.status)
+        ? true
+        : `Status can only move draft to review, or review to approved/rejected. Current saved status is ${persisted.status}.`;
+    }),
 
   fields: [
     defineField({
