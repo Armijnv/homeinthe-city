@@ -7,6 +7,20 @@ import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
 type ProviderMatch = {
   _id: string;
+  slug?: {
+    _type?: "slug";
+    current?: string;
+  };
+  roles?: string[];
+  primaryRole?: string;
+  mainPhoto?: {
+    _type?: "image";
+    alt?: string;
+    asset?: {
+      _type?: "reference";
+      _ref?: string;
+    };
+  };
   ownership?: {
     contactEmail?: string;
     ownerUserId?: string;
@@ -16,6 +30,9 @@ type ProviderMatch = {
 type ExistingSubmission = {
   _id: string;
   ownerUserId?: string;
+  profileSnapshot?: {
+    mainPhoto?: ProviderMatch["mainPhoto"];
+  };
 };
 
 const matchedProviderForAccountQuery = `
@@ -27,6 +44,14 @@ const matchedProviderForAccountQuery = `
     )
   ][0]{
     _id,
+    slug,
+    roles,
+    primaryRole,
+    mainPhoto{
+      _type,
+      alt,
+      asset
+    },
     ownership{
       contactEmail,
       ownerUserId
@@ -42,7 +67,7 @@ function value(formData: FormData, key: string) {
   return typeof entry === "string" ? entry.trim() : "";
 }
 
-function optionalUrl(formData: FormData, key: string) {
+function optionalValue(formData: FormData, key: string) {
   const nextValue = value(formData, key);
   return nextValue || undefined;
 }
@@ -59,16 +84,57 @@ function keyFromValue(nextValue: string, fallback: string) {
   return nextValue.toLowerCase().replace(/[^a-z0-9_-]+/g, "-") || fallback;
 }
 
-function buildProfileSnapshot(formData: FormData) {
+function imageSnapshot(
+  provider: ProviderMatch,
+  existingSubmission: ExistingSubmission | null,
+  formData: FormData,
+) {
+  const existingImage =
+    existingSubmission?.profileSnapshot?.mainPhoto || provider.mainPhoto;
+  const asset = existingImage?.asset;
+  const alt = optionalValue(formData, "main-photo-alt") || existingImage?.alt;
+
+  if (!asset?._ref && !alt) return undefined;
+
+  return {
+    _type: "image",
+    ...(asset?._ref
+      ? {
+          asset: {
+            _type: "reference",
+            _ref: asset._ref,
+          },
+        }
+      : {}),
+    ...(alt ? { alt } : {}),
+  };
+}
+
+function buildProfileSnapshot(
+  provider: ProviderMatch,
+  existingSubmission: ExistingSubmission | null,
+  formData: FormData,
+) {
+  const mainPhoto = imageSnapshot(provider, existingSubmission, formData);
   const snapshot: Record<string, unknown> = {
     name: value(formData, "name"),
+    ...(provider.slug?.current
+      ? {
+          slug: {
+            _type: "slug",
+            current: provider.slug.current,
+          },
+        }
+      : {}),
+    roles: provider.roles || [],
+    primaryRole: provider.primaryRole,
     contactOptions: {
       _type: "object",
-      email: value(formData, "contact-email"),
-      phone: value(formData, "contact-phone"),
-      whatsapp: optionalUrl(formData, "contact-whatsapp"),
-      website: optionalUrl(formData, "contact-website"),
-      preferredContact: value(formData, "preferred-contact") || undefined,
+      email: optionalValue(formData, "contact-email"),
+      phone: optionalValue(formData, "contact-phone"),
+      whatsapp: optionalValue(formData, "contact-whatsapp"),
+      website: optionalValue(formData, "contact-website"),
+      preferredContact: optionalValue(formData, "preferred-contact"),
     },
     cities: selectedValues(formData, "cities").map((cityId) => ({
       _type: "reference",
@@ -92,6 +158,7 @@ function buildProfileSnapshot(formData: FormData) {
         };
       })
       .filter(Boolean),
+    ...(mainPhoto ? { mainPhoto } : {}),
   };
 
   editableLanguageCodes.forEach((language) => {
@@ -99,14 +166,6 @@ function buildProfileSnapshot(formData: FormData) {
     snapshot[`intro_${language}`] = value(formData, `intro_${language}`);
     snapshot[`about_${language}`] = value(formData, `about_${language}`);
   });
-
-  const photoAlt = value(formData, "main-photo-alt");
-  if (photoAlt) {
-    snapshot.mainPhoto = {
-      _type: "image",
-      alt: photoAlt,
-    };
-  }
 
   return snapshot;
 }
@@ -152,7 +211,6 @@ export async function saveProviderProfileDraft(formData: FormData) {
   assertSanityWriteToken();
 
   const { provider, ownerEmail, ownerUserId } = await getSignedInProvider();
-  const profileSnapshot = buildProfileSnapshot(formData);
   const existingSubmission = await client.fetch<ExistingSubmission | null>(
     `*[
       _type == "providerSubmission" &&
@@ -164,13 +222,25 @@ export async function saveProviderProfileDraft(formData: FormData) {
       )
     ] | order(_updatedAt desc)[0]{
       _id,
-      ownerUserId
+      ownerUserId,
+      profileSnapshot{
+        mainPhoto{
+          _type,
+          alt,
+          asset
+        }
+      }
     }`,
     {
       providerId: provider._id,
       ownerEmail: ownerEmail.toLowerCase(),
       ownerUserId,
     },
+  );
+  const profileSnapshot = buildProfileSnapshot(
+    provider,
+    existingSubmission,
+    formData,
   );
 
   const submissionId =
