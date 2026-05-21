@@ -1,5 +1,6 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { headers } from "next/headers";
@@ -99,45 +100,47 @@ export default async function RootLayout({
   const pathname = requestHeaders.get("x-homeinthecity-pathname") || "/";
 
   return (
-    <html lang={getDocumentLang(pathname)}>
-      <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
-          }}
-        />
+    <ClerkProvider>
+      <html lang={getDocumentLang(pathname)}>
+        <head>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
+            }}
+          />
 
-        <meta
-          name="google-site-verification"
-          content="UP4h8B-BAThTU-bsGtY6i0ldvgdKuacyc6mMpZgi5Qk"
-        />
+          <meta
+            name="google-site-verification"
+            content="UP4h8B-BAThTU-bsGtY6i0ldvgdKuacyc6mMpZgi5Qk"
+          />
 
-        <meta
-          name="msvalidate.01"
-          content="9384E5E1766FDB69069141549D0C48D5"
-        />
-      </head>
+          <meta
+            name="msvalidate.01"
+            content="9384E5E1766FDB69069141549D0C48D5"
+          />
+        </head>
 
-      <body className={`${geist.className} bg-[#1a1f2e]`}>
-        {/* ======================================================
-            HEADER
-        ====================================================== */}
+        <body className={`${geist.className} bg-[#1a1f2e]`}>
+          {/* ======================================================
+              HEADER
+          ====================================================== */}
 
-        <Header />
+          <Header />
 
-        {/* ======================================================
-            PAGE CONTENT
-        ====================================================== */}
+          {/* ======================================================
+              PAGE CONTENT
+          ====================================================== */}
 
-        <main>{children}</main>
+          <main>{children}</main>
 
-        {/* ======================================================
-            FOOTER
-        ====================================================== */}
+          {/* ======================================================
+              FOOTER
+          ====================================================== */}
 
-        <Footer />
-      </body>
-    </html>
+          <Footer />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
