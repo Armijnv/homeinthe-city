@@ -11,9 +11,16 @@ export const structure: StructureResolver = (S) =>
           S.list()
             .title("Provider Profiles")
             .items([
-              S.documentTypeListItem("provider").title(
-                "Published Provider Profiles",
-              ),
+              S.listItem()
+                .title("Published Provider Profiles")
+                .child(
+                  S.documentTypeList("provider")
+                    .title("Published Provider Profiles")
+                    .filter(
+                      '_type == "provider" && status == "published" && !(_id in path("drafts.**"))',
+                    ),
+                ),
+              S.documentTypeListItem("provider").title("All Provider Profiles"),
               S.listItem()
                 .title("Provider Submissions")
                 .child(
