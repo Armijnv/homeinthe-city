@@ -30,6 +30,7 @@ type ProviderMatch = {
 type ExistingSubmission = {
   _id: string;
   ownerUserId?: string;
+  ownerEmail?: string;
   profileSnapshot?: {
     mainPhoto?: ProviderMatch["mainPhoto"];
   };
@@ -202,9 +203,25 @@ async function getSignedInProvider() {
 
   return {
     provider,
+    emails,
     ownerEmail,
     ownerUserId,
   };
+}
+
+function isOwnedSubmission(
+  submission: ExistingSubmission,
+  ownerEmail: string,
+  ownerUserId: string,
+  emails: string[],
+) {
+  const submissionOwnerEmail = submission.ownerEmail?.toLowerCase();
+
+  return (
+    submission.ownerUserId === ownerUserId ||
+    submissionOwnerEmail === ownerEmail.toLowerCase() ||
+    Boolean(submissionOwnerEmail && emails.includes(submissionOwnerEmail))
+  );
 }
 
 export async function saveProviderProfileDraft(formData: FormData) {
@@ -279,28 +296,27 @@ export async function saveProviderProfileDraft(formData: FormData) {
 export async function submitProviderProfileForReview() {
   assertSanityWriteToken();
 
-  const { provider, ownerEmail, ownerUserId } = await getSignedInProvider();
+  const { provider, emails, ownerEmail, ownerUserId } =
+    await getSignedInProvider();
   const existingSubmission = await client.fetch<ExistingSubmission | null>(
     `*[
       _type == "providerSubmission" &&
       provider._ref == $providerId &&
-      status == "draft" &&
-      (
-        lower(ownerEmail) == $ownerEmail ||
-        ownerUserId == $ownerUserId
-      )
+      status == "draft"
     ] | order(_updatedAt desc)[0]{
       _id,
-      ownerUserId
+      ownerUserId,
+      ownerEmail
     }`,
     {
       providerId: provider._id,
-      ownerEmail: ownerEmail.toLowerCase(),
-      ownerUserId,
     },
   );
 
-  if (!existingSubmission?._id) {
+  if (
+    !existingSubmission?._id ||
+    !isOwnedSubmission(existingSubmission, ownerEmail, ownerUserId, emails)
+  ) {
     throw new Error("Save a draft before submitting for review.");
   }
 
