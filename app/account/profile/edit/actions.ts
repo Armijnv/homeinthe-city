@@ -275,3 +275,42 @@ export async function saveProviderProfileDraft(formData: FormData) {
 
   redirect("/account/profile/edit?saved=1");
 }
+
+export async function submitProviderProfileForReview() {
+  assertSanityWriteToken();
+
+  const { provider, ownerEmail, ownerUserId } = await getSignedInProvider();
+  const existingSubmission = await client.fetch<ExistingSubmission | null>(
+    `*[
+      _type == "providerSubmission" &&
+      provider._ref == $providerId &&
+      status == "draft" &&
+      (
+        lower(ownerEmail) == $ownerEmail ||
+        ownerUserId == $ownerUserId
+      )
+    ] | order(_updatedAt desc)[0]{
+      _id,
+      ownerUserId
+    }`,
+    {
+      providerId: provider._id,
+      ownerEmail: ownerEmail.toLowerCase(),
+      ownerUserId,
+    },
+  );
+
+  if (!existingSubmission?._id) {
+    throw new Error("Save a draft before submitting for review.");
+  }
+
+  await writeClient
+    .patch(existingSubmission._id)
+    .set({
+      status: "review",
+      submittedAt: new Date().toISOString(),
+    })
+    .commit();
+
+  redirect("/account/profile/edit?submitted=1");
+}

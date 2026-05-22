@@ -2,7 +2,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { saveProviderProfileDraft } from "./actions";
+import {
+  saveProviderProfileDraft,
+  submitProviderProfileForReview,
+} from "./actions";
 import { client } from "@/sanity/lib/client";
 
 type CityOption = {
@@ -94,6 +97,7 @@ type ProviderSubmission = {
 type PageProps = {
   searchParams: Promise<{
     saved?: string;
+    submitted?: string;
   }>;
 };
 
@@ -389,6 +393,12 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         ) : null}
 
+        {params.submitted ? (
+          <div className="mb-8 rounded-lg border border-[#d6a85a]/40 bg-[#d6a85a]/10 p-4 text-[#f0d9aa]">
+            Submitted for review. Your public profile has not changed yet.
+          </div>
+        ) : null}
+
         {provider ? (
           <form action={saveProviderProfileDraft} className="space-y-10">
             <Section title="Basics">
@@ -651,13 +661,21 @@ export default async function Page({ searchParams }: PageProps) {
               </div>
             </Section>
 
-            <div className="flex justify-end border-t border-white/10 pt-8">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-white/10 pt-8">
               <button
                 type="submit"
-                className="rounded-lg bg-[#d6a85a] px-6 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
+                className="rounded-lg border border-white/15 px-6 py-3 text-sm font-medium text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
               >
                 Save draft
               </button>
+              {submission ? (
+                <button
+                  formAction={submitProviderProfileForReview}
+                  className="rounded-lg bg-[#d6a85a] px-6 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
+                >
+                  Submit for review
+                </button>
+              ) : null}
             </div>
           </form>
         ) : null}
