@@ -668,14 +668,12 @@ export default async function Page({ searchParams }: PageProps) {
               >
                 Save draft
               </button>
-              {submission ? (
-                <button
-                  formAction={submitProviderProfileForReview}
-                  className="rounded-lg bg-[#d6a85a] px-6 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
-                >
-                  Submit for review
-                </button>
-              ) : null}
+              <button
+                formAction={submitProviderProfileForReview}
+                className="rounded-lg bg-[#d6a85a] px-6 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
+              >
+                Submit for review
+              </button>
             </div>
           </form>
         ) : null}
