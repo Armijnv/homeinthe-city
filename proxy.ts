@@ -3,32 +3,42 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const isAccountRoute = createRouteMatcher(["/account(.*)"]);
 const developmentClockSkewInMs = 60 * 60 * 1000;
+const clerkProxyPath = "/__clerk";
 
-export default clerkMiddleware(async (auth, request: NextRequest) => {
-  if (isAccountRoute(request)) {
-    const { isAuthenticated, redirectToSignIn } = await auth({
-      treatPendingAsSignedOut: false,
-    });
-
-    if (!isAuthenticated) {
-      return redirectToSignIn({
-        returnBackUrl: `${request.nextUrl.pathname}${request.nextUrl.search}`,
+export default clerkMiddleware(
+  async (auth, request: NextRequest) => {
+    if (isAccountRoute(request)) {
+      const { isAuthenticated, redirectToSignIn } = await auth({
+        treatPendingAsSignedOut: false,
       });
+
+      if (!isAuthenticated) {
+        return redirectToSignIn({
+          returnBackUrl: `${request.nextUrl.pathname}${request.nextUrl.search}`,
+        });
+      }
     }
-  }
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-homeinthecity-pathname", request.nextUrl.pathname);
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-homeinthecity-pathname", request.nextUrl.pathname);
 
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
+  },
+  {
+    clockSkewInMs:
+      process.env.NODE_ENV === "development"
+        ? developmentClockSkewInMs
+        : undefined,
+    frontendApiProxy: {
+      enabled: true,
+      path: clerkProxyPath,
     },
-  });
-}, {
-  clockSkewInMs:
-    process.env.NODE_ENV === "development" ? developmentClockSkewInMs : undefined,
-});
+  },
+);
 
 export const config = {
   matcher: [

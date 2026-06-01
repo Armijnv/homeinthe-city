@@ -9,6 +9,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 const siteUrl = "https://homeinthe.city";
 const siteName = "Home in the City";
+const clerkProxyPath = "/__clerk";
 
 const siteJsonLd = {
   "@context": "https://schema.org",
@@ -100,28 +101,28 @@ export default async function RootLayout({
   const pathname = requestHeaders.get("x-homeinthecity-pathname") || "/";
 
   return (
-    <ClerkProvider>
-      <html lang={getDocumentLang(pathname)}>
-        <head>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
-            }}
-          />
+    <html lang={getDocumentLang(pathname)}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
 
-          <meta
-            name="google-site-verification"
-            content="UP4h8B-BAThTU-bsGtY6i0ldvgdKuacyc6mMpZgi5Qk"
-          />
+        <meta
+          name="google-site-verification"
+          content="UP4h8B-BAThTU-bsGtY6i0ldvgdKuacyc6mMpZgi5Qk"
+        />
 
-          <meta
-            name="msvalidate.01"
-            content="9384E5E1766FDB69069141549D0C48D5"
-          />
-        </head>
+        <meta
+          name="msvalidate.01"
+          content="9384E5E1766FDB69069141549D0C48D5"
+        />
+      </head>
 
-        <body className={`${geist.className} bg-[#1a1f2e]`}>
+      <body className={`${geist.className} bg-[#1a1f2e]`}>
+        <ClerkProvider proxyUrl={clerkProxyPath}>
           {/* ======================================================
               HEADER
           ====================================================== */}
@@ -139,8 +140,8 @@ export default async function RootLayout({
           ====================================================== */}
 
           <Footer />
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
