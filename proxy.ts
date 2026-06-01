@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const isAccountRoute = createRouteMatcher(["/account(.*)"]);
 
-export default clerkMiddleware(async (auth, request: NextRequest) => {
+export const proxy = clerkMiddleware(async (auth, request: NextRequest) => {
   if (isAccountRoute(request)) {
     await auth.protect();
   }
