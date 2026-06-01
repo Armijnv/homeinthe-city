@@ -2,10 +2,19 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
 const isAccountRoute = createRouteMatcher(["/account(.*)"]);
+const developmentClockSkewInMs = 60 * 60 * 1000;
 
-export const proxy = clerkMiddleware(async (auth, request: NextRequest) => {
+export default clerkMiddleware(async (auth, request: NextRequest) => {
   if (isAccountRoute(request)) {
-    await auth.protect();
+    const { isAuthenticated, redirectToSignIn } = await auth({
+      treatPendingAsSignedOut: false,
+    });
+
+    if (!isAuthenticated) {
+      return redirectToSignIn({
+        returnBackUrl: `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      });
+    }
   }
 
   const requestHeaders = new Headers(request.headers);
@@ -16,8 +25,15 @@ export const proxy = clerkMiddleware(async (auth, request: NextRequest) => {
       headers: requestHeaders,
     },
   });
+}, {
+  clockSkewInMs:
+    process.env.NODE_ENV === "development" ? developmentClockSkewInMs : undefined,
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png).*)"],
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+    "/__clerk/(.*)",
+  ],
 };

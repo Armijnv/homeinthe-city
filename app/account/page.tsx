@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const user = await currentUser();
+  const user = await currentUser({ treatPendingAsSignedOut: false });
   const email = user?.primaryEmailAddress?.emailAddress || "";
   const provider = email
     ? await client.fetch<MatchedProvider | null>(matchedProviderQuery, { email })

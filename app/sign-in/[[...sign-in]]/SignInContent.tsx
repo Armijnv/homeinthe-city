@@ -21,6 +21,7 @@ function AlreadySignedInCard() {
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link
           href="/account"
+          prefetch={false}
           className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
         >
           Go to account
