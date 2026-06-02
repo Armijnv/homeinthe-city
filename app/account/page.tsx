@@ -1,3 +1,4 @@
+import { SignOutButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -44,6 +45,15 @@ export default async function Page() {
               Signed-in email
             </p>
             <p className="text-lg text-white">{email || "No email found"}</p>
+
+            <SignOutButton redirectUrl="/sign-in">
+              <button
+                type="button"
+                className="mt-4 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+              >
+                Sign out
+              </button>
+            </SignOutButton>
           </div>
 
           <div>

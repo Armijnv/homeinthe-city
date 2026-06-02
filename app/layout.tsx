@@ -9,7 +9,6 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 const siteUrl = "https://homeinthe.city";
 const siteName = "Home in the City";
-const clerkProxyPath = "/__clerk";
 
 const siteJsonLd = {
   "@context": "https://schema.org",
