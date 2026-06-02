@@ -34,7 +34,7 @@ export default clerkMiddleware(
         ? developmentClockSkewInMs
         : undefined,
    frontendApiProxy: {
-  enabled: process.env.NODE_ENV !== "development",
+  enabled: false,
   path: clerkProxyPath,
 },
   },
