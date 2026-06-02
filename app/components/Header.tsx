@@ -24,7 +24,7 @@ export default function Header() {
     },
     pt: {
       interpreter: "Intérprete",
-      translators: "Translators",
+      translators: "Tradutores",
       host: "Seu anfitrião",
       email: "Email",
       contact: "WhatsApp",
@@ -32,7 +32,7 @@ export default function Header() {
     },
     nl: {
       interpreter: "Tolk",
-      translators: "Translators",
+      translators: "Vertalers",
       host: "Uw host",
       email: "Email",
       contact: "WhatsApp",

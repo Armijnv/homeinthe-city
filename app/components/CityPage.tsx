@@ -128,6 +128,20 @@ export default function CityPage({ lang }: { lang: Lang }) {
   };
 
   const t = labels[lang];
+  const translatorCard = {
+    en: {
+      title: "Document Translation",
+      button: "Translation Services",
+    },
+    pt: {
+      title: "Tradução de Documentos",
+      button: "Serviços de Tradução",
+    },
+    nl: {
+      title: "Documentvertaling",
+      button: "Vertaaldiensten",
+    },
+  }[lang];
   const places: MapPlace[] = city?.mapPlaces || [];
   const sidebarCards: SidebarCard[] = city?.sidebarCards || [];
 
@@ -258,26 +272,24 @@ export default function CityPage({ lang }: { lang: Lang }) {
             </div>
           ))}
 
-          {lang === "en" && (
-            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-              <h3 className="mb-3 text-lg font-medium text-black">
-                Document translation
-              </h3>
+          <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+            <h3 className="mb-3 text-lg font-medium text-black">
+              {translatorCard.title}
+            </h3>
 
-              <p className="mb-5 text-sm leading-relaxed text-stone-700">
-                Need translations between English, Portuguese or Dutch? Luciana
-                Graziuso provides professional translation services with 20+
-                years experience.
-              </p>
+            <p className="mb-5 text-sm leading-relaxed text-stone-700">
+              Need translations between English, Portuguese or Dutch? Luciana
+              Graziuso provides professional translation services with 20+ years
+              experience.
+            </p>
 
-              <Link
-                href="/providers/luciana"
-                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-              >
-                Translation services
-              </Link>
-            </div>
-          )}
+            <Link
+              href="/providers/luciana"
+              className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+            >
+              {translatorCard.button}
+            </Link>
+          </div>
         </div>
       </div>
     </div>
