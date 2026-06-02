@@ -16,6 +16,7 @@ export default function Header() {
   const labels = {
     en: {
       interpreter: "Interpreter",
+      translators: "Translators",
       host: "Your Host",
       email: "Email",
       contact: "WhatsApp",
@@ -23,6 +24,7 @@ export default function Header() {
     },
     pt: {
       interpreter: "Intérprete",
+      translators: "Translators",
       host: "Seu anfitrião",
       email: "Email",
       contact: "WhatsApp",
@@ -30,6 +32,7 @@ export default function Header() {
     },
     nl: {
       interpreter: "Tolk",
+      translators: "Translators",
       host: "Uw host",
       email: "Email",
       contact: "WhatsApp",
@@ -154,6 +157,10 @@ export default function Header() {
             {t.interpreter}
           </Link>
 
+          <Link href="/providers/luciana" className="hover:text-white">
+            {t.translators}
+          </Link>
+
           <Link href={hostPath} className="hover:text-white">
             {t.host}
           </Link>
@@ -194,6 +201,7 @@ export default function Header() {
           <nav className="absolute right-0 mt-6 flex w-64 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-2xl">
             <Link href={portoAlegrePath}>Porto Alegre</Link>
             <Link href={interpreterPath}>{t.interpreter}</Link>
+            <Link href="/providers/luciana">{t.translators}</Link>
             <Link href={hostPath}>{t.host}</Link>
 
             <a href="mailto:contact@homeinthe.city">

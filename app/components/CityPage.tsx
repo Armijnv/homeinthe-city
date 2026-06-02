@@ -3,6 +3,7 @@
 import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
@@ -256,6 +257,27 @@ export default function CityPage({ lang }: { lang: Lang }) {
               </a>
             </div>
           ))}
+
+          {lang === "en" && (
+            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+              <h3 className="mb-3 text-lg font-medium text-black">
+                Document translation
+              </h3>
+
+              <p className="mb-5 text-sm leading-relaxed text-stone-700">
+                Need translations between English, Portuguese or Dutch? Luciana
+                Graziuso provides professional translation services with 20+
+                years experience.
+              </p>
+
+              <Link
+                href="/providers/luciana"
+                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+              >
+                Translation services
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
