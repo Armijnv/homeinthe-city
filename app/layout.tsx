@@ -122,7 +122,7 @@ export default async function RootLayout({
       </head>
 
       <body className={`${geist.className} bg-[#1a1f2e]`}>
-        <ClerkProvider proxyUrl={clerkProxyPath}>
+        <ClerkProvider>
           {/* ======================================================
               HEADER
           ====================================================== */}
