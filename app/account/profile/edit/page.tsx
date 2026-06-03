@@ -96,6 +96,7 @@ type ProviderSubmission = {
 
 type PageProps = {
   searchParams: Promise<{
+    error?: string;
     saved?: string;
     submitted?: string;
   }>;
@@ -396,6 +397,12 @@ export default async function Page({ searchParams }: PageProps) {
         {params.submitted ? (
           <div className="mb-8 rounded-lg border border-[#d6a85a]/40 bg-[#d6a85a]/10 p-4 text-[#f0d9aa]">
             Submitted for review. Your public profile has not changed yet.
+          </div>
+        ) : null}
+
+        {params.error ? (
+          <div className="mb-8 rounded-lg border border-red-300/40 bg-red-500/10 p-4 text-red-100">
+            {params.error}
           </div>
         ) : null}
 

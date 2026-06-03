@@ -1,7 +1,7 @@
 "use server";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
@@ -30,11 +30,17 @@ type ProviderMatch = {
 type ExistingSubmission = {
   _id: string;
   ownerUserId?: string;
-  ownerEmail?: string;
   profileSnapshot?: {
     mainPhoto?: ProviderMatch["mainPhoto"];
   };
 };
+
+class ProfileWorkflowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ProfileWorkflowError";
+  }
+}
 
 const matchedProviderForAccountQuery = `
   *[
@@ -183,7 +189,9 @@ async function getSignedInProvider() {
     .filter(Boolean);
 
   if (emails.length === 0) {
-    throw new Error("Your signed-in account does not have an email address.");
+    throw new ProfileWorkflowError(
+      "Your signed-in account does not have an email address.",
+    );
   }
 
   const provider = await client.fetch<ProviderMatch | null>(
@@ -195,7 +203,9 @@ async function getSignedInProvider() {
   );
 
   if (!provider?._id) {
-    throw new Error("No provider profile matches your signed-in account.");
+    throw new ProfileWorkflowError(
+      "No provider profile matches your signed-in account.",
+    );
   }
 
   const ownerEmail = provider.ownership?.contactEmail || emails[0];
@@ -203,30 +213,21 @@ async function getSignedInProvider() {
 
   return {
     provider,
-    emails,
     ownerEmail,
     ownerUserId,
   };
 }
 
-function isOwnedSubmission(
-  submission: ExistingSubmission,
-  ownerEmail: string,
-  ownerUserId: string,
-  emails: string[],
-) {
-  const submissionOwnerEmail = submission.ownerEmail?.toLowerCase();
+function profileErrorRedirect(error: unknown): never {
+  const message =
+    error instanceof ProfileWorkflowError
+      ? error.message
+      : "We could not save your profile changes. Please try again.";
 
-  return (
-    submission.ownerUserId === ownerUserId ||
-    submissionOwnerEmail === ownerEmail.toLowerCase() ||
-    Boolean(submissionOwnerEmail && emails.includes(submissionOwnerEmail))
-  );
+  redirect(`/account/profile/edit?error=${encodeURIComponent(message)}`);
 }
 
-export async function saveProviderProfileDraft(formData: FormData) {
-  assertSanityWriteToken();
-
+async function saveProviderProfileDraftForCurrentUser(formData: FormData) {
   const { provider, ownerEmail, ownerUserId } = await getSignedInProvider();
   const existingSubmission = await client.fetch<ExistingSubmission | null>(
     `*[
@@ -290,43 +291,37 @@ export async function saveProviderProfileDraft(formData: FormData) {
     })
     .commit();
 
+  return submissionId;
+}
+
+export async function saveProviderProfileDraft(formData: FormData) {
+  try {
+    assertSanityWriteToken();
+    await saveProviderProfileDraftForCurrentUser(formData);
+  } catch (error) {
+    unstable_rethrow(error);
+    profileErrorRedirect(error);
+  }
+
   redirect("/account/profile/edit?saved=1");
 }
 
-export async function submitProviderProfileForReview() {
-  assertSanityWriteToken();
+export async function submitProviderProfileForReview(formData: FormData) {
+  try {
+    assertSanityWriteToken();
+    const submissionId = await saveProviderProfileDraftForCurrentUser(formData);
 
-  const { provider, emails, ownerEmail, ownerUserId } =
-    await getSignedInProvider();
-  const existingSubmission = await client.fetch<ExistingSubmission | null>(
-    `*[
-      _type == "providerSubmission" &&
-      provider._ref == $providerId &&
-      status == "draft"
-    ] | order(_updatedAt desc)[0]{
-      _id,
-      ownerUserId,
-      ownerEmail
-    }`,
-    {
-      providerId: provider._id,
-    },
-  );
-
-  if (
-    !existingSubmission?._id ||
-    !isOwnedSubmission(existingSubmission, ownerEmail, ownerUserId, emails)
-  ) {
-    throw new Error("Save a draft before submitting for review.");
+    await writeClient
+      .patch(submissionId)
+      .set({
+        status: "review",
+        submittedAt: new Date().toISOString(),
+      })
+      .commit();
+  } catch (error) {
+    unstable_rethrow(error);
+    profileErrorRedirect(error);
   }
-
-  await writeClient
-    .patch(existingSubmission._id)
-    .set({
-      status: "review",
-      submittedAt: new Date().toISOString(),
-    })
-    .commit();
 
   redirect("/account/profile/edit?submitted=1");
 }
