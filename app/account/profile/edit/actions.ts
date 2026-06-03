@@ -68,6 +68,7 @@ const matchedProviderForAccountQuery = `
 
 const editableLanguageCodes = ["en", "pt", "nl"] as const;
 const editableLanguages = ["language-0", "language-1", "language-2", "language-3", "language-4"];
+const maxProfilePhotoSize = 10 * 1024 * 1024;
 
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
@@ -91,14 +92,39 @@ function keyFromValue(nextValue: string, fallback: string) {
   return nextValue.toLowerCase().replace(/[^a-z0-9_-]+/g, "-") || fallback;
 }
 
-function imageSnapshot(
+async function uploadedProfilePhotoAsset(formData: FormData) {
+  const entry = formData.get("profile-photo");
+
+  if (!(entry instanceof File) || entry.size === 0) return null;
+
+  if (!entry.type.startsWith("image/")) {
+    throw new ProfileWorkflowError("Profile photo must be an image file.");
+  }
+
+  if (entry.size > maxProfilePhotoSize) {
+    throw new ProfileWorkflowError("Profile photo must be smaller than 10 MB.");
+  }
+
+  const asset = await writeClient.assets.upload("image", entry, {
+    contentType: entry.type,
+    filename: entry.name,
+  });
+
+  return {
+    _type: "reference",
+    _ref: asset._id,
+  };
+}
+
+async function imageSnapshot(
   provider: ProviderMatch,
   existingSubmission: ExistingSubmission | null,
   formData: FormData,
 ) {
+  const uploadedAsset = await uploadedProfilePhotoAsset(formData);
   const existingImage =
     existingSubmission?.profileSnapshot?.mainPhoto || provider.mainPhoto;
-  const asset = existingImage?.asset;
+  const asset = uploadedAsset || existingImage?.asset;
   const alt = optionalValue(formData, "main-photo-alt") || existingImage?.alt;
 
   if (!asset?._ref && !alt) return undefined;
@@ -117,12 +143,12 @@ function imageSnapshot(
   };
 }
 
-function buildProfileSnapshot(
+async function buildProfileSnapshot(
   provider: ProviderMatch,
   existingSubmission: ExistingSubmission | null,
   formData: FormData,
 ) {
-  const mainPhoto = imageSnapshot(provider, existingSubmission, formData);
+  const mainPhoto = await imageSnapshot(provider, existingSubmission, formData);
   const snapshot: Record<string, unknown> = {
     name: value(formData, "name"),
     ...(provider.slug?.current
@@ -255,7 +281,7 @@ async function saveProviderProfileDraftForCurrentUser(formData: FormData) {
       ownerUserId,
     },
   );
-  const profileSnapshot = buildProfileSnapshot(
+  const profileSnapshot = await buildProfileSnapshot(
     provider,
     existingSubmission,
     formData,

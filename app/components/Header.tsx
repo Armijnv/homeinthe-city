@@ -14,6 +14,10 @@ export default function Header() {
     pathname === "/providers" ||
     pathname === "/pt/profissionais" ||
     pathname === "/nl/professionals";
+  const isTranslationServicesPath =
+    pathname === "/translation-services" ||
+    pathname === "/pt/servicos-de-traducao" ||
+    pathname === "/nl/vertaaldiensten";
 
   const lang = pathname.startsWith("/pt")
     ? "pt"
@@ -57,6 +61,8 @@ export default function Header() {
       ? `/providers/${providerSlug}`
       : isProviderListPath
       ? "/providers"
+      : isTranslationServicesPath
+      ? "/translation-services"
       : pathname === "/pt/interprete-porto-alegre"
       ? "/interpreter-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -78,6 +84,8 @@ export default function Header() {
       ? `/pt/profissionais/${providerSlug}`
       : isProviderListPath
       ? "/pt/profissionais"
+      : isTranslationServicesPath
+      ? "/pt/servicos-de-traducao"
       : pathname === "/interpreter-porto-alegre"
       ? "/pt/interprete-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -101,6 +109,8 @@ export default function Header() {
       ? `/nl/professionals/${providerSlug}`
       : isProviderListPath
       ? "/nl/professionals"
+      : isTranslationServicesPath
+      ? "/nl/vertaaldiensten"
       : pathname === "/interpreter-porto-alegre"
       ? "/nl/tolk-porto-alegre"
       : pathname === "/pt/interprete-porto-alegre"
@@ -138,10 +148,10 @@ export default function Header() {
     : "/interpreter-porto-alegre";
 
   const translatorsPath = pathname.startsWith("/pt")
-    ? "/pt/profissionais/luciana"
+    ? "/pt/servicos-de-traducao"
     : pathname.startsWith("/nl")
-    ? "/nl/professionals/luciana"
-    : "/providers/luciana";
+    ? "/nl/vertaaldiensten"
+    : "/translation-services";
 
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;

@@ -133,16 +133,19 @@ export default function CityPage({ lang }: { lang: Lang }) {
       title: "Document Translation",
       text: "Need translations between English, Portuguese or Dutch? Luciana Graziuso provides professional translation services with 20+ years experience.",
       button: "Translation Services",
+      href: "/providers/luciana",
     },
     pt: {
       title: "Tradução de Documentos",
       text: "Precisa de traduções entre português, inglês e holandês? Luciana Graziuso oferece serviços profissionais de tradução com mais de 20 anos de experiência.",
       button: "Serviços de Tradução",
+      href: "/pt/profissionais/luciana",
     },
     nl: {
       title: "Documentvertaling",
       text: "Heeft u vertalingen nodig tussen Nederlands, Engels en Portugees? Luciana Graziuso biedt professionele vertaaldiensten met meer dan 20 jaar ervaring.",
       button: "Vertaaldiensten",
+      href: "/nl/professionals/luciana",
     },
   }[lang];
   const places: MapPlace[] = city?.mapPlaces || [];
@@ -285,7 +288,7 @@ export default function CityPage({ lang }: { lang: Lang }) {
             </p>
 
             <Link
-              href="/providers/luciana"
+              href={translatorCard.href}
               className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
             >
               {translatorCard.button}

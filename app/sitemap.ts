@@ -58,6 +58,25 @@ export default function sitemap() {
     },
 
     /* ======================================================
+       TRANSLATION PAGES
+    ====================================================== */
+
+    {
+      url: "https://homeinthe.city/translation-services",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/pt/servicos-de-traducao",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/nl/vertaaldiensten",
+      lastModified: new Date(),
+    },
+
+    /* ======================================================
        HOST PAGE
     ====================================================== */
 

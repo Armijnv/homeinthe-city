@@ -169,7 +169,27 @@ const draftSubmissionQuery = `
     _id,
     status,
     _updatedAt,
-    profileSnapshot
+    profileSnapshot{
+      name,
+      headline_en,
+      headline_pt,
+      headline_nl,
+      intro_en,
+      intro_pt,
+      intro_nl,
+      about_en,
+      about_pt,
+      about_nl,
+      contactOptions,
+      cities,
+      languages,
+      mainPhoto{
+        alt,
+        asset->{
+          url
+        }
+      }
+    }
   }
 `;
 
@@ -407,7 +427,11 @@ export default async function Page({ searchParams }: PageProps) {
         ) : null}
 
         {provider ? (
-          <form action={saveProviderProfileDraft} className="space-y-10">
+          <form
+            action={saveProviderProfileDraft}
+            encType="multipart/form-data"
+            className="space-y-10"
+          >
             <Section title="Basics">
               <label className="block">
                 <span className={labelClass()}>Name</span>
@@ -627,7 +651,7 @@ export default async function Page({ searchParams }: PageProps) {
               </div>
             </Section>
 
-            <Section title="Photo Upload Placeholder">
+            <Section title="Profile photo">
               <div className="grid gap-4 md:grid-cols-[180px_1fr] md:items-start">
                 <div className="aspect-square overflow-hidden rounded-lg border border-white/10 bg-white/5">
                   {photo?.asset?.url ? (
@@ -645,11 +669,12 @@ export default async function Page({ searchParams }: PageProps) {
                 </div>
                 <div className="space-y-4">
                   <label className="block">
-                    <span className={labelClass()}>Photo upload</span>
+                    <span className={labelClass()}>Profile photo</span>
                     <input
+                      name="profile-photo"
                       type="file"
-                      disabled
-                      className="w-full rounded-lg border border-dashed border-white/15 bg-white/5 px-4 py-6 text-stone-400"
+                      accept="image/*"
+                      className="w-full rounded-lg border border-dashed border-white/15 bg-white/5 px-4 py-6 text-sm text-stone-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#1a1f2e]"
                     />
                   </label>
                   <label className="block">
@@ -661,8 +686,8 @@ export default async function Page({ searchParams }: PageProps) {
                     />
                   </label>
                   <p className="text-sm leading-relaxed text-stone-400">
-                    Photo upload is reserved for the next step. Saving this draft
-                    keeps the current public image unchanged.
+                    Uploading a new photo saves it to your draft only. Your public
+                    profile photo changes after review.
                   </p>
                 </div>
               </div>
