@@ -6,6 +6,14 @@ import { usePathname } from "next/navigation";
 
 export default function Header() {
   const pathname = usePathname();
+  const providerSlug =
+    pathname.match(/^\/providers\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/pt\/profissionais\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/nl\/professionals\/([^/]+)/)?.[1];
+  const isProviderListPath =
+    pathname === "/providers" ||
+    pathname === "/pt/profissionais" ||
+    pathname === "/nl/professionals";
 
   const lang = pathname.startsWith("/pt")
     ? "pt"
@@ -45,7 +53,11 @@ export default function Header() {
   const homePath = lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/";
 
   const englishPath =
-    pathname === "/pt/interprete-porto-alegre"
+    providerSlug
+      ? `/providers/${providerSlug}`
+      : isProviderListPath
+      ? "/providers"
+      : pathname === "/pt/interprete-porto-alegre"
       ? "/interpreter-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
       ? "/interpreter-porto-alegre"
@@ -62,7 +74,11 @@ export default function Header() {
       : pathname;
 
   const portuguesePath =
-    pathname === "/interpreter-porto-alegre"
+    providerSlug
+      ? `/pt/profissionais/${providerSlug}`
+      : isProviderListPath
+      ? "/pt/profissionais"
+      : pathname === "/interpreter-porto-alegre"
       ? "/pt/interprete-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
       ? "/pt/interprete-porto-alegre"
@@ -81,7 +97,11 @@ export default function Header() {
       : pathname;
 
   const dutchPath =
-    pathname === "/interpreter-porto-alegre"
+    providerSlug
+      ? `/nl/professionals/${providerSlug}`
+      : isProviderListPath
+      ? "/nl/professionals"
+      : pathname === "/interpreter-porto-alegre"
       ? "/nl/tolk-porto-alegre"
       : pathname === "/pt/interprete-porto-alegre"
       ? "/nl/tolk-porto-alegre"
@@ -116,6 +136,12 @@ export default function Header() {
     : pathname.startsWith("/nl")
     ? "/nl/tolk-porto-alegre"
     : "/interpreter-porto-alegre";
+
+  const translatorsPath = pathname.startsWith("/pt")
+    ? "/pt/profissionais/luciana"
+    : pathname.startsWith("/nl")
+    ? "/nl/professionals/luciana"
+    : "/providers/luciana";
 
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;
@@ -157,7 +183,7 @@ export default function Header() {
             {t.interpreter}
           </Link>
 
-          <Link href="/providers/luciana" className="hover:text-white">
+          <Link href={translatorsPath} className="hover:text-white">
             {t.translators}
           </Link>
 
@@ -201,7 +227,7 @@ export default function Header() {
           <nav className="absolute right-0 mt-6 flex w-64 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-2xl">
             <Link href={portoAlegrePath}>Porto Alegre</Link>
             <Link href={interpreterPath}>{t.interpreter}</Link>
-            <Link href="/providers/luciana">{t.translators}</Link>
+            <Link href={translatorsPath}>{t.translators}</Link>
             <Link href={hostPath}>{t.host}</Link>
 
             <a href="mailto:contact@homeinthe.city">
