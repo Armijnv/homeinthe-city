@@ -33,6 +33,57 @@ const localizedListFields = (name: string, title: string) => [
   }),
 ];
 
+const buildingAmenityOptions = [
+  { title: "Elevator", value: "elevator" },
+  { title: "24h security", value: "security24h" },
+  { title: "Concierge", value: "concierge" },
+  { title: "Gym", value: "gym" },
+  { title: "Pool", value: "pool" },
+  { title: "Party room", value: "partyRoom" },
+  { title: "Coworking space", value: "coworkingSpace" },
+];
+
+const apartmentAmenityOptions = [
+  { title: "Air conditioning", value: "airConditioning" },
+  { title: "High-speed internet", value: "highSpeedInternet" },
+  { title: "Balcony", value: "balcony" },
+  { title: "BBQ / churrasqueira", value: "bbq" },
+  { title: "Washer", value: "washer" },
+  { title: "Dryer", value: "dryer" },
+  { title: "Dishwasher", value: "dishwasher" },
+  { title: "Home office", value: "homeOffice" },
+  { title: "Smart TV", value: "smartTv" },
+  { title: "Fully equipped kitchen", value: "fullyEquippedKitchen" },
+];
+
+const parkingAmenityOptions = [
+  { title: "Parking space", value: "parkingSpace" },
+  { title: "Covered parking", value: "coveredParking" },
+  { title: "Visitor parking", value: "visitorParking" },
+];
+
+const lifestyleAmenityOptions = [
+  { title: "Park view", value: "parkView" },
+  { title: "City view", value: "cityView" },
+  { title: "Pet friendly", value: "petFriendly" },
+  { title: "Family friendly", value: "familyFriendly" },
+  { title: "Quiet street", value: "quietStreet" },
+  { title: "Walkable neighborhood", value: "walkableNeighborhood" },
+];
+
+const amenityField = (
+  name: string,
+  title: string,
+  options: Array<{ title: string; value: string }>,
+) =>
+  defineField({
+    name,
+    title,
+    type: "array",
+    of: [{ type: "string" }],
+    options: { list: options },
+  });
+
 export const propertyListing = defineType({
   name: "propertyListing",
   title: "Property Listing",
@@ -123,9 +174,81 @@ export const propertyListing = defineType({
     defineField({ name: "areaM2", title: "Area (m²)", type: "number" }),
     defineField({ name: "floor", title: "Floor", type: "number" }),
     defineField({ name: "furnished", title: "Furnished", type: "boolean" }),
+    defineField({
+      name: "minimumStay",
+      title: "Minimum Stay",
+      type: "string",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "maximumGuests",
+      title: "Maximum Guests",
+      type: "number",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "utilitiesIncluded",
+      title: "Utilities Included",
+      type: "boolean",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "internetIncluded",
+      title: "Internet Included",
+      type: "boolean",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "cleaningIncluded",
+      title: "Cleaning Included",
+      type: "boolean",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "availableFrom",
+      title: "Available From",
+      type: "date",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "petsAllowed",
+      title: "Pets Allowed",
+      type: "boolean",
+      hidden: ({ document }) => document?.listingType !== "rent",
+    }),
+    defineField({
+      name: "financingPossible",
+      title: "Financing Possible",
+      type: "boolean",
+      hidden: ({ document }) => document?.listingType !== "sale",
+    }),
+    defineField({
+      name: "occupancyStatus",
+      title: "Occupancy Status",
+      type: "string",
+      options: {
+        list: [
+          { title: "Vacant", value: "vacant" },
+          { title: "Occupied", value: "occupied" },
+        ],
+      },
+      hidden: ({ document }) => document?.listingType !== "sale",
+    }),
+    defineField({
+      name: "yearBuilt",
+      title: "Year Built",
+      type: "number",
+      hidden: ({ document }) => document?.listingType !== "sale",
+    }),
     ...localizedTextFields("shortDescription", "Short Description"),
     ...localizedTextFields("longDescription", "Long Description"),
     ...localizedListFields("features", "Features"),
+    amenityField("buildingAmenities", "Building Amenities", buildingAmenityOptions),
+    amenityField("apartmentAmenities", "Apartment Amenities", apartmentAmenityOptions),
+    amenityField("parkingAmenities", "Parking Amenities", parkingAmenityOptions),
+    amenityField("lifestyleAmenities", "Lifestyle / Comfort Amenities", lifestyleAmenityOptions),
+    ...localizedTextFields("neighborhoodDescription", "Neighborhood Description"),
+    ...localizedListFields("nearbyHighlights", "Nearby Highlights"),
     defineField({
       name: "mainImage",
       title: "Main Image",
@@ -146,6 +269,12 @@ export const propertyListing = defineType({
       ],
     }),
     defineField({ name: "mapCoordinates", title: "Map Coordinates", type: "geopoint" }),
+    defineField({
+      name: "videoUrl",
+      title: "Video URL",
+      type: "url",
+      description: "Optional YouTube, Vimeo, or hosted video tour URL.",
+    }),
     defineField({
       name: "linkedRealtor",
       title: "Linked Realtor / Provider",
