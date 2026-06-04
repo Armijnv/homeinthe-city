@@ -4,6 +4,89 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+type MenuLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+type MenuSection = {
+  title: string;
+  links: MenuLink[];
+};
+
+function MenuContent({
+  mobile = false,
+  menuSections,
+  englishPath,
+  portuguesePath,
+  dutchPath,
+}: {
+  mobile?: boolean;
+  menuSections: MenuSection[];
+  englishPath: string;
+  portuguesePath: string;
+  dutchPath: string;
+}) {
+  return (
+    <nav
+      className={
+        mobile
+          ? "absolute right-0 mt-6 flex max-h-[calc(100vh-7rem)] w-[min(20rem,calc(100vw-3rem))] flex-col gap-5 overflow-y-auto rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-2xl"
+          : "absolute right-0 mt-5 w-[min(48rem,calc(100vw-4rem))] rounded-2xl border border-white/10 bg-[#1a1f2e] p-6 text-white shadow-2xl"
+      }
+    >
+      <div
+        className={
+          mobile ? "grid gap-5" : "grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+        }
+      >
+        {menuSections.map((section) => (
+          <section key={section.title}>
+            <h2 className="mb-3 text-xs uppercase tracking-widest text-white/40">
+              {section.title}
+            </h2>
+
+            <div className="flex flex-col gap-3 text-sm text-white/75">
+              {section.links.map((link) =>
+                link.external ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={link.href.startsWith("http") ? "_blank" : undefined}
+                    rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                    className="hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link key={link.label} href={link.href} className="hover:text-white">
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {mobile ? (
+        <div className="flex gap-3 border-t border-white/10 pt-4 text-xl">
+          <Link href={englishPath} aria-label="English">
+            🇬🇧
+          </Link>
+          <Link href={portuguesePath} aria-label="Portuguese">
+            🇧🇷
+          </Link>
+          <Link href={dutchPath} aria-label="Dutch">
+            🇳🇱
+          </Link>
+        </div>
+      ) : null}
+    </nav>
+  );
+}
+
 export default function Header() {
   const pathname = usePathname();
   const providerSlug =
@@ -27,25 +110,70 @@ export default function Header() {
 
   const labels = {
     en: {
+      menu: "Menu",
       interpreter: "Interpreter",
       translators: "Translators",
       host: "Your Host",
+      realEstate: "Real Estate",
+      services: "Services",
+      explore: "Explore Porto Alegre",
+      propertyListings: "Property Listings",
+      about: "About",
+      restaurants: "Restaurants",
+      cafes: "Cafés",
+      parks: "Parks & Walks",
+      culture: "Culture & Events",
+      markets: "Markets",
+      portoAlegreRentals: "Porto Alegre Rentals",
+      florianopolisSales: "Florianópolis Sales",
+      allListings: "All Listings",
+      aboutHome: "About Home in the City",
       email: "Email",
       contact: "WhatsApp",
       tagline: "Your local guide · Wherever business takes you",
     },
     pt: {
+      menu: "Menu",
       interpreter: "Intérprete",
       translators: "Tradutores",
       host: "Seu anfitrião",
+      realEstate: "Imóveis",
+      services: "Serviços",
+      explore: "Explore Porto Alegre",
+      propertyListings: "Anúncios de imóveis",
+      about: "Sobre",
+      restaurants: "Restaurantes",
+      cafes: "Cafés",
+      parks: "Parques e caminhadas",
+      culture: "Cultura e eventos",
+      markets: "Mercados",
+      portoAlegreRentals: "Aluguéis em Porto Alegre",
+      florianopolisSales: "Vendas em Florianópolis",
+      allListings: "Todos os anúncios",
+      aboutHome: "Sobre a Home in the City",
       email: "Email",
       contact: "WhatsApp",
       tagline: "Seu apoio local · Onde os negócios levarem você",
     },
     nl: {
+      menu: "Menu",
       interpreter: "Tolk",
       translators: "Vertalers",
       host: "Uw host",
+      realEstate: "Vastgoed",
+      services: "Diensten",
+      explore: "Ontdek Porto Alegre",
+      propertyListings: "Woningaanbod",
+      about: "Over",
+      restaurants: "Restaurants",
+      cafes: "Cafés",
+      parks: "Parken en wandelingen",
+      culture: "Cultuur en events",
+      markets: "Markten",
+      portoAlegreRentals: "Huurwoningen Porto Alegre",
+      florianopolisSales: "Koopwoningen Florianópolis",
+      allListings: "Alle woningen",
+      aboutHome: "Over Home in the City",
       email: "Email",
       contact: "WhatsApp",
       tagline: "Je lokale gids · Waar je zakenreis je ook brengt",
@@ -153,6 +281,51 @@ export default function Header() {
     ? "/nl/vertaaldiensten"
     : "/translation-services";
 
+  const realEstatePath = portoAlegrePath;
+  const aboutPath = homePath;
+
+  const menuSections = [
+    {
+      title: t.services,
+      links: [
+        { label: "Interpreter Porto Alegre", href: interpreterPath },
+        { label: t.translators, href: translatorsPath },
+        { label: t.host, href: hostPath },
+        { label: t.realEstate, href: realEstatePath },
+      ],
+    },
+    {
+      title: t.explore,
+      links: [
+        { label: t.restaurants, href: portoAlegrePath },
+        { label: t.cafes, href: portoAlegrePath },
+        { label: t.parks, href: portoAlegrePath },
+        { label: t.culture, href: portoAlegrePath },
+        { label: t.markets, href: portoAlegrePath },
+      ],
+    },
+    {
+      title: t.propertyListings,
+      links: [
+        { label: t.portoAlegreRentals, href: realEstatePath },
+        { label: t.florianopolisSales, href: realEstatePath },
+        { label: t.allListings, href: realEstatePath },
+      ],
+    },
+    {
+      title: t.about,
+      links: [
+        { label: t.aboutHome, href: aboutPath },
+        { label: t.email, href: "mailto:contact@homeinthe.city", external: true },
+        {
+          label: t.contact,
+          href: "https://wa.me/+5551997783369",
+          external: true,
+        },
+      ],
+    },
+  ];
+
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;
 
@@ -184,45 +357,32 @@ export default function Header() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm text-white/70 xl:flex">
-          <Link href={portoAlegrePath} className="hover:text-white">
-            Porto Alegre
-          </Link>
+        <div className="hidden items-center gap-5 xl:flex">
+          <details className="relative" onClick={closeMenuOnLinkClick}>
+            <summary className="cursor-pointer list-none rounded-full border border-white/15 px-5 py-2 text-sm text-white/80 transition hover:border-white/35 hover:text-white [&::-webkit-details-marker]:hidden">
+              {t.menu}
+            </summary>
 
-          <Link href={interpreterPath} className="hover:text-white">
-            {t.interpreter}
-          </Link>
-
-          <Link href={translatorsPath} className="hover:text-white">
-            {t.translators}
-          </Link>
-
-          <Link href={hostPath} className="hover:text-white">
-            {t.host}
-          </Link>
-
-          <a
-            href="mailto:contact@homeinthe.city"
-            className="hover:text-white"
-          >
-            {t.email}
-          </a>
-
-          <a
-            href="https://wa.me/+5551997783369"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white"
-          >
-            {t.contact}
-          </a>
+            <MenuContent
+              menuSections={menuSections}
+              englishPath={englishPath}
+              portuguesePath={portuguesePath}
+              dutchPath={dutchPath}
+            />
+          </details>
 
           <div className="ml-2 flex items-center gap-2 text-lg">
-            <Link href={englishPath}>🇬🇧</Link>
-            <Link href={portuguesePath}>🇧🇷</Link>
-            <Link href={dutchPath}>🇳🇱</Link>
+            <Link href={englishPath} aria-label="English">
+              🇬🇧
+            </Link>
+            <Link href={portuguesePath} aria-label="Portuguese">
+              🇧🇷
+            </Link>
+            <Link href={dutchPath} aria-label="Dutch">
+              🇳🇱
+            </Link>
           </div>
-        </nav>
+        </div>
 
         <details
           className="relative xl:hidden"
@@ -234,30 +394,13 @@ export default function Header() {
             <span className="h-[2px] w-6 bg-white"></span>
           </summary>
 
-          <nav className="absolute right-0 mt-6 flex w-64 flex-col gap-4 rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-2xl">
-            <Link href={portoAlegrePath}>Porto Alegre</Link>
-            <Link href={interpreterPath}>{t.interpreter}</Link>
-            <Link href={translatorsPath}>{t.translators}</Link>
-            <Link href={hostPath}>{t.host}</Link>
-
-            <a href="mailto:contact@homeinthe.city">
-              {t.email}
-            </a>
-
-            <a
-              href="https://wa.me/+5551997783369"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {t.contact}
-            </a>
-
-            <div className="flex gap-3 border-t border-white/10 pt-4 text-xl">
-              <Link href={englishPath}>🇬🇧</Link>
-              <Link href={portuguesePath}>🇧🇷</Link>
-              <Link href={dutchPath}>🇳🇱</Link>
-            </div>
-          </nav>
+          <MenuContent
+            mobile
+            menuSections={menuSections}
+            englishPath={englishPath}
+            portuguesePath={portuguesePath}
+            dutchPath={dutchPath}
+          />
         </details>
       </div>
     </header>
