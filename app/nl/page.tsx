@@ -6,9 +6,9 @@ import HomePage from "@/app/components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Lokale Ondersteuning in Porto Alegre",
+  title: "Home in the City | Lokale hulp, tolk en wonen in Porto Alegre",
   description:
-    "Lokale ondersteuning voor internationale zakenbezoekers in Porto Alegre. Tolkdiensten, stadsgidsen, restaurants, evenementen en praktische hulp ter plaatse.",
+    "Home in the City is een vertrouwde lokale verbinding voor buitenlanders, bezoekers, professionals en nieuwkomers in Porto Alegre, met tolken, vertaaldiensten, lokale hosting, gemeubileerde appartementen, vastgoedhulp en stadskennis.",
 
   alternates: {
     canonical: "https://homeinthe.city/nl",

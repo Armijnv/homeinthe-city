@@ -36,6 +36,20 @@ function MenuContent({
           : "absolute right-0 mt-5 w-[min(48rem,calc(100vw-4rem))] rounded-2xl border border-white/10 bg-[#1a1f2e] p-6 text-white shadow-2xl"
       }
     >
+      {mobile ? (
+        <div className="flex gap-3 border-b border-white/10 pb-4 text-xl">
+          <Link href={englishPath} aria-label="English">
+            🇬🇧
+          </Link>
+          <Link href={portuguesePath} aria-label="Portuguese">
+            🇧🇷
+          </Link>
+          <Link href={dutchPath} aria-label="Dutch">
+            🇳🇱
+          </Link>
+        </div>
+      ) : null}
+
       <div
         className={
           mobile ? "grid gap-5" : "grid gap-6 md:grid-cols-2 lg:grid-cols-4"
@@ -69,20 +83,6 @@ function MenuContent({
           </section>
         ))}
       </div>
-
-      {mobile ? (
-        <div className="flex gap-3 border-t border-white/10 pt-4 text-xl">
-          <Link href={englishPath} aria-label="English">
-            🇬🇧
-          </Link>
-          <Link href={portuguesePath} aria-label="Portuguese">
-            🇧🇷
-          </Link>
-          <Link href={dutchPath} aria-label="Dutch">
-            🇳🇱
-          </Link>
-        </div>
-      ) : null}
     </nav>
   );
 }

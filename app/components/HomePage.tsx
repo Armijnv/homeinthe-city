@@ -9,39 +9,135 @@ type Lang = "en" | "pt" | "nl";
 
 const content = {
   en: {
-    eyebrow: "Your local guide · Wherever business takes you",
-    titleLine1: "Home in the City",
-    titleLine2: "Business Interpreter in Porto Alegre",
+    eyebrow: "Porto Alegre is live · Florianópolis coming soon",
+    title: "Home in the City",
+    subtitle: "A trusted local connection when you are far from home.",
     intro:
-      "English, Portuguese and Dutch interpreter for meetings, factory visits, negotiations and business travel in southern Brazil.",
-    simpleIntro:
-      "Local help in Porto Alegre for international business visitors: interpreting, city guidance, restaurants and practical support.",
-    cta: "Explore Porto Alegre →",
-    href: "/brazil/porto-alegre",
+      "Whether you need an interpreter, a translator, a furnished apartment, real estate help, or simply practical advice from someone who knows the city, Home in the City helps you arrive with confidence.",
+    primaryCta: "Find local support",
+    primaryHref: "/providers",
+    interpreterCta: "Business interpreter in Porto Alegre",
+    interpreterHref: "/interpreter-porto-alegre",
+    cityCta: "Explore Porto Alegre",
+    cityHref: "/brazil/porto-alegre",
+    liveCity: "Porto Alegre is live",
+    nextCity: "Florianópolis coming soon",
+    servicesTitle: "What can we help you with?",
+    services: [
+      {
+        title: "Business Interpreting",
+        text: "Meetings, visits and negotiations with calm language support.",
+        href: "/interpreter-porto-alegre",
+      },
+      {
+        title: "Translation Services",
+        text: "English, Portuguese and Dutch translation by a verified local professional.",
+        href: "/translation-services",
+      },
+      {
+        title: "Furnished Apartments",
+        text: "Comfortable city stays for newcomers, visitors and longer projects.",
+        href: "/real-estate/porto-alegre",
+      },
+      {
+        title: "Real Estate",
+        text: "Buying, renting and settling in with trusted local guidance.",
+        href: "/real-estate",
+      },
+      {
+        title: "Local Recommendations",
+        text: "Practical city knowledge for easier days on the ground.",
+        href: "/brazil/porto-alegre",
+      },
+    ],
   },
 
   pt: {
-    eyebrow: "Seu apoio local · Onde os negócios levarem você",
-    titleLine1: "Home in the City",
-    titleLine2: "Intérprete de Negócios em Porto Alegre",
+    eyebrow: "Porto Alegre está ativa · Florianópolis em breve",
+    title: "Home in the City",
+    subtitle: "Uma conexão local de confiança quando você está longe de casa.",
     intro:
-      "Interpretação em inglês, português e holandês para reuniões, visitas a empresas, negociações e viagens de negócios no sul do Brasil.",
-    simpleIntro:
-      "Apoio local em Porto Alegre para visitantes internacionais: interpretação, orientação na cidade, restaurantes e ajuda prática.",
-    cta: "Explorar Porto Alegre →",
-    href: "/pt/brasil/porto-alegre",
+      "Se você precisa de intérprete, tradutor, apartamento mobiliado, ajuda com imóveis ou orientação prática de alguém que conhece a cidade, a Home in the City ajuda você a chegar com confiança.",
+    primaryCta: "Encontrar apoio local",
+    primaryHref: "/pt/profissionais",
+    interpreterCta: "Intérprete de negócios em Porto Alegre",
+    interpreterHref: "/pt/interprete-porto-alegre",
+    cityCta: "Explorar Porto Alegre",
+    cityHref: "/pt/brasil/porto-alegre",
+    liveCity: "Porto Alegre está ativa",
+    nextCity: "Florianópolis em breve",
+    servicesTitle: "Como podemos ajudar?",
+    services: [
+      {
+        title: "Interpretação de negócios",
+        text: "Reuniões, visitas e negociações com apoio linguístico tranquilo.",
+        href: "/pt/interprete-porto-alegre",
+      },
+      {
+        title: "Serviços de tradução",
+        text: "Traduções em inglês, português e holandês com profissional verificada.",
+        href: "/pt/servicos-de-traducao",
+      },
+      {
+        title: "Apartamentos mobiliados",
+        text: "Estadias confortáveis para recém-chegados, visitantes e projetos longos.",
+        href: "/pt/imoveis/porto-alegre",
+      },
+      {
+        title: "Imóveis",
+        text: "Compra, aluguel e chegada à cidade com orientação local confiável.",
+        href: "/pt/imoveis",
+      },
+      {
+        title: "Recomendações locais",
+        text: "Conhecimento prático da cidade para dias mais simples no destino.",
+        href: "/pt/brasil/porto-alegre",
+      },
+    ],
   },
 
   nl: {
-    eyebrow: "Je lokale gids · Waar je zakenreis je ook brengt",
-    titleLine1: "Home in the City",
-    titleLine2: "Business Tolk in Porto Alegre",
+    eyebrow: "Porto Alegre is live · Florianópolis binnenkort",
+    title: "Home in the City",
+    subtitle: "Een vertrouwde lokale verbinding wanneer je ver van huis bent.",
     intro:
-      "Engels, Portugees en Nederlands voor vergaderingen, fabrieksbezoeken, onderhandelingen en zakenreizen in Zuid-Brazilië.",
-    simpleIntro:
-      "Lokale hulp in Porto Alegre voor internationale zakenbezoekers: tolken, stadsgids, restaurants en praktische ondersteuning.",
-    cta: "Ontdek Porto Alegre →",
-    href: "/nl/brazilie/porto-alegre",
+      "Of je nu een tolk, vertaler, gemeubileerd appartement, hulp met vastgoed of praktisch advies van iemand ter plaatse nodig hebt: Home in the City helpt je met vertrouwen aan te komen.",
+    primaryCta: "Vind lokale hulp",
+    primaryHref: "/nl/professionals",
+    interpreterCta: "Business tolk in Porto Alegre",
+    interpreterHref: "/nl/tolk-porto-alegre",
+    cityCta: "Ontdek Porto Alegre",
+    cityHref: "/nl/brazilie/porto-alegre",
+    liveCity: "Porto Alegre is live",
+    nextCity: "Florianópolis binnenkort",
+    servicesTitle: "Waarmee kunnen we helpen?",
+    services: [
+      {
+        title: "Zakelijk tolken",
+        text: "Vergaderingen, bezoeken en onderhandelingen met rustige taalhulp.",
+        href: "/nl/tolk-porto-alegre",
+      },
+      {
+        title: "Vertaaldiensten",
+        text: "Engels, Portugees en Nederlands via een geverifieerde professional.",
+        href: "/nl/vertaaldiensten",
+      },
+      {
+        title: "Gemeubileerde appartementen",
+        text: "Comfortabele verblijven voor nieuwkomers, bezoekers en langere projecten.",
+        href: "/nl/vastgoed/porto-alegre",
+      },
+      {
+        title: "Vastgoed",
+        text: "Kopen, huren en landen in de stad met betrouwbare lokale begeleiding.",
+        href: "/nl/vastgoed",
+      },
+      {
+        title: "Lokale aanbevelingen",
+        text: "Praktische stadskennis voor soepelere dagen ter plaatse.",
+        href: "/nl/brazilie/porto-alegre",
+      },
+    ],
   },
 };
 
@@ -73,23 +169,70 @@ export default function HomePage({ lang }: { lang: Lang }) {
           </p>
 
           <h1 className="mb-5 text-4xl font-light leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.75)] sm:text-5xl md:text-6xl lg:text-7xl lg:drop-shadow-none">
-            {t.titleLine1}
-            <br />
-            <span className="text-stone-300 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-              {t.titleLine2}
-            </span>
+            {t.title}
           </h1>
+
+          <p className="mb-4 max-w-lg text-xl font-light leading-snug text-stone-100 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] sm:text-2xl lg:drop-shadow-none">
+            {t.subtitle}
+          </p>
 
           <p className="mb-7 max-w-lg text-base leading-relaxed text-stone-300 drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)] sm:text-lg lg:drop-shadow-none">
             {t.intro}
           </p>
 
-          <Link
-            href={t.href}
-            className="inline-block rounded-full bg-white px-7 py-4 text-sm text-stone-900 transition-colors hover:bg-stone-200"
-          >
-            {t.cta}
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={t.primaryHref}
+              className="inline-flex rounded-full bg-white px-6 py-3 text-sm text-stone-900 transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-white/60"
+            >
+              {t.primaryCta}
+            </Link>
+            <Link
+              href={t.interpreterHref}
+              className="inline-flex rounded-full border border-white/30 bg-white/10 px-6 py-3 text-sm text-white backdrop-blur-sm transition-colors hover:border-white/60 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/60"
+            >
+              {t.interpreterCta}
+            </Link>
+            <Link
+              href={t.cityHref}
+              className="inline-flex rounded-full border border-white/15 px-6 py-3 text-sm text-stone-200 transition-colors hover:border-white/45 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/60"
+            >
+              {t.cityCta}
+            </Link>
+          </div>
+
+          <div className="mt-5 flex flex-wrap gap-2 text-xs text-stone-300">
+            <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
+              {t.liveCity}
+            </span>
+            <span className="rounded-full border border-white/15 bg-black/10 px-3 py-1.5 backdrop-blur-sm">
+              {t.nextCity}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative z-20 bg-[#f5f1ea] px-6 py-14 text-[#1a1f2e] md:px-10 lg:px-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-8 text-2xl font-light sm:text-3xl">
+            {t.servicesTitle}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {t.services.map((service) => (
+              <Link
+                key={service.href}
+                href={service.href}
+                className="group rounded-lg border border-stone-200 bg-white/65 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+              >
+                <h3 className="mb-3 text-base font-medium text-[#1a1f2e]">
+                  {service.title}
+                </h3>
+                <p className="text-sm leading-relaxed text-stone-600">
+                  {service.text}
+                </p>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </div>
