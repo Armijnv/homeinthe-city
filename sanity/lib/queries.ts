@@ -326,6 +326,112 @@ export const propertyListingQuery = `
   }
 `;
 
+export const propertyListingListQuery = `
+  *[
+    _type == "propertyListing" &&
+    status in ["available", "reserved", "sold", "rented"]
+  ] | order(_createdAt desc){
+    title_en,
+    title_pt,
+    title_nl,
+    slug,
+    listingType,
+    status,
+    city->{
+      name_en,
+      name_pt,
+      name_nl,
+      slug
+    },
+    cityName,
+    neighborhood,
+    price,
+    currency,
+    bedrooms,
+    bathrooms,
+    parkingSpaces,
+    areaM2,
+    shortDescription_en,
+    shortDescription_pt,
+    shortDescription_nl,
+    mainImage{
+      alt,
+      asset->{
+        url
+      }
+    },
+    linkedRealtor->{
+      name,
+      slug
+    }
+  }
+`;
+
+export const propertyListingsByCityQuery = `
+  *[
+    _type == "propertyListing" &&
+    status in ["available", "reserved", "sold", "rented"] &&
+    (
+      city->slug.current == $citySlug ||
+      cityName in $cityNames
+    )
+  ] | order(_createdAt desc){
+    title_en,
+    title_pt,
+    title_nl,
+    slug,
+    listingType,
+    status,
+    city->{
+      name_en,
+      name_pt,
+      name_nl,
+      slug
+    },
+    cityName,
+    neighborhood,
+    price,
+    currency,
+    bedrooms,
+    bathrooms,
+    parkingSpaces,
+    areaM2,
+    shortDescription_en,
+    shortDescription_pt,
+    shortDescription_nl,
+    mainImage{
+      alt,
+      asset->{
+        url
+      }
+    },
+    linkedRealtor->{
+      name,
+      slug
+    }
+  }
+`;
+
+export const realtorProviderQuery = `
+  *[
+    _type == "provider" &&
+    status == "published" &&
+    "realtor" in roles
+  ] | order(name asc)[0]{
+    name,
+    slug,
+    headline_en,
+    headline_pt,
+    headline_nl,
+    mainPhoto{
+      alt,
+      asset->{
+        url
+      }
+    }
+  }
+`;
+
 /* ======================================================
    HOST QUERY
 ====================================================== */

@@ -101,6 +101,12 @@ export default function Header() {
     pathname === "/translation-services" ||
     pathname === "/pt/servicos-de-traducao" ||
     pathname === "/nl/vertaaldiensten";
+  const realEstateMatch =
+    pathname.match(/^\/real-estate(?:\/([^/]+)(?:\/([^/]+))?)?$/) ||
+    pathname.match(/^\/pt\/imoveis(?:\/([^/]+)(?:\/([^/]+))?)?$/) ||
+    pathname.match(/^\/nl\/vastgoed(?:\/([^/]+)(?:\/([^/]+))?)?$/);
+  const realEstateCitySlug = realEstateMatch?.[1];
+  const realEstateListingSlug = realEstateMatch?.[2];
 
   const lang = pathname.startsWith("/pt")
     ? "pt"
@@ -184,6 +190,12 @@ export default function Header() {
 
   const homePath = lang === "pt" ? "/pt" : lang === "nl" ? "/nl" : "/";
 
+  function localizedRealEstatePath(prefix: string) {
+    return [prefix, realEstateCitySlug, realEstateListingSlug]
+      .filter(Boolean)
+      .join("/");
+  }
+
   const englishPath =
     providerSlug
       ? `/providers/${providerSlug}`
@@ -191,6 +203,8 @@ export default function Header() {
       ? "/providers"
       : isTranslationServicesPath
       ? "/translation-services"
+      : realEstateMatch
+      ? localizedRealEstatePath("/real-estate")
       : pathname === "/pt/interprete-porto-alegre"
       ? "/interpreter-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -214,6 +228,8 @@ export default function Header() {
       ? "/pt/profissionais"
       : isTranslationServicesPath
       ? "/pt/servicos-de-traducao"
+      : realEstateMatch
+      ? localizedRealEstatePath("/pt/imoveis")
       : pathname === "/interpreter-porto-alegre"
       ? "/pt/interprete-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -239,6 +255,8 @@ export default function Header() {
       ? "/nl/professionals"
       : isTranslationServicesPath
       ? "/nl/vertaaldiensten"
+      : realEstateMatch
+      ? localizedRealEstatePath("/nl/vastgoed")
       : pathname === "/interpreter-porto-alegre"
       ? "/nl/tolk-porto-alegre"
       : pathname === "/pt/interprete-porto-alegre"
@@ -281,7 +299,13 @@ export default function Header() {
     ? "/nl/vertaaldiensten"
     : "/translation-services";
 
-  const realEstatePath = portoAlegrePath;
+  const realEstatePath = pathname.startsWith("/pt")
+    ? "/pt/imoveis"
+    : pathname.startsWith("/nl")
+    ? "/nl/vastgoed"
+    : "/real-estate";
+  const portoAlegreRealEstatePath = `${realEstatePath}/porto-alegre`;
+  const florianopolisRealEstatePath = `${realEstatePath}/florianopolis`;
   const aboutPath = homePath;
 
   const menuSections = [
@@ -307,8 +331,8 @@ export default function Header() {
     {
       title: t.propertyListings,
       links: [
-        { label: t.portoAlegreRentals, href: realEstatePath },
-        { label: t.florianopolisSales, href: realEstatePath },
+        { label: t.portoAlegreRentals, href: portoAlegreRealEstatePath },
+        { label: t.florianopolisSales, href: florianopolisRealEstatePath },
         { label: t.allListings, href: realEstatePath },
       ],
     },

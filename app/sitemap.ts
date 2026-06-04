@@ -77,6 +77,55 @@ export default function sitemap() {
     },
 
     /* ======================================================
+       REAL ESTATE PAGES
+    ====================================================== */
+
+    {
+      url: "https://homeinthe.city/real-estate",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/real-estate/porto-alegre",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/real-estate/florianopolis",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/pt/imoveis",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/pt/imoveis/porto-alegre",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/pt/imoveis/florianopolis",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/nl/vastgoed",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/nl/vastgoed/porto-alegre",
+      lastModified: new Date(),
+    },
+
+    {
+      url: "https://homeinthe.city/nl/vastgoed/florianopolis",
+      lastModified: new Date(),
+    },
+
+    /* ======================================================
        HOST PAGE
     ====================================================== */
 
