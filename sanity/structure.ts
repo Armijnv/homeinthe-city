@@ -63,5 +63,23 @@ export const structure: StructureResolver = (S) =>
         ),
       S.documentTypeListItem("host").title("Legacy Hosts"),
       S.documentTypeListItem("city").title("Cities"),
+      S.listItem()
+        .title("Property Listings")
+        .child(
+          S.list()
+            .title("Property Listings")
+            .items([
+              S.listItem()
+                .title("Public Property Listings")
+                .child(
+                  S.documentTypeList("propertyListing")
+                    .title("Public Property Listings")
+                    .filter(
+                      '_type == "propertyListing" && status in ["available", "reserved", "sold", "rented"] && !(_id in path("drafts.**"))',
+                    ),
+                ),
+              S.documentTypeListItem("propertyListing").title("All Property Listings"),
+            ]),
+        ),
       S.documentTypeListItem("servicePage").title("Service Pages"),
     ]);

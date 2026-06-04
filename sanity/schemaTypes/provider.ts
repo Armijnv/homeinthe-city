@@ -6,6 +6,7 @@ const roleOptions = [
   { title: "Translator", value: "translator" },
   { title: "Guide", value: "guide" },
   { title: "Specialist", value: "specialist" },
+  { title: "Real estate agent", value: "realtor" },
 ];
 
 const selfEditableFieldOptions = [

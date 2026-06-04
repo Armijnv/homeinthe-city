@@ -97,6 +97,7 @@ const roleLabels: Record<Lang, Record<string, string>> = {
     translator: "Translator",
     guide: "Guide",
     specialist: "Specialist",
+    realtor: "Real estate agent",
   },
   pt: {
     host: "Anfitriao",
@@ -104,6 +105,7 @@ const roleLabels: Record<Lang, Record<string, string>> = {
     translator: "Tradutor",
     guide: "Guia",
     specialist: "Especialista",
+    realtor: "Corretor de imóveis",
   },
   nl: {
     host: "Host",
@@ -111,6 +113,7 @@ const roleLabels: Record<Lang, Record<string, string>> = {
     translator: "Vertaler",
     guide: "Gids",
     specialist: "Specialist",
+    realtor: "Makelaar",
   },
 };
 

@@ -230,6 +230,103 @@ export const providerListQuery = `
 `;
 
 /* ======================================================
+   PROPERTY LISTING QUERY
+====================================================== */
+
+export const propertyListingQuery = `
+  *[
+    _type == "propertyListing" &&
+    slug.current == $listingSlug &&
+    status in ["available", "reserved", "sold", "rented"] &&
+    (
+      city->slug.current == $citySlug ||
+      cityName == $citySlug
+    )
+  ][0]{
+    title_en,
+    title_pt,
+    title_nl,
+    slug,
+    listingType,
+    status,
+    city->{
+      name_en,
+      name_pt,
+      name_nl,
+      slug
+    },
+    cityName,
+    neighborhood,
+    addressVisibility,
+    address,
+    price,
+    currency,
+    monthlyCondoFee,
+    propertyTax,
+    bedrooms,
+    bathrooms,
+    parkingSpaces,
+    areaM2,
+    floor,
+    furnished,
+    shortDescription_en,
+    shortDescription_pt,
+    shortDescription_nl,
+    longDescription_en,
+    longDescription_pt,
+    longDescription_nl,
+    features_en,
+    features_pt,
+    features_nl,
+    mainImage{
+      alt,
+      asset->{
+        url
+      }
+    },
+    gallery[]{
+      alt,
+      asset->{
+        url
+      }
+    },
+    mapCoordinates,
+    linkedRealtor->{
+      name,
+      slug,
+      primaryRole,
+      headline_en,
+      headline_pt,
+      headline_nl,
+      contactOptions{
+        email,
+        phone,
+        whatsapp,
+        website,
+        preferredContact
+      },
+      mainPhoto{
+        alt,
+        asset->{
+          url
+        }
+      },
+      verificationStatus
+    },
+    contact{
+      whatsapp,
+      email
+    },
+    seoTitle_en,
+    seoTitle_pt,
+    seoTitle_nl,
+    seoDescription_en,
+    seoDescription_pt,
+    seoDescription_nl
+  }
+`;
+
+/* ======================================================
    HOST QUERY
 ====================================================== */
 

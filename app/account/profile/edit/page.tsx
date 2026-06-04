@@ -237,6 +237,15 @@ const preferredContactOptions = [
   ["website", "Website"],
 ];
 
+const providerRoleLabels: Record<string, string> = {
+  host: "Host",
+  interpreter: "Interpreter",
+  translator: "Translator",
+  guide: "Guide",
+  specialist: "Specialist",
+  realtor: "Real estate agent",
+};
+
 export const metadata: Metadata = {
   title: "Edit provider profile | Home in the City",
 };
@@ -280,6 +289,11 @@ function formatUpdatedAt(updatedAt?: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(updatedAt));
+}
+
+function providerRoleLabel(role?: string) {
+  if (!role) return "";
+  return providerRoleLabels[role] || role;
 }
 
 function inputClass(extra = "") {
@@ -382,7 +396,7 @@ export default async function Page({ searchParams }: PageProps) {
                   </span>
                   {provider.primaryRole ? (
                     <span className="rounded-full border border-white/15 px-3 py-1">
-                      {provider.primaryRole}
+                      {providerRoleLabel(provider.primaryRole)}
                     </span>
                   ) : null}
                   {submission?._updatedAt ? (
