@@ -1,4 +1,75 @@
-export default function sitemap() {
+import type { MetadataRoute } from "next";
+import { client } from "@/sanity/lib/client";
+import {
+  propertyListingListQuery,
+  providerListQuery,
+} from "@/sanity/lib/queries";
+
+type SitemapProvider = {
+  slug?: {
+    current?: string;
+  };
+};
+
+type SitemapPropertyListing = {
+  slug?: {
+    current?: string;
+  };
+  city?: {
+    slug?: {
+      current?: string;
+    };
+  };
+  cityName?: string;
+};
+
+const siteUrl = "https://homeinthe.city";
+
+function citySlugFromName(cityName?: string) {
+  return cityName
+    ?.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function staticEntry(path = "") {
+  return {
+    url: `${siteUrl}${path}`,
+    lastModified: new Date(),
+  };
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [providers, propertyListings] = await Promise.all([
+    client.fetch<SitemapProvider[]>(providerListQuery),
+    client.fetch<SitemapPropertyListing[]>(propertyListingListQuery),
+  ]);
+
+  const providerEntries = providers.flatMap((provider) => {
+    const slug = provider.slug?.current;
+    if (!slug) return [];
+
+    return [
+      staticEntry(`/providers/${slug}`),
+      staticEntry(`/pt/profissionais/${slug}`),
+      staticEntry(`/nl/professionals/${slug}`),
+    ];
+  });
+
+  const propertyEntries = propertyListings.flatMap((listing) => {
+    const listingSlug = listing.slug?.current;
+    const citySlug = listing.city?.slug?.current || citySlugFromName(listing.cityName);
+    if (!listingSlug || !citySlug) return [];
+
+    return [
+      staticEntry(`/real-estate/${citySlug}/${listingSlug}`),
+      staticEntry(`/pt/imoveis/${citySlug}/${listingSlug}`),
+      staticEntry(`/nl/vastgoed/${citySlug}/${listingSlug}`),
+    ];
+  });
+
   return [
     /* ======================================================
        HOME
@@ -143,5 +214,8 @@ export default function sitemap() {
       url: "https://homeinthe.city/nl/hosts/armijn",
       lastModified: new Date(),
     },
+
+    ...providerEntries,
+    ...propertyEntries,
   ];
 }

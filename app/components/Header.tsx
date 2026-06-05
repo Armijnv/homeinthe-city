@@ -21,12 +21,14 @@ function MenuContent({
   englishPath,
   portuguesePath,
   dutchPath,
+  featuredInterpreter,
 }: {
   mobile?: boolean;
   menuSections: MenuSection[];
   englishPath: string;
   portuguesePath: string;
   dutchPath: string;
+  featuredInterpreter: MenuLink;
 }) {
   return (
     <nav
@@ -48,6 +50,15 @@ function MenuContent({
             🇳🇱
           </Link>
         </div>
+      ) : null}
+
+      {mobile ? (
+        <Link
+          href={featuredInterpreter.href}
+          className="rounded-lg border border-[#d7b46a]/50 bg-[#d7b46a]/10 px-4 py-3 text-sm font-medium text-white"
+        >
+          {featuredInterpreter.label}
+        </Link>
       ) : null}
 
       <div
@@ -349,6 +360,10 @@ export default function Header() {
       ],
     },
   ];
+  const featuredInterpreter = {
+    label: "Interpreter Porto Alegre",
+    href: interpreterPath,
+  };
 
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;
@@ -382,6 +397,13 @@ export default function Header() {
         </Link>
 
         <div className="hidden items-center gap-5 xl:flex">
+          <Link
+            href={interpreterPath}
+            className="text-sm font-medium text-white/85 transition hover:text-white"
+          >
+            {t.interpreter}
+          </Link>
+
           <details className="relative" onClick={closeMenuOnLinkClick}>
             <summary className="cursor-pointer list-none rounded-full border border-white/15 px-5 py-2 text-sm text-white/80 transition hover:border-white/35 hover:text-white [&::-webkit-details-marker]:hidden">
               {t.menu}
@@ -392,6 +414,7 @@ export default function Header() {
               englishPath={englishPath}
               portuguesePath={portuguesePath}
               dutchPath={dutchPath}
+              featuredInterpreter={featuredInterpreter}
             />
           </details>
 
@@ -424,6 +447,7 @@ export default function Header() {
             englishPath={englishPath}
             portuguesePath={portuguesePath}
             dutchPath={dutchPath}
+            featuredInterpreter={featuredInterpreter}
           />
         </details>
       </div>

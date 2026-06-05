@@ -9,9 +9,9 @@ const structuredData = {
     {
       "@type": "ProfessionalService",
       "@id": "https://homeinthe.city/pt/interprete-porto-alegre#service",
-      name: "Intérprete em Porto Alegre para reuniões de negócios",
+      name: "Serviços de intérprete da Home in the City em Porto Alegre",
       description:
-        "Serviço de interpretação inglês-português, acompanhamento empresarial e apoio local para visitantes estrangeiros em Porto Alegre.",
+        "Serviços de intérprete de negócios em Porto Alegre e no Rio Grande do Sul para reuniões, visitas a fábricas, conversas com fornecedores, explicações técnicas e coordenação empresarial local.",
       url: "https://homeinthe.city/pt/interprete-porto-alegre",
       image: "https://homeinthe.city/og-armijn2.jpg",
       areaServed: {
@@ -20,22 +20,23 @@ const structuredData = {
         addressCountry: "BR",
       },
       serviceType: [
+        "Intérprete de negócios em Porto Alegre",
         "Intérprete inglês-português",
         "Acompanhamento empresarial",
-        "Apoio local para visitantes estrangeiros",
-        "Interpretação em reuniões de negócios",
+        "Interpretação em visitas técnicas",
         "Apoio em visitas técnicas e fábricas",
+        "Apoio em feiras e eventos de negócios",
       ],
       availableLanguage: ["pt-BR", "en", "nl"],
       provider: {
-        "@id": "https://homeinthe.city/pt/interprete-porto-alegre#person",
+        "@id": "https://homeinthe.city/#organization",
       },
     },
     {
       "@type": "Person",
       "@id": "https://homeinthe.city/pt/interprete-porto-alegre#person",
       name: "Armijn van Dijk",
-      jobTitle: "Intérprete e apoio local de negócios em Porto Alegre",
+      jobTitle: "Fundador da Home in the City",
       url: "https://homeinthe.city/pt/hosts/armijn",
       knowsLanguage: ["Português", "Inglês", "Holandês"],
       worksFor: {

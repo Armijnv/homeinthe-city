@@ -40,41 +40,41 @@ export default async function Page() {
 
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "ProfessionalService",
-    name: "Home in the City - Nederlandse tolk in Porto Alegre",
-    description:
-      "Nederlandse tolk in Porto Alegre voor zakelijke meetings, fabrieksbezoeken en lokale begeleiding tijdens zakenreizen in Brazilië.",
-    url: "https://homeinthe.city/nl/tolk-porto-alegre",
-    areaServed: {
-      "@type": "City",
-      name: "Porto Alegre",
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: "Porto Alegre",
-        addressRegion: "RS",
-        addressCountry: "BR",
+    "@graph": [
+      {
+        "@type": "ProfessionalService",
+        "@id": "https://homeinthe.city/nl/tolk-porto-alegre#service",
+        name: "Home in the City tolkdiensten in Porto Alegre",
+        description:
+          "Zakelijke tolken in Porto Alegre en Rio Grande do Sul voor meetings, fabrieksbezoeken, leveranciersgesprekken, technische uitleg en lokale zakelijke coördinatie.",
+        url: "https://homeinthe.city/nl/tolk-porto-alegre",
+        areaServed: {
+          "@type": "City",
+          name: "Porto Alegre",
+          addressCountry: "BR",
+        },
+        serviceType: [
+          "Business tolk in Porto Alegre",
+          "Engels Portugees tolk",
+          "Nederlandse tolk in Brazilië",
+          "Tolken bij technische bezoeken",
+          "Lokale zakelijke ondersteuning",
+          "Tolkhulp bij beurzen en events",
+        ],
+        availableLanguage: ["nl", "en", "pt-BR"],
+        provider: {
+          "@id": "https://homeinthe.city/#organization",
+        },
       },
-    },
-    serviceType: [
-      "Nederlandse tolk",
-      "Zakelijke tolk",
-      "Portugees Nederlands tolk",
-      "Begeleiding bij fabrieksbezoeken",
-      "Lokale ondersteuning tijdens zakenreizen",
+      {
+        "@type": "Person",
+        "@id": "https://homeinthe.city/nl/tolk-porto-alegre#person",
+        name: "Armijn van Dijk",
+        knowsLanguage: ["Nederlands", "Engels", "Portugees"],
+        jobTitle: "Oprichter van Home in the City",
+        url: "https://homeinthe.city/nl/hosts/armijn",
+      },
     ],
-    availableLanguage: ["Nederlands", "Engels", "Portugees"],
-    provider: {
-      "@type": "Person",
-      name: "Armijn van Dijk",
-      knowsLanguage: ["Nederlands", "Engels", "Portugees"],
-      jobTitle: "Interpreter and local business host in Porto Alegre",
-    },
-    contactPoint: {
-      "@type": "ContactPoint",
-      contactType: "customer service",
-      telephone: "+55 51 99778-3369",
-      availableLanguage: ["Nederlands", "Engels", "Portugees"],
-    },
   };
 
   return (

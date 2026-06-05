@@ -6,9 +6,9 @@ import HomePage from "@/app/components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Home in the City | Apoio local, intérprete e moradia em Porto Alegre",
+  title: "Intérprete de Negócios em Porto Alegre | Home in the City",
   description:
-    "A Home in the City é uma conexão local de confiança para estrangeiros, visitantes, profissionais e recém-chegados em Porto Alegre, com interpretação, tradução, hospedagem local, apartamentos mobiliados, ajuda com imóveis e recomendações da cidade.",
+    "Intérprete de negócios em Porto Alegre para reuniões, visitas a empresas e apoio local. Interpretação em português, inglês e holandês, com tradução, moradia e ajuda local disponíveis quando necessário.",
 
   keywords: [
     "intérprete em Porto Alegre",
@@ -33,9 +33,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Home in the City | Apoio local em Porto Alegre",
+    title: "Intérprete de Negócios em Porto Alegre | Home in the City",
     description:
-      "Interpretação, tradução, apartamentos mobiliados, imóveis e recomendações locais em Porto Alegre.",
+      "Interpretação de negócios, apoio local, tradução e moradia em Porto Alegre.",
     url: "https://homeinthe.city/pt",
     siteName: "Home in the City",
     locale: "pt_BR",
