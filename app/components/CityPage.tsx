@@ -78,6 +78,145 @@ type WeatherData = {
   temperature_2m: number;
 };
 
+/* ======================================================
+   PORTO ALEGRE CITY GUIDE CONTENT
+====================================================== */
+
+const cityGuideContent = {
+  en: {
+    title: "Porto Alegre: Your Local Guide in Southern Brazil",
+    intro:
+      "Discover restaurants, business locations, cultural venues, walks, practical information and trusted local contacts for your stay in Porto Alegre.",
+    hostLine:
+      "Hosted by Armijn van Dijk, your local contact for business visits, interpretation, housing and practical support in the city.",
+    serviceCards: [
+      {
+        title: "Business interpreter in Porto Alegre",
+        text: "Language support for meetings, company visits and local business conversations.",
+        button: "Interpreter services",
+        href: "/interpreter-porto-alegre",
+      },
+      {
+        title: "Document translation",
+        text: "Written translation support for documents, business communication and local projects.",
+        button: "Translation services",
+        href: "/translation-services",
+      },
+      {
+        title: "Apartments and real estate",
+        text: "Furnished stays, rentals and buying guidance for short or longer stays in Porto Alegre.",
+        button: "Real estate",
+        href: "/real-estate/porto-alegre",
+      },
+      {
+        title: "Local business support",
+        text: "Practical help with local planning, restaurants, transport, contacts and meeting days.",
+        button: "Meet your host",
+        href: "/hosts/armijn",
+      },
+    ],
+  },
+  pt: {
+    title: "Porto Alegre: Seu Guia Local no Sul do Brasil",
+    intro:
+      "Descubra restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis para sua estadia em Porto Alegre.",
+    hostLine:
+      "Com curadoria de Armijn van Dijk, seu contato local para visitas de negócios, interpretação, hospedagem e apoio prático na cidade.",
+    serviceCards: [
+      {
+        title: "Intérprete de negócios em Porto Alegre",
+        text: "Apoio no idioma para reuniões, visitas a empresas e conversas de negócios locais.",
+        button: "Serviços de intérprete",
+        href: "/pt/interprete-porto-alegre",
+      },
+      {
+        title: "Tradução de documentos",
+        text: "Apoio em tradução escrita para documentos, comunicação empresarial e projetos locais.",
+        button: "Serviços de tradução",
+        href: "/pt/servicos-de-traducao",
+      },
+      {
+        title: "Apartamentos e imóveis",
+        text: "Estadias mobiliadas, aluguel e orientação de compra para visitas curtas ou mais longas.",
+        button: "Imóveis",
+        href: "/pt/imoveis/porto-alegre",
+      },
+      {
+        title: "Apoio empresarial local",
+        text: "Ajuda prática com planejamento local, restaurantes, transporte, contatos e dias de reunião.",
+        button: "Conheça seu anfitrião",
+        href: "/pt/hosts/armijn",
+      },
+    ],
+  },
+  nl: {
+    title: "Porto Alegre: Uw Lokale Gids in Zuid-Brazilië",
+    intro:
+      "Ontdek restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten voor uw verblijf in Porto Alegre.",
+    hostLine:
+      "Samengesteld door Armijn van Dijk, uw lokale contact voor zakelijke bezoeken, tolken, verblijf en praktische ondersteuning in de stad.",
+    serviceCards: [
+      {
+        title: "Business tolk in Porto Alegre",
+        text: "Taalondersteuning voor meetings, bedrijfsbezoeken en lokale zakelijke gesprekken.",
+        button: "Tolkdiensten",
+        href: "/nl/tolk-porto-alegre",
+      },
+      {
+        title: "Documentvertaling",
+        text: "Schriftelijke vertaalhulp voor documenten, zakelijke communicatie en lokale projecten.",
+        button: "Vertaaldiensten",
+        href: "/nl/vertaaldiensten",
+      },
+      {
+        title: "Appartementen en vastgoed",
+        text: "Gemeubileerde verblijven, huur en koophulp voor korte of langere verblijven in Porto Alegre.",
+        button: "Vastgoed",
+        href: "/nl/vastgoed/porto-alegre",
+      },
+      {
+        title: "Lokale zakelijke hulp",
+        text: "Praktische hulp met lokale planning, restaurants, vervoer, contacten en meetingdagen.",
+        button: "Ontmoet uw host",
+        href: "/nl/hosts/armijn",
+      },
+    ],
+  },
+};
+
+function normalizeHref(href?: string) {
+  return href?.replace(/\/$/, "") || "";
+}
+
+function getLocalizedHref(card: SidebarCard, lang: Lang) {
+  return normalizeHref(card[`href_${lang}`]);
+}
+
+function getLocalizedCardText(card: SidebarCard, lang: Lang) {
+  return [
+    card[`title_${lang}`],
+    card[`text_${lang}`],
+    card[`button_${lang}`],
+    card[`href_${lang}`],
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function isDuplicateServiceCard(card: SidebarCard, lang: Lang, serviceHrefs: Set<string>) {
+  if (serviceHrefs.has(getLocalizedHref(card, lang))) return true;
+
+  const text = getLocalizedCardText(card, lang);
+
+  return [
+    /interpreter|int[eé]rprete|tolk/,
+    /translation|translator|tradu[cç][aã]o|tradutor|vertaling|vertaler/,
+    /real estate|apartment|apartamento|im[oó]ve|vastgoed/,
+    /business support|apoio empresarial|lokale zakelijke hulp/,
+  ].some((pattern) => pattern.test(text));
+}
+
 function Weather() {
   const [data, setData] = useState<WeatherData | null>(null);
 
@@ -128,28 +267,14 @@ export default function CityPage({ lang }: { lang: Lang }) {
   };
 
   const t = labels[lang];
-  const translatorCard = {
-    en: {
-      title: "Document Translation",
-      text: "Need translations between English, Portuguese or Dutch? Luciana Graziuso provides professional translation services with 20+ years experience.",
-      button: "Translation Services",
-      href: "/providers/luciana",
-    },
-    pt: {
-      title: "Tradução de Documentos",
-      text: "Precisa de traduções entre português, inglês e holandês? Luciana Graziuso oferece serviços profissionais de tradução com mais de 20 anos de experiência.",
-      button: "Serviços de Tradução",
-      href: "/pt/profissionais/luciana",
-    },
-    nl: {
-      title: "Documentvertaling",
-      text: "Heeft u vertalingen nodig tussen Nederlands, Engels en Portugees? Luciana Graziuso biedt professionele vertaaldiensten met meer dan 20 jaar ervaring.",
-      button: "Vertaaldiensten",
-      href: "/nl/professionals/luciana",
-    },
-  }[lang];
   const places: MapPlace[] = city?.mapPlaces || [];
-  const sidebarCards: SidebarCard[] = city?.sidebarCards || [];
+  const guide = cityGuideContent[lang];
+  const serviceHrefs = new Set(
+    guide.serviceCards.map((card) => normalizeHref(card.href))
+  );
+  const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
+    (card) => !isDuplicateServiceCard(card, lang, serviceHrefs)
+  );
 
   return (
     <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
@@ -212,13 +337,15 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
           <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
             <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
-              {city?.[`headline_${lang}`] ||
-                "Interpreter in Porto Alegre for Business Meetings"}
+              {guide.title}
             </h1>
 
             <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
-              {city?.[`intro_${lang}`] ||
-                "Your local guide in Porto Alegre for business visits."}
+              {guide.intro}
+            </p>
+
+            <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">
+              {guide.hostLine}
             </p>
 
             <div className="mt-6 space-y-4">
@@ -256,9 +383,39 @@ export default function CityPage({ lang }: { lang: Lang }) {
             <Weather />
           </div>
 
+          {/* ======================================================
+             SECONDARY SERVICE ENTRY POINTS
+          ====================================================== */}
+
+          {guide.serviceCards.map((card) => (
+            <div
+              key={card.href}
+              className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
+            >
+              <h3 className="mb-3 text-lg font-medium text-black">
+                {card.title}
+              </h3>
+
+              <p className="mb-5 text-sm leading-relaxed text-stone-700">
+                {card.text}
+              </p>
+
+              <Link
+                href={card.href}
+                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+              >
+                {card.button}
+              </Link>
+            </div>
+          ))}
+
+          {/* ======================================================
+             SANITY CITY CARDS
+          ====================================================== */}
+
           {sidebarCards.map((card, index) => (
             <div
-              key={index}
+              key={`${getLocalizedHref(card, lang)}-${index}`}
               className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
             >
               <h3 className="mb-3 text-lg font-medium text-black">
@@ -277,23 +434,6 @@ export default function CityPage({ lang }: { lang: Lang }) {
               </a>
             </div>
           ))}
-
-          <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-            <h3 className="mb-3 text-lg font-medium text-black">
-              {translatorCard.title}
-            </h3>
-
-            <p className="mb-5 text-sm leading-relaxed text-stone-700">
-              {translatorCard.text}
-            </p>
-
-            <Link
-              href={translatorCard.href}
-              className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-            >
-              {translatorCard.button}
-            </Link>
-          </div>
         </div>
       </div>
     </div>

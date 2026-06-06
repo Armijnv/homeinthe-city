@@ -1,7 +1,7 @@
 export const metadata = {
-  title: "Interpreter in Porto Alegre for Business Meetings & Company Visits",
+  title: "Porto Alegre City Guide | Home in the City",
   description:
-    "Local interpreter in Porto Alegre helping foreign business visitors with meetings, company visits and on-site communication.",
+    "Hosted Porto Alegre city guide with restaurants, business locations, cultural venues, walks, housing and trusted local contacts.",
 };
 
 export default function PortoAlegreEnLayout({

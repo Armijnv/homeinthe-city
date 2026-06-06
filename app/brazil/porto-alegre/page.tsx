@@ -6,9 +6,9 @@ import CityPage from "@/app/components/CityPage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Porto Alegre Business Interpreter",
+  title: "Porto Alegre City Guide | Home in the City",
   description:
-    "Business interpreter in Porto Alegre for meetings, factory visits and business travel. English, Portuguese and Dutch local support for international visitors in southern Brazil.",
+    "A hosted Porto Alegre city guide with restaurants, business locations, cultural venues, walks, practical information, housing and trusted local contacts.",
 
   alternates: {
     canonical: "https://homeinthe.city/brazil/porto-alegre",
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Porto Alegre Business Interpreter | Home in the City",
+    title: "Porto Alegre City Guide | Home in the City",
     description:
-      "On-site business interpreter in Porto Alegre. English, Portuguese and Dutch support for meetings, factory visits and local business coordination.",
+      "Restaurants, business locations, cultural venues, walks, practical information and trusted local contacts for your stay in Porto Alegre.",
     url: "https://homeinthe.city/brazil/porto-alegre",
     siteName: "Home in the City",
     locale: "en_US",

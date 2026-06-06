@@ -6,9 +6,9 @@ import CityPage from "@/app/components/CityPage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Intérprete em Porto Alegre",
+  title: "Guia Local de Porto Alegre | Home in the City",
   description:
-    "Intérprete de negócios em Porto Alegre para reuniões, visitas a empresas e viagens corporativas. Apoio local em português, inglês e holandês para visitantes internacionais.",
+    "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas, moradia e contatos confiáveis.",
 
   alternates: {
     canonical: "https://homeinthe.city/pt/brasil/porto-alegre",
@@ -20,9 +20,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Intérprete em Porto Alegre | Home in the City",
+    title: "Guia Local de Porto Alegre | Home in the City",
     description:
-      "Apoio local para visitantes de negócios em Porto Alegre. Português, inglês e holandês.",
+      "Restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis em Porto Alegre.",
     url: "https://homeinthe.city/pt/brasil/porto-alegre",
     siteName: "Home in the City",
     locale: "pt_BR",

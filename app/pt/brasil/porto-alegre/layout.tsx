@@ -1,7 +1,7 @@
 export const metadata = {
-  title: "Intérprete em Porto Alegre para reuniões e visitantes estrangeiros",
+  title: "Guia Local de Porto Alegre | Home in the City",
   description:
-    "Intérprete em Porto Alegre para empresas que recebem clientes estrangeiros. Apoio em reuniões, visitas a empresas e comunicação.",
+    "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, moradia e contatos confiáveis.",
 };
 
 export default function PortoAlegrePtLayout({

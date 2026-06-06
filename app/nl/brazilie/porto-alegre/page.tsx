@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
 
+/* ======================================================
+   PORTO ALEGRE PAGE METADATA / SEO
+====================================================== */
+
 export const metadata: Metadata = {
-  title: "Tolk Porto Alegre | Home in the City",
+  title: "Porto Alegre Lokale Gids | Home in the City",
   description:
-    "Zakelijke tolk in Porto Alegre voor meetings, bedrijfsbezoeken en zakenreizen. Ondersteuning in Nederlands, Engels en Portugees voor internationale bezoekers in Zuid-Brazilië.",
+    "Een lokale gids voor Porto Alegre met restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie, verblijf en vertrouwde contacten.",
 
   alternates: {
     canonical: "https://homeinthe.city/nl/brazilie/porto-alegre",
@@ -16,15 +20,19 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Tolk Porto Alegre | Home in the City",
+    title: "Porto Alegre Lokale Gids | Home in the City",
     description:
-      "Nederlandse zakelijke ondersteuning in Porto Alegre. Nederlands, Engels en Portugees.",
+      "Restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten in Porto Alegre.",
     url: "https://homeinthe.city/nl/brazilie/porto-alegre",
     siteName: "Home in the City",
     locale: "nl_NL",
     type: "website",
   },
 };
+
+/* ======================================================
+   PORTO ALEGRE PAGE
+====================================================== */
 
 export default function Page() {
   return (
