@@ -6,9 +6,9 @@ import HomePage from "@/app/components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Business Tolk in Porto Alegre | Home in the City",
+  title: "Home in the City | Wereldwijde Connecties, Lokale Expertise",
   description:
-    "Business tolk in Porto Alegre voor meetings, bedrijfsbezoeken en lokale ondersteuning. Engels, Portugees en Nederlands tolken, met vertaling, wonen en lokale hulp wanneer nodig.",
+    "Home in the City verbindt zakelijke reizigers, nieuwkomers en internationale bezoekers met vertrouwde lokale hosts, tolken, vertalers en stadsexperts.",
 
   alternates: {
     canonical: "https://homeinthe.city/nl",
@@ -17,6 +17,16 @@ export const metadata: Metadata = {
       pt: "https://homeinthe.city/pt",
       nl: "https://homeinthe.city/nl",
     },
+  },
+
+  openGraph: {
+    title: "Home in the City | Wereldwijde Connecties, Lokale Expertise",
+    description:
+      "Vertrouwde lokale hosts, tolken, vertalers en stadsexperts voor zakenreizen, verhuizen, meetings en het dagelijks leven op onbekende plekken.",
+    url: "https://homeinthe.city/nl",
+    siteName: "Home in the City",
+    locale: "nl_NL",
+    type: "website",
   },
 };
 

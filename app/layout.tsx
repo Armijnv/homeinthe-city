@@ -56,17 +56,17 @@ export const metadata: Metadata = {
   },
 
   title: {
-    default: "Home in the City | Business Interpreter in Porto Alegre",
+    default: "Home in the City | Global Connections, Local Expertise",
     template: `%s | ${siteName}`,
   },
 
   description:
-    "On-site interpreter in Porto Alegre for business visitors. Meetings, factory visits, local support. English, Dutch, Portuguese.",
+    "Home in the City connects business travelers, newcomers and international visitors with trusted local hosts, interpreters, translators and city experts.",
 
   openGraph: {
-    title: `${siteName} | Business Interpreter in Porto Alegre`,
+    title: `${siteName} | Global Connections, Local Expertise`,
     description:
-      "Home in the City provides on-site business interpretation and local support in Porto Alegre for meetings, factory visits and business travel.",
+      "Trusted local hosts, interpreters, translators and city experts for business travel, relocation, meetings and everyday life in unfamiliar places.",
     url: siteUrl,
     siteName,
     locale: "en_US",
@@ -75,9 +75,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} | Business Interpreter in Porto Alegre`,
+    title: `${siteName} | Global Connections, Local Expertise`,
     description:
-      "On-site business interpreter in Porto Alegre. English, Portuguese and Dutch support for meetings, factory visits and business travel.",
+      "Trusted local hosts, interpreters, translators and city experts for business travel, relocation, meetings and everyday life in unfamiliar places.",
   },
 };
 

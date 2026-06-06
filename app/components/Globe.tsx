@@ -18,6 +18,10 @@ type GlobeCity = {
 };
 
 const cities: GlobeCity[] = [
+  /* ======================================================
+     ACTIVE CITY
+  ====================================================== */
+
   {
     lat: -30.0346,
     lng: -51.2177,
@@ -26,13 +30,26 @@ const cities: GlobeCity[] = [
     href: "/brazil/porto-alegre",
     ariaLabel: "Open Porto Alegre city guide",
   },
+
+  /* ======================================================
+     COMING SOON CITIES
+  ====================================================== */
+
   {
-    lat: -27.5949,
-    lng: -48.5482,
-    name: "Florianópolis",
+    lat: -10.9472,
+    lng: -37.0731,
+    name: "Aracaju",
     status: "next",
-    href: "/real-estate/florianopolis",
-    ariaLabel: "Open Florianópolis real estate preview",
+    href: "/",
+    ariaLabel: "Aracaju coming soon",
+  },
+  {
+    lat: -7.1195,
+    lng: -34.845,
+    name: "João Pessoa",
+    status: "next",
+    href: "/",
+    ariaLabel: "João Pessoa coming soon",
   },
 ];
 
@@ -85,11 +102,10 @@ export default function GlobeComponent() {
     return (
       <div className="flex h-[420px] w-[420px] flex-col items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
         <Link href="/brazil/porto-alegre" className="hover:text-white">
-          Porto Alegre is live
+          Porto Alegre is available now
         </Link>
-        <Link href="/real-estate/florianopolis" className="text-xs hover:text-white">
-          Florianópolis coming soon
-        </Link>
+        <span className="text-xs">Aracaju coming soon</span>
+        <span className="text-xs">João Pessoa coming soon</span>
       </div>
     );
   }
@@ -116,7 +132,7 @@ export default function GlobeComponent() {
 
     const status = document.createElement("span");
     status.className = "text-[9px] uppercase tracking-widest text-stone-300";
-    status.textContent = city.status === "live" ? "Live" : "Coming soon";
+    status.textContent = city.status === "live" ? "Available now" : "Coming soon";
 
     label.append(name, status);
     marker.append(dot, label);

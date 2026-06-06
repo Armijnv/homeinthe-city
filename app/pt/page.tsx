@@ -6,21 +6,17 @@ import HomePage from "@/app/components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Intérprete de Negócios em Porto Alegre | Home in the City",
+  title: "Home in the City | Conexões Globais, Experiência Local",
   description:
-    "Intérprete de negócios em Porto Alegre para reuniões, visitas a empresas e apoio local. Interpretação em português, inglês e holandês, com tradução, moradia e ajuda local disponíveis quando necessário.",
+    "A Home in the City conecta viajantes de negócios, recém-chegados e visitantes internacionais a anfitriões locais, intérpretes, tradutores e especialistas da cidade.",
 
   keywords: [
-    "intérprete em Porto Alegre",
-    "intérprete Porto Alegre",
-    "apoio local Porto Alegre",
-    "apartamentos mobiliados Porto Alegre",
-    "imóveis Porto Alegre",
-    "tradução inglês português holandês",
-    "visitantes de negócios Porto Alegre",
-    "intérprete inglês português",
-    "intérprete holandês Brasil",
-    "viagem de negócios Porto Alegre",
+    "apoio local global",
+    "anfitriões locais",
+    "apoio para viagem de negócios",
+    "intérpretes e especialistas locais",
+    "conexões locais confiáveis",
+    "Home in the City",
   ],
 
   alternates: {
@@ -33,9 +29,9 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "Intérprete de Negócios em Porto Alegre | Home in the City",
+    title: "Home in the City | Conexões Globais, Experiência Local",
     description:
-      "Interpretação de negócios, apoio local, tradução e moradia em Porto Alegre.",
+      "Anfitriões locais, intérpretes, tradutores e especialistas da cidade para quem chega a lugares desconhecidos.",
     url: "https://homeinthe.city/pt",
     siteName: "Home in the City",
     locale: "pt_BR",
