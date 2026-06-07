@@ -247,7 +247,7 @@ const providerRoleLabels: Record<string, string> = {
 };
 
 export const metadata: Metadata = {
-  title: "Edit provider profile | Home in the City",
+  title: "Edit provider profile",
 };
 
 function fieldValue(

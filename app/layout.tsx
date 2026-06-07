@@ -1,6 +1,7 @@
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import { JsonLdScript, organizationId, websiteId } from "@/app/lib/structuredData";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { headers } from "next/headers";
@@ -15,21 +16,28 @@ const siteJsonLd = {
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": `${siteUrl}/#website`,
+      "@id": websiteId,
       name: siteName,
       alternateName: "homeinthe.city",
       url: siteUrl,
       inLanguage: ["en", "pt-BR", "nl-NL"],
       publisher: {
-        "@id": `${siteUrl}/#organization`,
+        "@id": organizationId,
       },
     },
     {
       "@type": "Organization",
-      "@id": `${siteUrl}/#organization`,
+      "@id": organizationId,
       name: siteName,
       url: siteUrl,
       logo: `${siteUrl}/icon.png`,
+      brand: {
+        "@type": "Brand",
+        name: siteName,
+        url: siteUrl,
+      },
+      description:
+        "Home in the City connects business travelers, newcomers and international visitors with trusted local hosts, interpreters, translators and city experts.",
     },
   ],
 };
@@ -102,12 +110,7 @@ export default async function RootLayout({
   return (
     <html lang={getDocumentLang(pathname)}>
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(siteJsonLd).replace(/</g, "\\u003c"),
-          }}
-        />
+        <JsonLdScript data={siteJsonLd} />
 
         <meta
           name="google-site-verification"

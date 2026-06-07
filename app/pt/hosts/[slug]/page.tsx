@@ -1,7 +1,20 @@
 import type { Metadata } from "next";
 import HostPage from "@/app/components/HostPage";
+import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
+import { JsonLdScript, personJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { hostQuery } from "@/sanity/lib/queries";
+
+type HostProfile = {
+  name?: string;
+  headline_pt?: string;
+  intro_pt?: string;
+  photo?: {
+    asset?: {
+      url?: string;
+    };
+  };
+};
 
 /* ======================================================
    DYNAMIC SEO METADATA
@@ -16,7 +29,7 @@ export async function generateMetadata({
   const host = await client.fetch(hostQuery, { slug });
 
   return {
-    title: `${host?.headline_pt || host?.name} | Intérprete em Porto Alegre`,
+    title: `${cleanMetadataTitle(host?.headline_pt || host?.name) || "Host"} | Intérprete em Porto Alegre`,
     description:
       host?.intro_pt ||
       "Intérprete em Porto Alegre para visitantes de negócios. Suporte em inglês, holandês e português para reuniões e visitas empresariais.",
@@ -58,6 +71,26 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const host = await client.fetch<HostProfile | null>(hostQuery, { slug });
+  const structuredData =
+    host &&
+    personJsonLd({
+      url: `https://homeinthe.city/pt/hosts/${slug}`,
+      name: host.name || host.headline_pt,
+      role: "Anfitrião local e intérprete",
+      roles: ["Anfitrião local", "Intérprete", "Guia"],
+      languages:
+        slug === "armijn" ? ["Português", "Inglês", "Holandês"] : undefined,
+      cities: ["Porto Alegre"],
+      image: host.photo?.asset?.url,
+      description: host.intro_pt,
+      inLanguage: "pt-BR",
+    });
 
-  return <HostPage lang="pt" slug={slug} />;
+  return (
+    <>
+      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <HostPage lang="pt" slug={slug} />
+    </>
+  );
 }

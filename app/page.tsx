@@ -6,7 +6,9 @@ import HomePage from "./components/HomePage";
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Home in the City | Global Connections, Local Expertise",
+  title: {
+    absolute: "Home in the City | Global Connections, Local Expertise",
+  },
   description:
     "Home in the City connects business travelers, newcomers and international visitors with trusted local hosts, interpreters, translators and city experts in unfamiliar places.",
 

@@ -1,17 +1,28 @@
 import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
+import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
+
+const pageUrl = "https://homeinthe.city/pt/brasil/porto-alegre";
+const pageDescription =
+  "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas, moradia e contatos confiáveis.";
+
+const structuredData = cityGuideJsonLd({
+  url: pageUrl,
+  name: "Guia Local de Porto Alegre",
+  description: pageDescription,
+  inLanguage: "pt-BR",
+});
 
 /* ======================================================
    PORTO ALEGRE PAGE METADATA / SEO
 ====================================================== */
 
 export const metadata: Metadata = {
-  title: "Guia Local de Porto Alegre | Home in the City",
-  description:
-    "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas, moradia e contatos confiáveis.",
+  title: "Guia Local de Porto Alegre",
+  description: pageDescription,
 
   alternates: {
-    canonical: "https://homeinthe.city/pt/brasil/porto-alegre",
+    canonical: pageUrl,
     languages: {
       en: "https://homeinthe.city/brazil/porto-alegre",
       pt: "https://homeinthe.city/pt/brasil/porto-alegre",
@@ -23,7 +34,7 @@ export const metadata: Metadata = {
     title: "Guia Local de Porto Alegre | Home in the City",
     description:
       "Restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis em Porto Alegre.",
-    url: "https://homeinthe.city/pt/brasil/porto-alegre",
+    url: pageUrl,
     siteName: "Home in the City",
     locale: "pt_BR",
     type: "website",
@@ -37,6 +48,7 @@ export const metadata: Metadata = {
 export default function Page() {
   return (
     <div className="relative isolate">
+      <JsonLdScript data={structuredData} />
       <div className="pointer-events-none fixed inset-0 z-0 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
       <div className="pointer-events-none fixed inset-0 z-0 hidden bg-white/25 md:block" />
 

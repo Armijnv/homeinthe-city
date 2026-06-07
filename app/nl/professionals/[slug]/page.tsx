@@ -2,8 +2,32 @@ import type { Metadata } from "next";
 import ProviderPage, {
   type ProviderProfile,
 } from "@/app/components/ProviderPage";
+import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
+import { JsonLdScript, personJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { providerQuery } from "@/sanity/lib/queries";
+
+const languageNames: Record<string, string> = {
+  en: "Engels",
+  pt: "Portugees",
+  nl: "Nederlands",
+  es: "Spaans",
+  de: "Duits",
+  fr: "Frans",
+};
+
+const roleNames: Record<string, string> = {
+  host: "Host",
+  interpreter: "Tolk",
+  translator: "Vertaler",
+  guide: "Gids",
+  specialist: "Specialist",
+  realtor: "Makelaar",
+};
+
+function label(value?: string) {
+  return value ? roleNames[value] || value : "";
+}
 
 export async function generateMetadata({
   params,
@@ -16,7 +40,9 @@ export async function generateMetadata({
   });
 
   return {
-    title: `${provider?.headline_nl || provider?.name || "Professional"} | Home in the City`,
+    title:
+      cleanMetadataTitle(provider?.headline_nl || provider?.name) ||
+      "Professional",
     description:
       provider?.intro_nl ||
       "Publiek profiel voor tolken, vertalers, hosts en lokale specialisten.",
@@ -56,5 +82,33 @@ export default async function Page({
     slug,
   });
 
-  return <ProviderPage lang="nl" slug={slug} provider={provider} />;
+  const profileUrl = `https://homeinthe.city/nl/professionals/${slug}`;
+  const structuredData =
+    provider &&
+    personJsonLd({
+      url: profileUrl,
+      name: provider.name,
+      role: label(provider.primaryRole),
+      roles: provider.roles?.map(label),
+      languages: provider.languages
+        ?.map((language) =>
+          language.language
+            ? languageNames[language.language] || language.language
+            : "",
+        )
+        .filter(Boolean),
+      cities: provider.cities
+        ?.map((city) => city.name_nl || city.name_en || city.name_pt || "")
+        .filter(Boolean),
+      image: provider.mainPhoto?.asset?.url,
+      description: provider.intro_nl || provider.intro_en,
+      inLanguage: "nl-NL",
+    });
+
+  return (
+    <>
+      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <ProviderPage lang="nl" slug={slug} provider={provider} />
+    </>
+  );
 }

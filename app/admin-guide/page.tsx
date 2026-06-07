@@ -75,7 +75,7 @@ const untestedItems = [
 ];
 
 export const metadata: Metadata = {
-  title: "Admin guide | Home in the City",
+  title: "Admin guide",
 };
 
 export default function AdminGuidePage() {

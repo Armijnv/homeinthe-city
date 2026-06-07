@@ -8,7 +8,7 @@ import {
 } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = {
-  title: "Vastgoed | Home in the City",
+  title: "Vastgoed",
   description:
     "Ondersteuning bij kopen, verkopen en huren in Brazilië met vastgoedaanbod van Home in the City.",
   alternates: {

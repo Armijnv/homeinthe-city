@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SignInContent from "./SignInContent";
 
 export const metadata: Metadata = {
-  title: "Sign in | Home in the City",
+  title: "Sign in",
 };
 
 export default function Page() {

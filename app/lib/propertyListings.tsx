@@ -6,6 +6,7 @@ import {
   type Lang,
   type PropertyListing,
 } from "@/app/components/PropertyListingPage";
+import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
 
 export const siteUrl = "https://homeinthe.city";
 
@@ -35,8 +36,10 @@ export function propertyListingMetadata({
   listingSlug: string;
 }): Metadata {
   const title =
-    (listing && localizedListingText(listing, "seoTitle", lang)) ||
-    (listing && localizedListingText(listing, "title", lang)) ||
+    cleanMetadataTitle(
+      (listing && localizedListingText(listing, "seoTitle", lang)) ||
+        (listing && localizedListingText(listing, "title", lang)),
+    ) ||
     "Property listing";
   const description =
     (listing && localizedListingText(listing, "seoDescription", lang)) ||
@@ -46,7 +49,7 @@ export function propertyListingMetadata({
   const alternates = listingAlternates(citySlug, listingSlug);
 
   return {
-    title: `${title} | Home in the City`,
+    title,
     description,
     alternates: {
       canonical: url,

@@ -19,7 +19,7 @@ const matchedProviderQuery = `
 `;
 
 export const metadata: Metadata = {
-  title: "Account | Home in the City",
+  title: "Account",
 };
 
 export default async function Page() {

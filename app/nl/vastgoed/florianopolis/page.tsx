@@ -8,7 +8,7 @@ import { client } from "@/sanity/lib/client";
 import { propertyListingsByCityQuery } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = {
-  title: "Vastgoed in Florianópolis | Home in the City",
+  title: "Vastgoed in Florianópolis",
   description: "Koop- en huuraanbod in Florianópolis van Home in the City.",
   alternates: {
     canonical: "https://homeinthe.city/nl/vastgoed/florianopolis",

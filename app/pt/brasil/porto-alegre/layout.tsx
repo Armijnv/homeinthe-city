@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Guia Local de Porto Alegre | Home in the City",
+  title: "Guia Local de Porto Alegre",
   description:
     "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, moradia e contatos confiáveis.",
 };

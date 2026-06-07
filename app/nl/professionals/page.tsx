@@ -6,7 +6,7 @@ import { client } from "@/sanity/lib/client";
 import { providerListQuery } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = {
-  title: "Professionals | Home in the City",
+  title: "Professionals",
   description:
     "Gepubliceerde profielen voor tolken, vertalers, hosts en lokale specialisten in Porto Alegre.",
   alternates: {

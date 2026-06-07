@@ -10,7 +10,7 @@ import {
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 
 export const metadata: Metadata = {
-  title: "Real Estate | Home in the City",
+  title: "Real Estate",
   description:
     "Buying, selling and renting support in Brazil with Home in the City real estate listings.",
   alternates: {

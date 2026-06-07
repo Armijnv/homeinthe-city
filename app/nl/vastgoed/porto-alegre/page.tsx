@@ -8,7 +8,7 @@ import { client } from "@/sanity/lib/client";
 import { propertyListingsByCityQuery } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = {
-  title: "Vastgoed in Porto Alegre | Home in the City",
+  title: "Vastgoed in Porto Alegre",
   description: "Huur- en koopaanbod in Porto Alegre van Home in the City.",
   alternates: {
     canonical: "https://homeinthe.city/nl/vastgoed/porto-alegre",

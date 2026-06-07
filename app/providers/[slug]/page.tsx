@@ -2,8 +2,28 @@ import type { Metadata } from "next";
 import ProviderPage, {
   type ProviderProfile,
 } from "@/app/components/ProviderPage";
+import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
+import { JsonLdScript, personJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { providerQuery } from "@/sanity/lib/queries";
+
+const languageNames: Record<string, string> = {
+  en: "English",
+  pt: "Portuguese",
+  nl: "Dutch",
+  es: "Spanish",
+  de: "German",
+  fr: "French",
+};
+
+function label(value?: string) {
+  if (!value) return "";
+  return value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 export async function generateMetadata({
   params,
@@ -16,7 +36,7 @@ export async function generateMetadata({
   });
 
   return {
-    title: `${provider?.headline_en || provider?.name || "Provider"} | Home in the City`,
+    title: cleanMetadataTitle(provider?.headline_en || provider?.name) || "Provider",
     description:
       provider?.intro_en ||
       "Public provider profile for interpreters, translators, hosts and local specialists.",
@@ -56,5 +76,33 @@ export default async function Page({
     slug,
   });
 
-  return <ProviderPage lang="en" slug={slug} provider={provider} />;
+  const profileUrl = `https://homeinthe.city/providers/${slug}`;
+  const structuredData =
+    provider &&
+    personJsonLd({
+      url: profileUrl,
+      name: provider.name,
+      role: label(provider.primaryRole),
+      roles: provider.roles?.map(label),
+      languages: provider.languages
+        ?.map((language) =>
+          language.language
+            ? languageNames[language.language] || label(language.language)
+            : "",
+        )
+        .filter(Boolean),
+      cities: provider.cities
+        ?.map((city) => city.name_en || city.name_pt || city.name_nl || "")
+        .filter(Boolean),
+      image: provider.mainPhoto?.asset?.url,
+      description: provider.intro_en,
+      inLanguage: "en",
+    });
+
+  return (
+    <>
+      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <ProviderPage lang="en" slug={slug} provider={provider} />
+    </>
+  );
 }
