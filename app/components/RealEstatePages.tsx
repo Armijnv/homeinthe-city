@@ -302,7 +302,7 @@ function premiumInquiryHref(lang: Lang) {
     nl: "Vraag over vastgoed in Brazilië",
   };
 
-  return `mailto:contact@homeinthe.city?subject=${encodeURIComponent(subjects[lang])}`;
+  return `mailto:properties@homeinthe.city?subject=${encodeURIComponent(subjects[lang])}`;
 }
 
 function premiumOwnerHref(lang: Lang) {
@@ -312,7 +312,7 @@ function premiumOwnerHref(lang: Lang) {
     nl: "Mijn woning in Brazilië aanbieden",
   };
 
-  return `mailto:contact@homeinthe.city?subject=${encodeURIComponent(subjects[lang])}`;
+  return `mailto:properties@homeinthe.city?subject=${encodeURIComponent(subjects[lang])}`;
 }
 
 const premiumPaths = {
