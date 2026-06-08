@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
 import HostPage from "@/app/components/HostPage";
+import type { Host } from "@/app/components/HostPage";
 import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
 import { JsonLdScript, personJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { hostQuery } from "@/sanity/lib/queries";
-
-type HostProfile = {
-  name?: string;
-  headline_nl?: string;
-  intro_nl?: string;
-  photo?: {
-    asset?: {
-      url?: string;
-    };
-  };
-};
 
 /* ======================================================
    DYNAMIC SEO METADATA
@@ -71,7 +61,7 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const host = await client.fetch<HostProfile | null>(hostQuery, { slug });
+  const host = await client.fetch<Host | null>(hostQuery, { slug });
   const structuredData =
     host &&
     personJsonLd({
@@ -90,7 +80,7 @@ export default async function Page({
   return (
     <>
       {structuredData ? <JsonLdScript data={structuredData} /> : null}
-      <HostPage lang="nl" slug={slug} />
+      <HostPage lang="nl" slug={slug} host={host} />
     </>
   );
 }

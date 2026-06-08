@@ -1,9 +1,4 @@
-"use client";
-
-import { client } from "@/sanity/lib/client";
-import { hostQuery } from "@/sanity/lib/queries";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -16,7 +11,7 @@ type HostService = {
   description_nl?: string;
 };
 
-type Host = {
+export type Host = {
   name?: string;
   eyebrow_en?: string;
   eyebrow_pt?: string;
@@ -46,17 +41,52 @@ type Host = {
   };
 };
 
-export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
-  const [host, setHost] = useState<Host | null>(null);
-
-  useEffect(() => {
-    client.fetch<Host | null>(hostQuery, { slug }).then(setHost);
-  }, [slug]);
-
+export default function HostPage({
+  lang,
+  slug,
+  host,
+}: {
+  lang: Lang;
+  slug: string;
+  host: Host | null;
+}) {
   const labels = {
-    en: { whatsapp: "WhatsApp", email: "Email me" },
-    pt: { whatsapp: "WhatsApp", email: "Enviar email" },
-    nl: { whatsapp: "WhatsApp", email: "Stuur email" },
+    en: {
+      eyebrow: "Local host · Interpreter · Porto Alegre",
+      headline: "Armijn van Dijk",
+      intro:
+        "I help international business visitors feel confident in Porto Alegre — with language support, local guidance and practical help on the ground.",
+      servicesTitle: "What I can help with",
+      aboutTitle: "A little about me",
+      about:
+        "I grew up in Holland, lived in California and the Caribbean, and have lived in Brazil for more than 25 years. My background is in hospitality, business, hands-on work and building things — which makes me practical, calm and useful when people need help in a new city.",
+      whatsapp: "WhatsApp",
+      email: "Email me",
+    },
+    pt: {
+      eyebrow: "Anfitrião local · Intérprete · Porto Alegre",
+      headline: "Armijn van Dijk",
+      intro:
+        "Ajudo visitantes internacionais a se sentirem mais seguros em Porto Alegre — com apoio no idioma, orientação local e ajuda prática no dia a dia.",
+      servicesTitle: "Como posso ajudar",
+      aboutTitle: "Um pouco sobre mim",
+      about:
+        "Cresci na Holanda, vivi na Califórnia e no Caribe, e moro no Brasil há mais de 25 anos. Minha experiência em hospitalidade, negócios e trabalhos práticos me ajuda a lidar com situações de forma calma, direta e útil para quem está em uma cidade nova.",
+      whatsapp: "WhatsApp",
+      email: "Enviar email",
+    },
+    nl: {
+      eyebrow: "Lokale host · Tolk · Porto Alegre",
+      headline: "Armijn van Dijk",
+      intro:
+        "Ik help internationale zakenbezoekers zich zekerder te voelen in Porto Alegre — met taalondersteuning, lokale begeleiding en praktische hulp ter plaatse.",
+      servicesTitle: "Waarmee ik kan helpen",
+      aboutTitle: "Een beetje over mij",
+      about:
+        "Ik ben in Nederland opgegroeid, woonde in Californië en het Caribisch gebied, en leef al meer dan 25 jaar in Brazilië. Mijn achtergrond in hospitality, ondernemen en praktisch werk helpt me om rustig, direct en nuttig te zijn voor mensen die zich in een nieuwe stad bevinden.",
+      whatsapp: "WhatsApp",
+      email: "Stuur email",
+    },
   };
 
   const t = labels[lang];
@@ -88,39 +118,37 @@ export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
           </div>
 
           <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
-            {host?.[`eyebrow_${lang}`] ||
-              "Local host · Interpreter · Porto Alegre"}
+            {host?.[`eyebrow_${lang}`] || t.eyebrow}
           </p>
 
           <h1 className="mb-6 text-4xl font-light leading-tight md:text-6xl">
-            {host?.[`headline_${lang}`] || host?.name || "Armijn van Dijk"}
+            {host?.[`headline_${lang}`] || host?.name || t.headline}
           </h1>
 
           <p className="mb-8 max-w-2xl text-xl leading-relaxed text-stone-300">
-            {host?.[`intro_${lang}`] ||
-              "I help international business visitors feel confident in Porto Alegre — with language support, local guidance and practical help on the ground."}
+            {host?.[`intro_${lang}`] || t.intro}
           </p>
 
           {/* Services */}
           <div className="mb-10 rounded-3xl bg-white p-8 text-stone-800">
             <h2 className="mb-4 text-2xl font-light">
-              {host?.[`servicesTitle_${lang}`] || "What I can help with"}
+              {host?.[`servicesTitle_${lang}`] || t.servicesTitle}
             </h2>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {host?.services?.map((service, index) => (
                 <div
-  key={index}
-  className="rounded-2xl bg-stone-50 p-4"
->
-  <h3 className="mb-2 font-medium text-stone-800">
-    {service[`title_${lang}`]}
-  </h3>
+                  key={index}
+                  className="rounded-2xl bg-stone-50 p-4"
+                >
+                  <h3 className="mb-2 font-medium text-stone-800">
+                    {service[`title_${lang}`]}
+                  </h3>
 
-  <p className="text-sm leading-relaxed text-stone-600">
-    {service[`description_${lang}`]}
-  </p>
-</div>
+                  <p className="text-sm leading-relaxed text-stone-600">
+                    {service[`description_${lang}`]}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
@@ -128,12 +156,11 @@ export default function HostPage({ lang, slug }: { lang: Lang; slug: string }) {
           {/* About */}
           <div className="mb-10 rounded-3xl bg-white/10 p-8">
             <h2 className="mb-3 text-2xl font-light">
-              {host?.[`aboutTitle_${lang}`] || "A little about me"}
+              {host?.[`aboutTitle_${lang}`] || t.aboutTitle}
             </h2>
 
             <p className="max-w-2xl leading-relaxed text-stone-300">
-              {host?.[`about_${lang}`] ||
-                "I grew up in Holland, lived in California and the Caribbean, and have lived in Brazil for more than 25 years. My background is in hospitality, business, hands-on work and building things — which makes me practical, calm and useful when people need help in a new city."}
+              {host?.[`about_${lang}`] || t.about}
             </p>
           </div>
 
