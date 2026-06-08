@@ -347,38 +347,11 @@ const premiumOwnerHref =
 
 const portalHighlights = [
   "Monthly stays",
-  "Property sales",
+  "Curated homes",
+  "Foreign buyers",
+  "Property owners",
   "Relocation assistance",
   "Interpreter services",
-  "Local hosts",
-  "On-the-ground support",
-];
-
-const trustReasons = [
-  {
-    title: "Personally verified properties",
-    text: "The goal is not volume. Home in the City focuses on trusted places we can explain, visit or evaluate with local context.",
-  },
-  {
-    title: "Local knowledge in Brazil",
-    text: "Neighborhoods, building culture, utilities, contracts and daily logistics matter as much as the property itself.",
-  },
-  {
-    title: "English, Portuguese and Dutch support",
-    text: "Clear multilingual communication helps foreign buyers, tenants and owners avoid confusion during important decisions.",
-  },
-  {
-    title: "Real people behind every listing",
-    text: "You are not passed into a faceless portal. A local contact helps with questions, visits, interpretation and next steps.",
-  },
-  {
-    title: "Relocation and interpreter services",
-    text: "Property search can connect with meetings, document appointments, neighborhood orientation and arrival support.",
-  },
-  {
-    title: "Transparent communication",
-    text: "Expect practical answers about what is known, what needs checking and what should be handled locally before commitment.",
-  },
 ];
 
 const monthlyStayPoints = [
@@ -455,30 +428,76 @@ const expansionLocations = [
   "Foreign-owned properties across Brazil",
 ];
 
-const fallbackShowcase = [
+const monthlyStayShowcase = [
   {
-    title: "Monthly city stays in Porto Alegre",
-    location: "Porto Alegre, Southern Brazil",
-    type: "Furnished apartments",
+    title: "Furnished city apartment in Porto Alegre",
+    location: "Porto Alegre",
+    type: "Featured Monthly Stay",
     image: "/porto-alegre-desktop-background.jpg",
-    text: "Move-in ready apartments for remote workers, visiting executives, researchers and long-stay travelers who need local confidence from day one.",
+    text: "A calm, move-in ready city base for remote workers, executives and researchers who want reliable daily life with local support nearby.",
     href: "/real-estate/porto-alegre",
   },
   {
-    title: "Beach houses for slower living",
-    location: "Garopaba and Florianópolis",
-    type: "Beach houses Brazil",
+    title: "Coastal work-from-Brazil stay",
+    location: "Florianópolis",
+    type: "Digital Nomad Rental",
     image: "/porto-alegre-river.jpg",
-    text: "Curated coastal homes for buyers, seasonal residents and digital nomads looking for space, nature and reliable support in Brazil.",
+    text: "A furnished coastal stay concept for digital nomads who want beach access, practical comfort and a trusted local bridge in Brazil.",
+    href: premiumInquiryHref,
+  },
+];
+
+const uniqueHomeShowcase = [
+  {
+    title: "Beach house in Garopaba",
+    location: "Garopaba",
+    type: "Unique Home for Sale",
+    image: "/og-armijn3.jpg",
+    text: "An aspirational beach-house opportunity for buyers seeking a slower rhythm, natural surroundings and a guided purchase experience.",
     href: premiumInquiryHref,
   },
   {
-    title: "Unique homes for international buyers",
-    location: "Brazil-wide opportunities",
-    type: "Property for sale in Brazil",
-    image: "/og-armijn3.jpg",
-    text: "A careful approach to homes for sale in Brazil, with local visits, multilingual communication and practical guidance before commitment.",
+    title: "Coastal property in Florianópolis",
+    location: "Florianópolis",
+    type: "Brazil Property Investment",
+    image: "/porto-alegre-river.jpg",
+    text: "A curated coastal property concept for international buyers, investors and future residents comparing lifestyle and long-term value.",
     href: premiumInquiryHref,
+  },
+];
+
+const ownerAudiences = [
+  "Foreign owners",
+  "Expats",
+  "Brazilians living abroad",
+  "Investors",
+  "Owners of unique homes",
+  "Owners of furnished monthly rentals",
+];
+
+const ownerPathway = [
+  "Curated listing presentation for international visitors",
+  "English, Portuguese and Dutch communication",
+  "Local support for viewings, access and practical questions",
+  "A better fit for distinctive homes than mass-market portals",
+];
+
+const howWeHelp = [
+  {
+    title: "Curate",
+    text: "We focus on properties with a clear story: monthly stays, beach houses, city apartments, unique homes and investment opportunities.",
+  },
+  {
+    title: "Translate",
+    text: "We help bridge English, Portuguese and Dutch communication before, during and after property visits.",
+  },
+  {
+    title: "Guide",
+    text: "Local hosts can explain neighborhoods, daily logistics, meetings, visits and relocation questions in Brazil.",
+  },
+  {
+    title: "Support",
+    text: "Interpreter services and on-the-ground assistance help international clients move from interest to confident next steps.",
   },
 ];
 
@@ -572,96 +591,72 @@ function PremiumShowcaseCard({
   );
 }
 
-function listingStory(listing: PropertyListing, lang: Lang) {
-  return (
-    localizedListingText(listing, "shortDescription", lang) ||
-    localizedListingText(listing, "longDescription", lang) ||
-    "A curated property in Brazil selected for international visitors who want local context, clear communication and a more confident stay or purchase."
-  );
-}
-
 function PremiumRealEstatePortal({
   listings,
 }: {
   listings: PropertyListing[];
 }) {
-  const showcasedListings = listings
-    .filter((listing) => listing.status !== "hidden")
-    .slice(0, 6);
-  const showcase =
-    showcasedListings.length > 0
-      ? showcasedListings.map((listing) => {
-          const citySlug = citySlugForListing(listing);
-          const listingSlug = listing.slug?.current;
-          return {
-            title:
-              localizedListingText(listing, "title", "en") ||
-              "Curated property in Brazil",
-            location: [listing.neighborhood, listingCityName(listing, "en")]
-              .filter(Boolean)
-              .join(", "),
-            type:
-              listing.listingType === "sale"
-                ? "Property for sale in Brazil"
-                : listing.listingType === "rent"
-                ? "Monthly rental Brazil"
-                : "International property Brazil",
-            image:
-              listing.mainImage?.asset?.url ||
-              "/porto-alegre-desktop-background.jpg",
-            text: listingStory(listing, "en"),
-            href: listingSlug
-              ? listingUrl("en", citySlug, listingSlug)
-              : cityPath("en", citySlug),
-          };
-        })
-      : fallbackShowcase;
+  const availableListingCount = listings.filter(
+    (listing) => listing.status !== "hidden",
+  ).length;
 
   return (
-    <main className="bg-[#f8f7f2] text-[#17202a]">
-      <section className="relative min-h-screen min-h-[92svh] overflow-hidden bg-[#17202a] text-white">
+    <main className="bg-[#f6f1e8] text-[#17202a]">
+      <section className="relative min-h-screen overflow-hidden bg-[#17202a] text-white">
         <Image
-          src="/porto-alegre-river.jpg"
-          alt="Brazil waterfront city view for international property stays and relocation"
+          src="/porto-alegre-desktop-background.jpg"
+          alt="Premium apartment interior and city lifestyle in Brazil"
           fill
           priority
-          className="object-cover opacity-75"
+          className="object-cover opacity-70"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-black/45" />
-        <div className="relative z-10 flex min-h-screen min-h-[92svh] items-end px-5 pt-32 pb-8 sm:px-8 lg:px-14">
-          <div className="mx-auto grid w-full max-w-7xl gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-end">
-            <div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-[#17202a]/95" />
+        <div className="relative z-10 flex min-h-screen items-end px-5 pt-32 pb-8 sm:px-8 lg:px-14">
+          <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[minmax(0,1fr)_26rem] lg:items-end">
+            <div className="pb-2">
               <p className="text-xs uppercase tracking-[0.28em] text-stone-200">
-                Curated real estate Brazil
+                Curated property platform for international life in Brazil
               </p>
               <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[1.02] sm:text-7xl lg:text-8xl">
                 Find Your Place in Brazil
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-stone-100 sm:text-xl">
-                Monthly stays, unique homes and trusted local support for
-                international visitors, digital nomads, expats and property
-                buyers.
+                Monthly stays, curated homes and trusted local support for
+                digital nomads, foreign buyers, expats and property owners in
+                Brazil.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <PremiumButton href="#featured" variant="light">
-                  View Properties
+                <PremiumButton href="#monthly-stays" variant="light">
+                  View Available Properties
                 </PremiumButton>
                 <PremiumButton href="#owners" variant="heroOutline">
                   List Your Property
                 </PremiumButton>
               </div>
             </div>
-            <div className="border border-white/20 bg-white/10 p-5 backdrop-blur-sm">
-              <p className="text-sm uppercase tracking-widest text-stone-200">
-                International property support
+            <div className="bg-white p-5 text-[#17202a] shadow-2xl shadow-black/20 sm:p-6">
+              <p className="text-xs uppercase tracking-[0.22em] text-[#9a6b3f]">
+                Not a mass portal
               </p>
-              <div className="mt-5 grid grid-cols-2 gap-3 text-sm text-white">
+              <h2 className="mt-3 text-2xl font-semibold leading-tight">
+                Curated properties, local guidance and multilingual support.
+              </h2>
+              <div className="mt-5 grid grid-cols-2 gap-2 text-sm">
                 {portalHighlights.map((item) => (
-                  <span key={item} className="border border-white/15 px-3 py-3">
+                  <span key={item} className="bg-[#f6f1e8] px-3 py-3">
                     {item}
                   </span>
                 ))}
+              </div>
+              <div className="mt-6 border-t border-stone-200 pt-5">
+                <p className="text-sm leading-6 text-stone-600">
+                  {availableListingCount > 0
+                    ? `${availableListingCount} verified property ${
+                        availableListingCount === 1 ? "opportunity is" : "opportunities are"
+                      } currently available, with more curated homes being added across Brazil.`
+                    : "The platform is open for curated monthly rentals, homes for sale and foreign-owned properties across Brazil."}
+                </p>
               </div>
             </div>
           </div>
@@ -669,31 +664,56 @@ function PremiumRealEstatePortal({
       </section>
 
       <section
-        aria-labelledby="featured-properties"
-        id="featured"
+        id="monthly-stays"
+        aria-labelledby="featured-monthly-stays"
         className="px-5 py-16 sm:px-8 lg:px-14 lg:py-24"
       >
         <div className="mx-auto max-w-7xl">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
-              Featured properties
-            </p>
-            <h2
-              id="featured-properties"
-              className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl"
-            >
-              Curated stays, homes and investment opportunities
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-stone-600">
-              This is a carefully selected property collection for monthly
-              rentals Brazil, beach houses Brazil, furnished apartments Brazil
-              and homes for sale in Brazil. Each listing is supported by local
-              knowledge and human communication.
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
+                Featured Monthly Stays
+              </p>
+              <h2
+                id="featured-monthly-stays"
+                className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl"
+              >
+                Furnished homes for staying, working and settling in
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-stone-600">
+              Monthly rentals Brazil should feel calm before you arrive. These
+              curated stay concepts are for digital nomads, remote workers,
+              executives, researchers and long-stay visitors who need practical
+              comfort and local support.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {showcase.map((item) => (
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {monthlyStayShowcase.map((item) => (
+              <PremiumShowcaseCard key={`${item.title}-${item.location}`} {...item} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="bg-[#17202a] px-5 py-16 text-white sm:px-8 lg:px-14 lg:py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
+              Unique Homes for Sale
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
+              Beach houses, coastal homes and properties worth understanding
+            </h2>
+            <p className="mt-5 text-lg leading-8 text-stone-200">
+              Property for sale in Brazil can be difficult to evaluate from
+              abroad. Home in the City presents homes through lifestyle,
+              location, local context and guided next steps.
+            </p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {uniqueHomeShowcase.map((item) => (
               <PremiumShowcaseCard key={`${item.title}-${item.location}`} {...item} />
             ))}
           </div>
@@ -701,95 +721,52 @@ function PremiumRealEstatePortal({
       </section>
 
       <section className="bg-white px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
-              Why Home in the City
+              For Digital Nomads
             </p>
             <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-              A trusted local guide, not a listings machine
+              Work from Brazil without starting from zero
             </h2>
             <p className="mt-5 text-lg leading-8 text-stone-600">
-              Home in the City helps international visitors discover trusted
-              places to stay, unique homes to buy and local support throughout
-              Brazil. We bridge property search with relocation Brazil,
-              interpreter services and real people on the ground.
+              Digital nomad rentals Brazil need more than an attractive photo.
+              We look for furnished apartments Brazil with reliable internet,
+              practical neighborhoods, move-in readiness and human help when
+              local systems are unfamiliar.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <PremiumButton href="/interpreter-porto-alegre" variant="outline">
-                Interpreter Services
-              </PremiumButton>
-              <PremiumButton href="/hosts/armijn">Meet Your Host</PremiumButton>
-            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {trustReasons.map((reason) => (
-              <article key={reason.title} className="border border-stone-200 bg-[#f8f7f2] p-5">
-                <h3 className="text-lg font-semibold">{reason.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-stone-600">
-                  {reason.text}
+          <div className="grid gap-3 sm:grid-cols-2">
+              {monthlyStayPoints.map((point) => (
+                <p key={point} className="border-l-2 border-[#9a6b3f] bg-[#f6f1e8] px-4 py-4 text-sm leading-6">
+                  {point}
                 </p>
-              </article>
-            ))}
+              ))}
           </div>
         </div>
       </section>
 
       <section className="px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
-          <div className="relative min-h-[24rem] overflow-hidden bg-stone-200">
-            <Image
-              src="/porto-alegre-desktop-background.jpg"
-              alt="Furnished apartment lifestyle and local support for monthly rentals in Brazil"
-              fill
-              className="object-cover"
-              sizes="(min-width: 1024px) 50vw, 100vw"
-            />
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
-              Monthly stays
-            </p>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-              Built for digital nomads, remote workers and long stays
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-stone-600">
-              Monthly rentals Brazil should be more than a key handoff. We look
-              for expat housing Brazil that works for real life: furnished
-              apartments, reliable internet, practical neighborhoods and support
-              when something needs explaining.
-            </p>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {monthlyStayPoints.map((point) => (
-                <p key={point} className="border-l-2 border-[#9a6b3f] bg-white px-4 py-3 text-sm leading-6">
-                  {point}
-                </p>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-[#16332c] px-5 py-16 text-white sm:px-8 lg:px-14 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-[#d7b46a]">
-              Buying property in Brazil
+              For International Buyers
             </p>
             <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-              Clear answers for foreign buyers
+              Buy property in Brazil with local eyes beside you
             </h2>
-            <p className="mt-5 text-lg leading-8 text-stone-200">
-              Brazil property investment can be rewarding, but international
-              buyers need careful local guidance. These are the first questions
-              most people ask before they buy property in Brazil.
+            <p className="mt-5 text-lg leading-8 text-stone-600">
+              International buyers often need context more than another search
+              result. We help with property visits, neighborhood orientation,
+              interpreter support and practical communication with owners,
+              sellers or agents.
             </p>
           </div>
           <div className="grid gap-4">
             {buyerFaqs.map((faq) => (
-              <article key={faq.question} className="border border-white/15 bg-white/10 p-5">
+              <article key={faq.question} className="border border-stone-200 bg-white p-5">
                 <h3 className="text-xl font-semibold">{faq.question}</h3>
-                <p className="mt-3 leading-7 text-stone-200">{faq.answer}</p>
+                <p className="mt-3 leading-7 text-stone-600">{faq.answer}</p>
               </article>
             ))}
           </div>
@@ -798,41 +775,46 @@ function PremiumRealEstatePortal({
 
       <section
         id="owners"
-        className="bg-white px-5 py-16 sm:px-8 lg:px-14 lg:py-24"
+        className="bg-[#16332c] px-5 py-16 text-white sm:px-8 lg:px-14 lg:py-24"
       >
-        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
-              Property owners
+            <p className="text-xs uppercase tracking-[0.24em] text-[#d7b46a]">
+              For property owners
             </p>
             <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
               Own Property in Brazil?
             </h2>
-            <p className="mt-5 text-lg leading-8 text-stone-600">
+            <p className="mt-5 text-lg leading-8 text-stone-200">
               We help property owners reach an international audience through
               curated listings, multilingual communication and local support.
             </p>
-            <p className="mt-5 leading-8 text-stone-600">
+            <p className="mt-5 leading-8 text-stone-200">
               This is designed for foreign owners, expats, Brazilians living
               abroad, investors and owners of unique homes who want their
               property presented with care to international visitors and buyers.
             </p>
-            <div className="mt-8">
-              <PremiumButton href={premiumOwnerHref}>List Your Property</PremiumButton>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <PremiumButton href={premiumOwnerHref} variant="light">
+                List Your Property
+              </PremiumButton>
+              <PremiumButton href="#how-we-help" variant="heroOutline">
+                How It Works
+              </PremiumButton>
             </div>
           </div>
-          <div className="border border-stone-200 bg-[#f8f7f2] p-6 sm:p-8">
-            <h3 className="text-2xl font-semibold">
-              A bridge for international property Brazil
-            </h3>
-            <div className="mt-6 grid gap-3">
-              {[
-                "Curated presentation instead of mass-market advertising",
-                "Multilingual communication with qualified leads",
-                "Local support for visits, access and practical questions",
-                "A natural fit for monthly rentals, unique homes and sales",
-              ].map((item) => (
-                <p key={item} className="border-b border-stone-200 pb-3 text-sm leading-6 text-stone-600">
+          <div className="bg-white p-6 text-[#17202a] sm:p-8">
+            <h3 className="text-2xl font-semibold">Who this is for</h3>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {ownerAudiences.map((item) => (
+                <p key={item} className="bg-[#f6f1e8] px-4 py-4 text-sm leading-6">
+                  {item}
+                </p>
+              ))}
+            </div>
+            <div className="mt-6 border-t border-stone-200 pt-6">
+              {ownerPathway.map((item) => (
+                <p key={item} className="border-b border-stone-200 py-3 text-sm leading-6 text-stone-600">
                   {item}
                 </p>
               ))}
@@ -841,27 +823,36 @@ function PremiumRealEstatePortal({
         </div>
       </section>
 
-      <section className="px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+      <section
+        id="how-we-help"
+        className="bg-white px-5 py-16 sm:px-8 lg:px-14 lg:py-24"
+      >
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
-                Questions international visitors ask
+                How Home in the City Helps
               </p>
               <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-                Practical answers before you arrive
+                Property search with a real local bridge
               </h2>
               <p className="mt-5 text-lg leading-8 text-stone-600">
-                Direct answers help digital nomads, remote workers, foreign
-                buyers and property owners understand how Home in the City can
-                support housing, relocation and property visits in Brazil.
+                We combine curated property discovery with local hosts,
+                interpreter services, relocation Brazil support and transparent
+                communication for people who are not yet fluent in the country.
               </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <PremiumButton href="/interpreter-porto-alegre" variant="outline">
+                  Interpreter Services
+                </PremiumButton>
+                <PremiumButton href="/hosts/armijn">Host Profiles</PremiumButton>
+              </div>
             </div>
-            <div className="grid gap-4">
-              {answerFaqs.map((faq) => (
-                <article key={faq.question} className="border border-stone-200 bg-white p-5">
-                  <h3 className="text-xl font-semibold">{faq.question}</h3>
-                  <p className="mt-3 leading-7 text-stone-600">{faq.answer}</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {howWeHelp.map((item) => (
+                <article key={item.title} className="border border-stone-200 bg-[#f6f1e8] p-5">
+                  <h3 className="text-xl font-semibold">{item.title}</h3>
+                  <p className="mt-3 leading-7 text-stone-600">{item.text}</p>
                 </article>
               ))}
             </div>
@@ -869,21 +860,50 @@ function PremiumRealEstatePortal({
         </div>
       </section>
 
+      <section className="px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
+              Practical answers
+            </p>
+            <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
+              Questions before you stay, buy or list
+            </h2>
+          </div>
+          <div className="grid gap-4">
+            {answerFaqs.map((faq) => (
+              <article key={faq.question} className="border border-stone-200 bg-white p-5">
+                <h3 className="text-xl font-semibold">{faq.question}</h3>
+                <p className="mt-3 leading-7 text-stone-600">{faq.answer}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-[#17202a] px-5 py-16 text-white sm:px-8 lg:px-14 lg:py-24">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-end">
+          <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[#d7b46a]">
-                Brazil-wide expansion
+                Ready to begin
               </p>
               <h2 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-                Built to grow beyond one city
+                Find, buy, stay or list with local support in Brazil
               </h2>
               <p className="mt-5 text-lg leading-8 text-stone-200">
-                The collection can expand from Porto Alegre and Southern Brazil
-                to beach houses, city apartments, furnished apartments Brazil
-                and foreign-owned homes across the country.
+                Whether you need monthly rentals Brazil, homes for sale in
+                Brazil or help presenting a property to international clients,
+                Home in the City is built to be a trusted bridge.
               </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <PremiumButton href="#monthly-stays" variant="light">
+                  View Available Properties
+                </PremiumButton>
+                <PremiumButton href={premiumOwnerHref} variant="heroOutline">
+                  List Your Property
+                </PremiumButton>
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {expansionLocations.map((location) => (
