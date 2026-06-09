@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
-import type { CityGuideContent } from "@/app/lib/cityGuides";
+import {
+  cityGuideDisplayContent,
+  type CityGuideContent,
+} from "@/app/lib/cityGuides";
 import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
@@ -59,7 +62,11 @@ export default async function Page() {
       <div className="pointer-events-none fixed inset-0 z-0 hidden bg-[url('/porto-alegre-desktop-background.jpg')] bg-cover bg-center md:block" />
       <div className="pointer-events-none fixed inset-0 z-0 hidden bg-white/25 md:block" />
 
-      <CityPage lang="pt" citySlug="porto-alegre" initialCity={city} />
+      <CityPage
+        lang="pt"
+        citySlug="porto-alegre"
+        initialCity={cityGuideDisplayContent(city, "porto-alegre")}
+      />
     </div>
   );
 }

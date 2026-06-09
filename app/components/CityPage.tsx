@@ -349,8 +349,8 @@ export default function CityPage({
   const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
   const places: MapPlace[] = city?.mapPlaces || [];
   const guide = isPortoAlegre ? cityGuideContent[lang] : null;
-  const title = headline || guide?.title || `${cityName}: ${t.fallbackTitle}`;
-  const introText = intro || guide?.intro || fallbackCopy.intro(cityName);
+  const title = guide?.title || headline || `${cityName}: ${t.fallbackTitle}`;
+  const introText = guide?.intro || intro || fallbackCopy.intro(cityName);
   const hostLine = guide?.hostLine || fallbackCopy.hostLine;
   const serviceCards = guide?.serviceCards || fallbackServiceCards({ lang, citySlug, cityName });
   const serviceHrefs = new Set(

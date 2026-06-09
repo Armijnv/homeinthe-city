@@ -151,6 +151,23 @@ export function isPortoAlegreGuide(citySlug: string) {
   return citySlug === "porto-alegre";
 }
 
+export function cityGuideDisplayContent(
+  city: CityGuideContent | null,
+  citySlug: string,
+) {
+  if (!city || !isPortoAlegreGuide(citySlug)) return city;
+
+  return {
+    ...city,
+    headline_en: undefined,
+    headline_pt: undefined,
+    headline_nl: undefined,
+    intro_en: undefined,
+    intro_pt: undefined,
+    intro_nl: undefined,
+  };
+}
+
 const fallbackDescriptions: Record<CityGuideLang, (cityName: string) => string> = {
   en: (cityName) =>
     `A Home in the City guide for ${cityName}, with local context, practical support and curated places as they are added.`,
