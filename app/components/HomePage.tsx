@@ -1,5 +1,14 @@
 import GlobeComponent from "./Globe";
 import Link from "next/link";
+import {
+  cityGuideGlobeCities,
+  cityGuideName,
+  cityGuidePath,
+  cityGuideStatus,
+  providerProfilePath,
+  publishedCityGuides,
+  type CityGuideContent,
+} from "@/app/lib/cityGuides";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -141,12 +150,100 @@ const content = {
   },
 };
 
+const cityDiscoveryContent = {
+  en: {
+    title: "Browse City Guides",
+    available: "Available now",
+    comingSoon: "Coming soon",
+    primaryCta: (cityName: string) => `Explore ${cityName}`,
+    hostCta: (cityName: string) => `Meet your ${cityName} host`,
+    liveSummary: (cities: string) => `Available now: ${cities}`,
+    nextSummary: (cities: string) => `Coming soon: ${cities}`,
+    cityText: (cityName: string) =>
+      `Local guidance, trusted contacts and practical support for ${cityName}.`,
+    empty: "City guides will appear here as they are published.",
+    open: "Open guide",
+  },
+  pt: {
+    title: "Guias por Cidade",
+    available: "Disponível agora",
+    comingSoon: "Em breve",
+    primaryCta: (cityName: string) => `Explorar ${cityName}`,
+    hostCta: (cityName: string) => `Conheça seu anfitrião em ${cityName}`,
+    liveSummary: (cities: string) => `Disponível agora: ${cities}`,
+    nextSummary: (cities: string) => `Em breve: ${cities}`,
+    cityText: (cityName: string) =>
+      `Orientação local, contatos confiáveis e apoio prático em ${cityName}.`,
+    empty: "Guias de cidade aparecerão aqui conforme forem publicados.",
+    open: "Abrir guia",
+  },
+  nl: {
+    title: "Stadsgidsen",
+    available: "Nu beschikbaar",
+    comingSoon: "Binnenkort",
+    primaryCta: (cityName: string) => `Ontdek ${cityName}`,
+    hostCta: (cityName: string) => `Ontmoet je ${cityName} host`,
+    liveSummary: (cities: string) => `Nu beschikbaar: ${cities}`,
+    nextSummary: (cities: string) => `Binnenkort: ${cities}`,
+    cityText: (cityName: string) =>
+      `Lokale gids, vertrouwde contacten en praktische hulp in ${cityName}.`,
+    empty: "Stadsgidsen verschijnen hier zodra ze gepubliceerd zijn.",
+    open: "Open gids",
+  },
+};
+
+const localeByLang: Record<Lang, string> = {
+  en: "en",
+  pt: "pt-BR",
+  nl: "nl-NL",
+};
+
+function formatCityNames(cities: CityGuideContent[], lang: Lang) {
+  const names = cities
+    .map((city) => {
+      const citySlug = city.slug?.current;
+      return citySlug ? cityGuideName(city, lang, citySlug) : "";
+    })
+    .filter(Boolean);
+
+  if (!names.length) return "";
+
+  return new Intl.ListFormat(localeByLang[lang], {
+    style: "long",
+    type: "conjunction",
+  }).format(names);
+}
+
 /* ======================================================
    HOMEPAGE TEMPLATE
 ====================================================== */
 
-export default function HomePage({ lang }: { lang: Lang }) {
+export default function HomePage({
+  lang,
+  cityGuides = [],
+}: {
+  lang: Lang;
+  cityGuides?: CityGuideContent[];
+}) {
   const t = content[lang];
+  const cityT = cityDiscoveryContent[lang];
+  const publicCities = publishedCityGuides(cityGuides);
+  const globeCities = cityGuideGlobeCities(publicCities, lang);
+  const liveCities = publicCities.filter((city) => cityGuideStatus(city) === "live");
+  const comingSoonCities = publicCities.filter(
+    (city) => cityGuideStatus(city) === "comingSoon",
+  );
+  const primaryCity = liveCities[0] || publicCities[0] || null;
+  const primaryCitySlug = primaryCity?.slug?.current;
+  const primaryCityName = primaryCitySlug
+    ? cityGuideName(primaryCity, lang, primaryCitySlug)
+    : "";
+  const primaryHostSlug = primaryCity?.primaryHost?.slug?.current;
+  const liveSummary = formatCityNames(liveCities, lang);
+  const comingSoonSummary = formatCityNames(comingSoonCities, lang);
+  const eyebrow = [liveSummary && cityT.liveSummary(liveSummary), comingSoonSummary && cityT.nextSummary(comingSoonSummary)]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#1a1f2e]">
@@ -157,7 +254,7 @@ export default function HomePage({ lang }: { lang: Lang }) {
            a large cinematic globe behind floating text.
         ====================================================== */}
         <div className="pointer-events-auto absolute left-1/2 top-[58%] z-10 -translate-x-1/2 -translate-y-1/2 scale-[0.76] opacity-95 sm:top-[56%] sm:scale-[0.86] md:top-[54%] md:scale-100 lg:left-[28%] lg:top-[56%] lg:scale-100 xl:scale-110">
-          <GlobeComponent />
+          <GlobeComponent cities={globeCities} />
         </div>
 
         {/* ======================================================
@@ -165,7 +262,7 @@ export default function HomePage({ lang }: { lang: Lang }) {
         ====================================================== */}
         <div className="relative z-20 max-w-xl pt-2 text-left lg:ml-auto lg:mr-0 lg:w-1/2 lg:pt-0">
           <p className="mb-4 max-w-[20rem] text-[11px] uppercase tracking-[0.22em] text-stone-400 sm:max-w-none sm:text-sm lg:tracking-[0.25em]">
-            {t.eyebrow}
+            {eyebrow || t.eyebrow}
           </p>
 
           <h1 className="mb-5 text-4xl font-light leading-tight text-white drop-shadow-[0_3px_14px_rgba(0,0,0,0.75)] sm:text-5xl md:text-6xl lg:text-7xl lg:drop-shadow-none">
@@ -182,10 +279,10 @@ export default function HomePage({ lang }: { lang: Lang }) {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href={t.primaryHref}
+              href={primaryCitySlug ? cityGuidePath(lang, primaryCitySlug) : t.primaryHref}
               className="inline-flex rounded-full bg-white px-6 py-3 text-sm text-stone-900 transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-white/60"
             >
-              {t.primaryCta}
+              {primaryCityName ? cityT.primaryCta(primaryCityName) : t.primaryCta}
             </Link>
             <Link
               href={t.interpreterHref}
@@ -194,26 +291,77 @@ export default function HomePage({ lang }: { lang: Lang }) {
               {t.interpreterCta}
             </Link>
             <Link
-              href={t.cityHref}
+              href={primaryHostSlug ? providerProfilePath(lang, primaryHostSlug) : t.cityHref}
               className="inline-flex rounded-full border border-white/15 px-6 py-3 text-sm text-stone-200 transition-colors hover:border-white/45 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/60"
             >
-              {t.cityCta}
+              {primaryCityName && primaryHostSlug
+                ? cityT.hostCta(primaryCityName)
+                : t.cityCta}
             </Link>
           </div>
 
           <div className="mt-5 flex flex-wrap gap-2 text-xs text-stone-300">
             <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
-              {t.liveCity}
+              {liveSummary ? cityT.liveSummary(liveSummary) : t.liveCity}
             </span>
-            <span className="rounded-full border border-white/15 bg-black/10 px-3 py-1.5 backdrop-blur-sm">
-              {t.nextCity}
-            </span>
+            {(comingSoonSummary || !publicCities.length) && (
+              <span className="rounded-full border border-white/15 bg-black/10 px-3 py-1.5 backdrop-blur-sm">
+                {comingSoonSummary ? cityT.nextSummary(comingSoonSummary) : t.nextCity}
+              </span>
+            )}
           </div>
         </div>
       </section>
 
       <section className="relative z-20 bg-[#f5f1ea] px-6 py-14 text-[#1a1f2e] md:px-10 lg:px-20">
         <div className="mx-auto max-w-6xl">
+          <div className="mb-14">
+            <h2 className="mb-8 text-2xl font-light sm:text-3xl">
+              {cityT.title}
+            </h2>
+
+            {publicCities.length ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {publicCities.map((city) => {
+                  const citySlug = city.slug?.current;
+                  if (!citySlug) return null;
+
+                  const cityName = cityGuideName(city, lang, citySlug);
+                  const status = cityGuideStatus(city);
+
+                  return (
+                    <Link
+                      key={citySlug}
+                      href={cityGuidePath(lang, citySlug)}
+                      className="group rounded-lg border border-stone-200 bg-white/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+                    >
+                      <div className="mb-4 flex items-start justify-between gap-4">
+                        <h3 className="text-lg font-medium text-[#1a1f2e]">
+                          {cityName}
+                        </h3>
+                        <span className="rounded-full border border-stone-200 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-stone-500">
+                          {status === "comingSoon"
+                            ? cityT.comingSoon
+                            : cityT.available}
+                        </span>
+                      </div>
+                      <p className="mb-5 text-sm leading-relaxed text-stone-600">
+                        {cityT.cityText(cityName)}
+                      </p>
+                      <span className="text-sm font-medium text-[#1a1f2e] group-hover:underline">
+                        {cityT.open}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm leading-relaxed text-stone-600">
+                {cityT.empty}
+              </p>
+            )}
+          </div>
+
           <h2 className="mb-8 text-2xl font-light sm:text-3xl">
             {t.servicesTitle}
           </h2>

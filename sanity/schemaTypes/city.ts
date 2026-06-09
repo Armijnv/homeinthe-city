@@ -38,6 +38,50 @@ export const city = defineType({
       },
     }),
 
+    defineField({
+      name: "guideStatus",
+      title: "City Guide Status",
+      type: "string",
+      description:
+        "Controls whether this city appears in public city discovery and on the homepage globe.",
+      initialValue: "live",
+      options: {
+        layout: "radio",
+        list: [
+          { title: "Live", value: "live" },
+          { title: "Coming soon", value: "comingSoon" },
+          { title: "Hidden", value: "hidden" },
+        ],
+      },
+    }),
+
+    defineField({
+      name: "latitude",
+      title: "City Latitude",
+      type: "number",
+      description: "Used for the homepage globe pin.",
+    }),
+
+    defineField({
+      name: "longitude",
+      title: "City Longitude",
+      type: "number",
+      description: "Used for the homepage globe pin.",
+    }),
+
+    defineField({
+      name: "primaryHost",
+      title: "Primary Host",
+      type: "reference",
+      description:
+        "The Provider Profile shown as the main local host for this city.",
+      to: [{ type: "provider" }],
+      options: {
+        disableNew: true,
+        filter: "status == 'published'",
+      },
+    }),
+
     /* ======================================================
        HERO / INTRO CONTENT
     ====================================================== */

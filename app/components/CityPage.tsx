@@ -8,9 +8,11 @@ import {
   isPortoAlegreGuide,
   localizedCityGuideList,
   localizedCityGuideText,
+  providerProfilePath,
   type CityGuideContent,
   type CityGuideLang as Lang,
   type CityGuideMapPlace as MapPlace,
+  type CityGuideProvider,
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import Image from "next/image";
@@ -39,6 +41,21 @@ type ServiceCard = {
   text: string;
   button: string;
   href: string;
+};
+
+type HostAction = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+type DisplayHost = {
+  name: string;
+  role: string;
+  photoUrl: string;
+  photoAlt: string;
+  profileHref?: string;
+  actions: HostAction[];
 };
 
 /* ======================================================
@@ -298,6 +315,113 @@ function fallbackServiceCards({
   ];
 }
 
+const roleLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    host: "Local host",
+    interpreter: "Interpreter",
+    translator: "Translator",
+    guide: "Guide",
+    specialist: "City specialist",
+    realtor: "Real estate agent",
+  },
+  pt: {
+    host: "Anfitriao local",
+    interpreter: "Interprete",
+    translator: "Tradutor",
+    guide: "Guia",
+    specialist: "Especialista local",
+    realtor: "Corretor de imóveis",
+  },
+  nl: {
+    host: "Lokale host",
+    interpreter: "Tolk",
+    translator: "Vertaler",
+    guide: "Gids",
+    specialist: "Stadsspecialist",
+    realtor: "Makelaar",
+  },
+};
+
+function roleLabel(lang: Lang, role?: string) {
+  if (!role) return roleLabels[lang].host;
+
+  return roleLabels[lang][role] || role;
+}
+
+function whatsappHref(value?: string) {
+  if (!value) return "";
+  if (value.startsWith("http")) return value;
+
+  const digits = value.replace(/\D/g, "");
+  return digits ? `https://wa.me/${digits}` : "";
+}
+
+function websiteHref(value?: string) {
+  if (!value) return "";
+  return value.startsWith("http") ? value : `https://${value}`;
+}
+
+function hostActions(provider: CityGuideProvider): HostAction[] {
+  const contact = provider.contactOptions;
+  const actions: HostAction[] = [];
+  const whatsapp = whatsappHref(contact?.whatsapp);
+  const email = contact?.email;
+  const website = websiteHref(contact?.website);
+
+  if (whatsapp) {
+    actions.push({ label: "WhatsApp", href: whatsapp, external: true });
+  }
+
+  if (email) {
+    actions.push({ label: "Email", href: `mailto:${email}` });
+  }
+
+  if (website) {
+    actions.push({ label: "Website", href: website, external: true });
+  }
+
+  return actions;
+}
+
+function providerDisplayHost({
+  provider,
+  lang,
+}: {
+  provider: CityGuideProvider;
+  lang: Lang;
+}): DisplayHost | null {
+  if (!provider.name) return null;
+
+  const providerSlug = provider.slug?.current;
+
+  return {
+    name: provider.name,
+    role: roleLabel(lang, provider.primaryRole || provider.roles?.[0]),
+    photoUrl: provider.mainPhoto?.asset?.url || "/me.png",
+    photoAlt: provider.mainPhoto?.alt || provider.name,
+    profileHref: providerSlug ? providerProfilePath(lang, providerSlug) : undefined,
+    actions: hostActions(provider),
+  };
+}
+
+function portoAlegreFallbackHost(lang: Lang): DisplayHost {
+  return {
+    name: "Armijn van Dijk",
+    role: roleLabel(lang, "host"),
+    photoUrl: "/me.png",
+    photoAlt: "Armijn van Dijk",
+    profileHref: providerProfilePath(lang, "armijn"),
+    actions: [
+      {
+        label: "WhatsApp",
+        href: "https://wa.me/5551997783369",
+        external: true,
+      },
+      { label: "Email", href: "mailto:contact@homeinthe.city" },
+    ],
+  };
+}
+
 export default function CityPage({
   lang,
   citySlug,
@@ -322,6 +446,7 @@ export default function CityPage({
       weatherTitle: "Weather today",
       cta: "Talk to me",
       profile: "Profile",
+      hostCardTitle: "Local host",
       fallbackTitle: "City guide coming soon",
     },
     pt: {
@@ -329,6 +454,7 @@ export default function CityPage({
       weatherTitle: "Clima hoje",
       cta: "Fale comigo",
       profile: "Perfil",
+      hostCardTitle: "Anfitriao local",
       fallbackTitle: "Guia da cidade em breve",
     },
     nl: {
@@ -336,6 +462,7 @@ export default function CityPage({
       weatherTitle: "Weer vandaag",
       cta: "Stuur me een bericht",
       profile: "Profiel",
+      hostCardTitle: "Lokale host",
       fallbackTitle: "Stadsgids binnenkort",
     },
   };
@@ -353,6 +480,11 @@ export default function CityPage({
   const introText = guide?.intro || intro || fallbackCopy.intro(cityName);
   const hostLine = guide?.hostLine || fallbackCopy.hostLine;
   const serviceCards = guide?.serviceCards || fallbackServiceCards({ lang, citySlug, cityName });
+  const selectedHost = city?.primaryHost
+    ? providerDisplayHost({ provider: city.primaryHost, lang })
+    : null;
+  const displayHost = selectedHost || (isPortoAlegre ? portoAlegreFallbackHost(lang) : null);
+  const primaryHostAction = displayHost?.actions[0];
   const serviceHrefs = new Set(
     serviceCards.map((card) => normalizeHref(card.href))
   );
@@ -365,52 +497,51 @@ export default function CityPage({
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
-        <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
-          <div
-            className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
-            onClick={() => setOpen(!open)}
-          >
-            <Image
-              src="/me.png"
-              alt="Your local host"
-              fill
-              sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
-              className="rounded-full border-4 border-white object-cover shadow-xl"
-            />
+        {displayHost ? (
+          <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
+            <div
+              className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
+              onClick={() => setOpen(!open)}
+            >
+              <Image
+                src={displayHost.photoUrl}
+                alt={displayHost.photoAlt}
+                fill
+                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
+                className="rounded-full border-4 border-white object-cover shadow-xl"
+              />
+            </div>
+
+            {open && (
+              <>
+                {displayHost.profileHref ? (
+                  <a
+                    href={displayHost.profileHref}
+                    className="absolute right-28 top-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-28 lg:right-32"
+                  >
+                    {t.profile}
+                  </a>
+                ) : null}
+
+                {displayHost.actions.slice(0, 2).map((action, index) => (
+                  <a
+                    key={action.href}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noreferrer" : undefined}
+                    className={
+                      index === 0
+                        ? "absolute right-32 top-16 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-32 lg:right-36 lg:top-20"
+                        : "absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
+                    }
+                  >
+                    {action.label}
+                  </a>
+                ))}
+              </>
+            )}
           </div>
-
-          {open && (
-            <>
-              <a
-                href={
-                  lang === "pt"
-                    ? "/pt/hosts/armijn"
-                    : lang === "nl"
-                    ? "/nl/hosts/armijn"
-                    : "/hosts/armijn"
-                }
-                className="absolute right-28 top-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-28 lg:right-32"
-              >
-                {t.profile}
-              </a>
-
-              <a
-                href="https://wa.me/+5551997783369"
-                target="_blank"
-                className="absolute right-32 top-16 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-32 lg:right-36 lg:top-20"
-              >
-                WhatsApp
-              </a>
-
-              <a
-                href="mailto:contact@homeinthe.city"
-                className="absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
-              >
-                Email
-              </a>
-            </>
-          )}
-        </div>
+        ) : null}
 
         <div className="space-y-8 md:col-span-2">
           <div className="flex gap-3 text-xl">
@@ -461,8 +592,9 @@ export default function CityPage({
             <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>
 
             <a
-              href="https://wa.me/+5551997783369"
-              target="_blank"
+              href={primaryHostAction?.href || "mailto:contact@homeinthe.city"}
+              target={primaryHostAction?.external ? "_blank" : undefined}
+              rel={primaryHostAction?.external ? "noreferrer" : undefined}
               className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
             >
               {localizedCityGuideText(city, "cta", lang) || t.cta}
@@ -471,6 +603,54 @@ export default function CityPage({
         </div>
 
         <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
+          {displayHost ? (
+            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+              <h3 className="mb-4 text-lg font-medium text-black">
+                {t.hostCardTitle}
+              </h3>
+
+              <div className="flex items-center gap-4">
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-stone-200">
+                  <Image
+                    src={displayHost.photoUrl}
+                    alt={displayHost.photoAlt}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                </div>
+
+                <div>
+                  <p className="font-medium text-stone-900">{displayHost.name}</p>
+                  <p className="text-sm text-stone-600">{displayHost.role}</p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                {displayHost.profileHref ? (
+                  <Link
+                    href={displayHost.profileHref}
+                    className="inline-block rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-800 hover:bg-stone-100"
+                  >
+                    {t.profile}
+                  </Link>
+                ) : null}
+
+                {displayHost.actions.map((action) => (
+                  <a
+                    key={action.href}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noreferrer" : undefined}
+                    className="inline-block rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
+                  >
+                    {action.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {isPortoAlegre ? (
             <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
               <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>

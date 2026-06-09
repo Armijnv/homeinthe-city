@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export type CityGuideLang = "en" | "pt" | "nl";
+export type CityGuideStatus = "live" | "comingSoon" | "hidden";
 
 export type CityGuideImage = {
   asset?: {
@@ -42,6 +43,26 @@ export type CityGuideSidebarCard = {
   href_nl?: string;
 };
 
+export type CityGuideProvider = {
+  name?: string;
+  slug?: {
+    current?: string;
+  };
+  status?: string;
+  roles?: string[];
+  primaryRole?: string;
+  contactOptions?: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+    website?: string;
+    preferredContact?: string;
+  };
+  mainPhoto?: CityGuideImage & {
+    alt?: string;
+  };
+};
+
 export type CityGuideContent = {
   name_en?: string;
   name_pt?: string;
@@ -49,6 +70,10 @@ export type CityGuideContent = {
   slug?: {
     current?: string;
   };
+  guideStatus?: CityGuideStatus;
+  latitude?: number;
+  longitude?: number;
+  primaryHost?: CityGuideProvider | null;
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -63,6 +88,15 @@ export type CityGuideContent = {
   cta_en?: string;
   cta_pt?: string;
   cta_nl?: string;
+};
+
+export type CityGuideGlobeCity = {
+  lat: number;
+  lng: number;
+  name: string;
+  status: "live" | "comingSoon";
+  href: string;
+  ariaLabel: string;
 };
 
 export const cityGuideSiteUrl = "https://homeinthe.city";
@@ -149,6 +183,56 @@ export function cityGuideName(
 
 export function isPortoAlegreGuide(citySlug: string) {
   return citySlug === "porto-alegre";
+}
+
+export function cityGuideStatus(city: CityGuideContent | null | undefined) {
+  return city?.guideStatus || "live";
+}
+
+export function providerProfilePath(lang: CityGuideLang, providerSlug: string) {
+  if (lang === "pt") return `/pt/profissionais/${providerSlug}`;
+  if (lang === "nl") return `/nl/professionals/${providerSlug}`;
+  return `/providers/${providerSlug}`;
+}
+
+export function publishedCityGuides(cities: CityGuideContent[]) {
+  return cities.filter(
+    (city) => Boolean(city.slug?.current) && cityGuideStatus(city) !== "hidden",
+  );
+}
+
+export function cityGuideGlobeCities(
+  cities: CityGuideContent[],
+  lang: CityGuideLang,
+): CityGuideGlobeCity[] {
+  return publishedCityGuides(cities).flatMap((city) => {
+    const citySlug = city.slug?.current;
+    const lat = city.latitude;
+    const lng = city.longitude;
+
+    if (!citySlug || typeof lat !== "number" || typeof lng !== "number") {
+      return [];
+    }
+
+    const name = cityGuideName(city, lang, citySlug);
+    const status = cityGuideStatus(city);
+    const pinStatus: CityGuideGlobeCity["status"] =
+      status === "comingSoon" ? "comingSoon" : "live";
+
+    return [
+      {
+        lat,
+        lng,
+        name,
+        status: pinStatus,
+        href: cityGuidePath(lang, citySlug),
+        ariaLabel:
+          status === "comingSoon"
+            ? `${name} city guide coming soon`
+            : `Open ${name} city guide`,
+      },
+    ];
+  });
 }
 
 export function cityGuideDisplayContent(

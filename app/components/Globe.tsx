@@ -8,50 +8,14 @@ import type { GlobeMethods } from "react-globe.gl";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
-type GlobeCity = {
+export type GlobeCity = {
   lat: number;
   lng: number;
   name: string;
-  status: "live" | "next";
+  status: "live" | "comingSoon";
   href: string;
   ariaLabel: string;
 };
-
-const cities: GlobeCity[] = [
-  /* ======================================================
-     ACTIVE CITY
-  ====================================================== */
-
-  {
-    lat: -30.0346,
-    lng: -51.2177,
-    name: "Porto Alegre",
-    status: "live",
-    href: "/brazil/porto-alegre",
-    ariaLabel: "Open Porto Alegre city guide",
-  },
-
-  /* ======================================================
-     COMING SOON CITIES
-  ====================================================== */
-
-  {
-    lat: -10.9472,
-    lng: -37.0731,
-    name: "Aracaju",
-    status: "next",
-    href: "/",
-    ariaLabel: "Aracaju coming soon",
-  },
-  {
-    lat: -7.1195,
-    lng: -34.845,
-    name: "João Pessoa",
-    status: "next",
-    href: "/",
-    ariaLabel: "João Pessoa coming soon",
-  },
-];
 
 function browserSupportsWebGL() {
   try {
@@ -66,7 +30,7 @@ function browserSupportsWebGL() {
   }
 }
 
-export default function GlobeComponent() {
+export default function GlobeComponent({ cities }: { cities: GlobeCity[] }) {
   const globeRef = useRef<GlobeMethods | undefined>(undefined) as MutableRefObject<
     GlobeMethods | undefined
   >;
@@ -85,8 +49,15 @@ export default function GlobeComponent() {
   function focusOnSouthernBrazil() {
     if (!globeRef.current) return;
 
+    const focusCity =
+      cities.find((city) => city.status === "live") || cities[0];
+
     globeRef.current.pointOfView(
-      { lat: -30, lng: -51, altitude: 2 },
+      {
+        lat: focusCity?.lat ?? -15,
+        lng: focusCity?.lng ?? -50,
+        altitude: focusCity ? 2 : 2.3,
+      },
       2000
     );
 
@@ -98,14 +69,28 @@ export default function GlobeComponent() {
     return null;
   }
 
+  if (!cities.length) {
+    return (
+      <div className="flex h-[420px] w-[420px] items-center justify-center rounded-full border border-white/10 bg-white/5 px-10 text-center text-sm text-stone-400">
+        City guide pins appear here as coordinates are added in Sanity.
+      </div>
+    );
+  }
+
   if (!supported) {
     return (
       <div className="flex h-[420px] w-[420px] flex-col items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
-        <Link href="/brazil/porto-alegre" className="hover:text-white">
-          Porto Alegre is available now
-        </Link>
-        <span className="text-xs">Aracaju coming soon</span>
-        <span className="text-xs">João Pessoa coming soon</span>
+        {cities.map((city) => (
+          <Link
+            key={city.href}
+            href={city.href}
+            className={city.status === "live" ? "hover:text-white" : "text-xs hover:text-white"}
+          >
+            {city.status === "live"
+              ? `${city.name} is available now`
+              : `${city.name} coming soon`}
+          </Link>
+        ))}
       </div>
     );
   }

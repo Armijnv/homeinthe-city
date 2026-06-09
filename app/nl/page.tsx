@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import HomePage from "@/app/components/HomePage";
+import type { CityGuideContent } from "@/app/lib/cityGuides";
+import { client } from "@/sanity/lib/client";
+import { cityGuideListQuery } from "@/sanity/lib/queries";
 
 /* ======================================================
    HOMEPAGE METADATA / SEO
@@ -36,6 +39,8 @@ export const metadata: Metadata = {
    HOMEPAGE
 ====================================================== */
 
-export default function Page() {
-  return <HomePage lang="nl" />;
+export default async function Page() {
+  const cityGuides = await client.fetch<CityGuideContent[]>(cityGuideListQuery);
+
+  return <HomePage lang="nl" cityGuides={cityGuides} />;
 }
