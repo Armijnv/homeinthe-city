@@ -56,6 +56,14 @@ const labels = {
     cities: "City real estate pages",
     listings: "Property listings",
     allListings: "All listings",
+    browseByCity: "Browse by City",
+    browseByCityText:
+      "Start with the places where Home in the City already has published property opportunities.",
+    featuredProperties: "Featured Properties",
+    featuredPropertiesText:
+      "Published homes from the Home in the City collection, updated directly from Sanity.",
+    cityCountSingular: "1 property",
+    cityCountPlural: "{count} properties",
     realtor: "Realtor profile",
     realtorFallback: "Realtor profile coming soon",
     realtorFallbackText:
@@ -97,6 +105,14 @@ const labels = {
     cities: "Páginas imobiliárias por cidade",
     listings: "Anúncios de imóveis",
     allListings: "Todos os anúncios",
+    browseByCity: "Buscar por Cidade",
+    browseByCityText:
+      "Comece pelos lugares onde a Home in the City já tem oportunidades de imóveis publicadas.",
+    featuredProperties: "Imóveis em Destaque",
+    featuredPropertiesText:
+      "Imóveis publicados da coleção Home in the City, atualizados diretamente pelo Sanity.",
+    cityCountSingular: "1 imóvel",
+    cityCountPlural: "{count} imóveis",
     realtor: "Perfil do corretor",
     realtorFallback: "Perfil de corretor em breve",
     realtorFallbackText:
@@ -138,6 +154,14 @@ const labels = {
     cities: "Vastgoedpagina's per stad",
     listings: "Woningaanbod",
     allListings: "Alle woningen",
+    browseByCity: "Zoek per Stad",
+    browseByCityText:
+      "Begin met de plaatsen waar Home in the City al gepubliceerde vastgoedkansen heeft.",
+    featuredProperties: "Uitgelichte Woningen",
+    featuredPropertiesText:
+      "Gepubliceerd woningaanbod uit de Home in the City-collectie, direct bijgewerkt vanuit Sanity.",
+    cityCountSingular: "1 woning",
+    cityCountPlural: "{count} woningen",
     realtor: "Makelaarsprofiel",
     realtorFallback: "Makelaarsprofiel binnenkort",
     realtorFallbackText:
@@ -177,16 +201,124 @@ function cityPath(lang: Lang, citySlug: string) {
   return `${listingPathPrefixes[lang]}/${citySlug}`;
 }
 
-function citySlugForListing(listing: PropertyListing) {
+export function listingCitySlug(listing: PropertyListing) {
   if (listing.city?.slug?.current) return listing.city.slug.current;
   if (!listing.cityName) return "porto-alegre";
 
-  return listing.cityName
+  return slugifyCityName(listing.cityName);
+}
+
+function slugifyCityName(cityName: string) {
+  return cityName
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+}
+
+type ListingCitySummary = {
+  slug: string;
+  name: string;
+  listingCount: number;
+  neighborhoods: string[];
+};
+
+function citySummariesFromListings(
+  listings: PropertyListing[],
+  lang: Lang,
+): ListingCitySummary[] {
+  const cities = new Map<string, ListingCitySummary>();
+
+  listings.forEach((listing) => {
+    const slug = listingCitySlug(listing);
+    const name = listingCityName(listing, lang) || slug;
+    const existing = cities.get(slug);
+
+    if (existing) {
+      existing.listingCount += 1;
+      if (
+        listing.neighborhood &&
+        !existing.neighborhoods.includes(listing.neighborhood)
+      ) {
+        existing.neighborhoods.push(listing.neighborhood);
+      }
+      return;
+    }
+
+    cities.set(slug, {
+      slug,
+      name,
+      listingCount: 1,
+      neighborhoods: listing.neighborhood ? [listing.neighborhood] : [],
+    });
+  });
+
+  return Array.from(cities.values()).sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+  );
+}
+
+export function realEstateCityConfigFromListings(
+  lang: Lang,
+  citySlug: string,
+  listings: PropertyListing[],
+): CityConfig {
+  const dynamicCity = citySummariesFromListings(listings, lang).find(
+    (city) => city.slug === citySlug,
+  );
+
+  if (!dynamicCity) return realEstateCityConfig(lang, citySlug);
+
+  const t = labels[lang];
+
+  return {
+    slug: dynamicCity.slug,
+    title: dynamicCity.name,
+    intro: t.browseByCityText,
+    typeFocus:
+      dynamicCity.listingCount === 1
+        ? t.cityCountSingular
+        : t.cityCountPlural.replace("{count}", String(dynamicCity.listingCount)),
+  };
+}
+
+function CityCard({
+  city,
+  lang,
+}: {
+  city: ListingCitySummary;
+  lang: Lang;
+}) {
+  const t = labels[lang];
+  const count =
+    city.listingCount === 1
+      ? t.cityCountSingular
+      : t.cityCountPlural.replace("{count}", String(city.listingCount));
+
+  return (
+    <Link
+      href={cityPath(lang, city.slug)}
+      className="group flex min-h-56 flex-col justify-between bg-white p-5 shadow-lg shadow-stone-300/20 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-stone-300/30 sm:p-6"
+    >
+      <div>
+        <p className="text-xs uppercase tracking-[0.22em] text-[#9a6b3f]">
+          {count}
+        </p>
+        <h3 className="mt-4 text-2xl font-semibold text-[#17202a]">
+          {city.name}
+        </h3>
+        {city.neighborhoods.length ? (
+          <p className="mt-3 text-sm leading-6 text-stone-600">
+            {city.neighborhoods.slice(0, 3).join(", ")}
+          </p>
+        ) : null}
+      </div>
+      <span className="mt-6 inline-flex border-b border-[#17202a] pb-1 text-sm font-semibold text-[#17202a]">
+        {t.viewCity}
+      </span>
+    </Link>
+  );
 }
 
 function formatPrice(listing: PropertyListing, lang: Lang) {
@@ -223,7 +355,7 @@ function PropertyCard({
 }) {
   const t = labels[lang];
   const listingSlug = listing.slug?.current;
-  const citySlug = citySlugForListing(listing);
+  const citySlug = listingCitySlug(listing);
   const href = listingSlug ? listingUrl(lang, citySlug, listingSlug) : cityPath(lang, citySlug);
   const title = localizedListingText(listing, "title", lang) || "Property listing";
   const cityName = listingCityName(listing, lang);
@@ -1113,6 +1245,7 @@ function PremiumRealEstatePortal({
   const paths = premiumPaths[lang];
   const inquiryHref = premiumInquiryHref(lang);
   const ownerHref = premiumOwnerHref(lang);
+  const cities = citySummariesFromListings(listings, lang);
   const availableListingCount = listings.filter(
     (listing) => listing.status !== "hidden",
   ).length;
@@ -1154,7 +1287,7 @@ function PremiumRealEstatePortal({
                 {content.heroText}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <PremiumButton href="#monthly-stays" variant="light">
+                <PremiumButton href="#featured-properties" variant="light">
                   {content.viewCta}
                 </PremiumButton>
                 <PremiumButton href="#owners" variant="heroOutline">
@@ -1183,6 +1316,84 @@ function PremiumRealEstatePortal({
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section
+        id="browse-by-city"
+        aria-labelledby="browse-by-city-title"
+        className="px-5 py-16 sm:px-8 lg:px-14 lg:py-24"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
+                {labels[lang].cities}
+              </p>
+              <h2
+                id="browse-by-city-title"
+                className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl"
+              >
+                {labels[lang].browseByCity}
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-stone-600">
+              {labels[lang].browseByCityText}
+            </p>
+          </div>
+
+          {cities.length ? (
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {cities.map((city) => (
+                <CityCard key={city.slug} city={city} lang={lang} />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-8 bg-white p-6 text-stone-600 shadow-lg shadow-stone-300/20">
+              {labels[lang].empty}
+            </p>
+          )}
+        </div>
+      </section>
+
+      <section
+        id="featured-properties"
+        aria-labelledby="featured-properties-title"
+        className="bg-white px-5 py-16 sm:px-8 lg:px-14 lg:py-24"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+            <div>
+              <p className="text-xs uppercase tracking-[0.24em] text-[#9a6b3f]">
+                {labels[lang].listings}
+              </p>
+              <h2
+                id="featured-properties-title"
+                className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl"
+              >
+                {labels[lang].featuredProperties}
+              </h2>
+            </div>
+            <p className="text-lg leading-8 text-stone-600">
+              {labels[lang].featuredPropertiesText}
+            </p>
+          </div>
+
+          {listings.length ? (
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {listings.map((listing) => (
+                <PropertyCard
+                  key={listing.slug?.current || localizedListingText(listing, "title", lang)}
+                  listing={listing}
+                  lang={lang}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-8 bg-[#f6f1e8] p-6 text-stone-600 shadow-lg shadow-stone-300/20">
+              {labels[lang].empty}
+            </p>
+          )}
         </div>
       </section>
 
@@ -1412,7 +1623,7 @@ function PremiumRealEstatePortal({
                 {content.readyText}
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <PremiumButton href="#monthly-stays" variant="light">
+                <PremiumButton href="#featured-properties" variant="light">
                   {content.viewCta}
                 </PremiumButton>
                 <PremiumButton href={ownerHref} variant="heroOutline">
