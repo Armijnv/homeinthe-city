@@ -539,12 +539,19 @@ function videoEmbedUrl(videoUrl?: string) {
 }
 
 function galleryImages(listing: PropertyListing, title: string): PropertyMediaImage[] {
-  const images = [listing.mainImage, ...(listing.gallery || [])]
-    .filter((image): image is ListingImage => Boolean(image?.asset?.url))
-    .map((image) => ({
-      url: image.asset?.url || "",
-      alt: image.alt || title,
-    }));
+  const seen = new Set<string>();
+  const images = [listing.mainImage, ...(listing.gallery || [])].flatMap((image) => {
+    const url = image?.asset?.url;
+
+    if (!url || seen.has(url)) return [];
+
+    seen.add(url);
+
+    return [{
+      url,
+      alt: image?.alt || title,
+    }];
+  });
 
   if (images.length) return images;
 

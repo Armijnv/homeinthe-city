@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type PropertyMediaImage = {
   url: string;
@@ -39,13 +39,21 @@ export default function PropertyListingMedia({
   nextLabel: string;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const hasImages = images.length > 0;
-  const heroImage = images[0];
-  const visibleGallery = useMemo(() => images.slice(1), [images]);
+  const hasMultipleImages = images.length > 1;
+  const selectedIndex = hasImages ? Math.min(currentIndex, images.length - 1) : 0;
+  const currentImage = images[selectedIndex];
 
   const openGallery = (index: number) => setActiveIndex(index);
   const closeGallery = () => setActiveIndex(null);
+  const showPreviousImage = useCallback(() => {
+    setCurrentIndex((index) => (index - 1 + images.length) % images.length);
+  }, [images.length]);
+  const showNextImage = useCallback(() => {
+    setCurrentIndex((index) => (index + 1) % images.length);
+  }, [images.length]);
   const showPrevious = useCallback(() => {
     setActiveIndex((index) =>
       index === null ? index : (index - 1 + images.length) % images.length,
@@ -75,42 +83,21 @@ export default function PropertyListingMedia({
     };
   }, [activeIndex, showNext, showPrevious]);
 
-  function handleTouchEnd(clientX: number) {
+  function handleTouchEnd(clientX: number, onPrevious: () => void, onNext: () => void) {
     if (touchStartX === null) return;
     const delta = clientX - touchStartX;
     setTouchStartX(null);
 
     if (Math.abs(delta) < 40) return;
-    if (delta > 0) showPrevious();
-    else showNext();
+    if (delta > 0) onPrevious();
+    else onNext();
   }
 
   return (
     <>
-      <section className="relative min-h-[92svh] overflow-hidden bg-[#111419] text-white">
-        {hasImages ? (
-          <button
-            type="button"
-            onClick={() => openGallery(0)}
-            className="absolute inset-0 cursor-zoom-in"
-            aria-label={openGalleryLabel}
-          >
-            <Image
-              src={heroImage.url}
-              alt={heroImage.alt}
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </button>
-        ) : (
-          <div className="absolute inset-0 bg-[#17202a]" />
-        )}
-
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
-        <div className="pointer-events-none relative z-10 flex min-h-[92svh] flex-col justify-end px-5 pb-12 pt-28 sm:px-8 lg:px-14">
-          <div className="max-w-5xl">
+      <section className="relative overflow-hidden bg-[#111419] px-5 pb-8 pt-28 text-white sm:px-8 lg:px-14 lg:pb-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-5xl pb-7">
             <p className="text-sm uppercase tracking-widest text-stone-200">
               {eyebrow}
             </p>
@@ -131,63 +118,134 @@ export default function PropertyListingMedia({
             <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-tight sm:text-6xl lg:text-7xl">
               {title}
             </h1>
-            <div className="mt-6 flex flex-col gap-5 text-lg text-stone-100 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mt-5 flex flex-col gap-4 text-base text-stone-100 sm:flex-row sm:items-end sm:justify-between sm:text-lg">
               <p className="max-w-2xl leading-8">{shortDescription}</p>
               {price ? (
                 <p className="text-3xl font-semibold sm:text-right">{price}</p>
               ) : null}
             </div>
           </div>
-        </div>
-      </section>
 
-      {visibleGallery.length ? (
-        <section className="px-5 py-12 sm:px-8 lg:px-14">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-5 flex items-end justify-between gap-4">
-              <h2 className="text-2xl font-semibold text-[#17202a]">
-                {galleryLabel}
-              </h2>
+          <div
+            className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#17202a] shadow-2xl shadow-black/35 sm:aspect-[16/10] lg:aspect-[16/9]"
+            onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
+            onTouchEnd={(event) =>
+              handleTouchEnd(
+                event.changedTouches[0]?.clientX ?? touchStartX ?? 0,
+                showPreviousImage,
+                showNextImage,
+              )
+            }
+          >
+            {hasImages && currentImage && hasMultipleImages ? (
               <button
                 type="button"
-                onClick={() => openGallery(0)}
-                className="hidden border border-[#17202a] px-4 py-2 text-sm font-semibold text-[#17202a] sm:inline-flex"
+                onClick={() => openGallery(selectedIndex)}
+                className="absolute inset-0 cursor-zoom-in"
+                aria-label={openGalleryLabel}
               >
-                {openGalleryLabel}
+                <Image
+                  src={currentImage.url}
+                  alt={currentImage.alt}
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="(min-width: 1024px) 1152px, 100vw"
+                />
               </button>
-            </div>
+            ) : hasImages && currentImage ? (
+              <Image
+                src={currentImage.url}
+                alt={currentImage.alt}
+                fill
+                priority
+                className="object-cover"
+                sizes="(min-width: 1024px) 1152px, 100vw"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[#17202a]" />
+            )}
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {visibleGallery.map((image, index) => (
+            {hasMultipleImages ? (
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/70 to-transparent" />
+            ) : null}
+
+            {hasMultipleImages ? (
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => openGallery(currentIndex)}
+                  className="rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-[#17202a] shadow-lg transition hover:bg-white"
+                >
+                  {openGalleryLabel}
+                </button>
+
+                <p className="rounded-full bg-black/55 px-3 py-1.5 text-sm font-medium text-white backdrop-blur">
+                  {selectedIndex + 1} / {images.length}
+                </p>
+              </div>
+            ) : null}
+
+            {hasMultipleImages ? (
+              <>
+                <button
+                  type="button"
+                  onClick={showPreviousImage}
+                  className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-3xl text-white backdrop-blur transition hover:bg-black/60 sm:left-4 sm:h-12 sm:w-12"
+                  aria-label={previousLabel}
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={showNextImage}
+                  className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/45 text-3xl text-white backdrop-blur transition hover:bg-black/60 sm:right-4 sm:h-12 sm:w-12"
+                  aria-label={nextLabel}
+                >
+                  ›
+                </button>
+              </>
+            ) : null}
+          </div>
+
+          {hasMultipleImages ? (
+            <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
+              {images.map((image, index) => (
                 <button
                   key={`${image.url}-${index}`}
                   type="button"
-                  onClick={() => openGallery(index + 1)}
-                  className={`relative overflow-hidden bg-stone-200 ${
-                    index === 0 ? "aspect-[4/3] lg:col-span-2 lg:row-span-2" : "aspect-[4/3]"
+                  onClick={() => setCurrentIndex(index)}
+                  className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border transition sm:h-20 sm:w-32 ${
+                    index === selectedIndex
+                      ? "border-white"
+                      : "border-white/20 opacity-70 hover:opacity-100"
                   }`}
-                  aria-label={`${openGalleryLabel}: ${index + 2}`}
+                  aria-label={`${galleryLabel}: ${index + 1}`}
                 >
                   <Image
                     src={image.url}
                     alt={image.alt}
                     fill
-                    className="object-cover transition duration-300 hover:scale-105"
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
+                    sizes="128px"
                   />
                 </button>
               ))}
             </div>
-          </div>
-        </section>
-      ) : null}
+          ) : null}
+        </div>
+      </section>
 
       {activeIndex !== null && hasImages ? (
         <div
           className="fixed inset-0 z-[100] bg-black text-white"
           onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
           onTouchEnd={(event) =>
-            handleTouchEnd(event.changedTouches[0]?.clientX ?? touchStartX ?? 0)
+            handleTouchEnd(
+              event.changedTouches[0]?.clientX ?? touchStartX ?? 0,
+              showPrevious,
+              showNext,
+            )
           }
         >
           <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between px-4 py-4 sm:px-6">
@@ -203,22 +261,26 @@ export default function PropertyListingMedia({
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={showPrevious}
-            className="absolute left-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl backdrop-blur transition hover:bg-white/25 sm:flex"
-            aria-label={previousLabel}
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={showNext}
-            className="absolute right-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl backdrop-blur transition hover:bg-white/25 sm:flex"
-            aria-label={nextLabel}
-          >
-            ›
-          </button>
+          {hasMultipleImages ? (
+            <>
+              <button
+                type="button"
+                onClick={showPrevious}
+                className="absolute left-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl backdrop-blur transition hover:bg-white/25 sm:flex"
+                aria-label={previousLabel}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={showNext}
+                className="absolute right-4 top-1/2 z-10 hidden h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-3xl backdrop-blur transition hover:bg-white/25 sm:flex"
+                aria-label={nextLabel}
+              >
+                ›
+              </button>
+            </>
+          ) : null}
 
           <div className="relative h-full w-full px-3 py-20 sm:px-16">
             <Image
