@@ -2,6 +2,17 @@
 
 import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
+import {
+  cityGuideName,
+  cityGuidePath,
+  isPortoAlegreGuide,
+  localizedCityGuideList,
+  localizedCityGuideText,
+  type CityGuideContent,
+  type CityGuideLang as Lang,
+  type CityGuideMapPlace as MapPlace,
+  type CityGuideSidebarCard as SidebarCard,
+} from "@/app/lib/cityGuides";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,63 +30,15 @@ const PortoMap = dynamic(
   }
 );
 
-type Lang = "en" | "pt" | "nl";
-
-type SidebarCard = {
-  title_en?: string;
-  title_pt?: string;
-  title_nl?: string;
-  text_en?: string;
-  text_pt?: string;
-  text_nl?: string;
-  button_en?: string;
-  button_pt?: string;
-  button_nl?: string;
-  href_en?: string;
-  href_pt?: string;
-  href_nl?: string;
-};
-
-type MapPlace = {
-  name: string;
-  category?: string;
-  description_en?: string;
-  description_pt?: string;
-  description_nl?: string;
-  detail_en?: string;
-  detail_pt?: string;
-  detail_nl?: string;
-  latitude?: number;
-  longitude?: number;
-  googleMaps?: string;
-  website?: string;
-  favorite?: boolean;
-  image?: {
-    asset?: {
-      url?: string;
-    };
-  };
-};
-
-type CityContent = {
-  headline_en?: string;
-  headline_pt?: string;
-  headline_nl?: string;
-  intro_en?: string;
-  intro_pt?: string;
-  intro_nl?: string;
-  introBlocks_en?: string[];
-  introBlocks_pt?: string[];
-  introBlocks_nl?: string[];
-  mapPlaces?: MapPlace[];
-  sidebarCards?: SidebarCard[];
-  cta_en?: string;
-  cta_pt?: string;
-  cta_nl?: string;
-};
-
 type WeatherData = {
   temperature_2m: number;
+};
+
+type ServiceCard = {
+  title: string;
+  text: string;
+  button: string;
+  href: string;
 };
 
 /* ======================================================
@@ -184,6 +147,60 @@ const cityGuideContent = {
   },
 };
 
+const fallbackGuideCopy = {
+  en: {
+    intro: (cityName: string) =>
+      `A Home in the City guide for ${cityName} is being prepared with local context, practical support and curated places.`,
+    hostLine:
+      "Local recommendations and support options will appear here as the guide grows.",
+    placesTitle: "Local picks coming soon",
+    placesText:
+      "Restaurants, cafés, cultural places and practical city tips will be added from the Sanity City document.",
+    realEstateTitle: (cityName: string) => `${cityName} real estate`,
+    realEstateText:
+      "See available property listings while the city guide is being expanded.",
+    realEstateButton: "View properties",
+    supportTitle: "Local support",
+    supportText:
+      "Contact Home in the City for practical questions while this guide is being completed.",
+    supportButton: "Contact",
+  },
+  pt: {
+    intro: (cityName: string) =>
+      `Um guia da Home in the City para ${cityName} está sendo preparado com contexto local, apoio prático e lugares selecionados.`,
+    hostLine:
+      "Recomendações locais e opções de apoio aparecerão aqui conforme o guia crescer.",
+    placesTitle: "Indicações locais em breve",
+    placesText:
+      "Restaurantes, cafés, espaços culturais e dicas práticas serão adicionados pelo documento de Cidade no Sanity.",
+    realEstateTitle: (cityName: string) => `Imóveis em ${cityName}`,
+    realEstateText:
+      "Veja anúncios disponíveis enquanto o guia da cidade está sendo expandido.",
+    realEstateButton: "Ver imóveis",
+    supportTitle: "Apoio local",
+    supportText:
+      "Entre em contato com a Home in the City para dúvidas práticas enquanto este guia é concluído.",
+    supportButton: "Contato",
+  },
+  nl: {
+    intro: (cityName: string) =>
+      `Een Home in the City-gids voor ${cityName} wordt voorbereid met lokale context, praktische hulp en geselecteerde plekken.`,
+    hostLine:
+      "Lokale aanbevelingen en hulpopties verschijnen hier naarmate de gids groeit.",
+    placesTitle: "Lokale tips binnenkort",
+    placesText:
+      "Restaurants, cafés, culturele plekken en praktische stadstips worden toegevoegd vanuit het Sanity City-document.",
+    realEstateTitle: (cityName: string) => `Vastgoed in ${cityName}`,
+    realEstateText:
+      "Bekijk beschikbaar woningaanbod terwijl de stadsgids wordt uitgebreid.",
+    realEstateButton: "Bekijk woningen",
+    supportTitle: "Lokale hulp",
+    supportText:
+      "Neem contact op met Home in the City voor praktische vragen terwijl deze gids wordt afgerond.",
+    supportButton: "Contact",
+  },
+};
+
 function normalizeHref(href?: string) {
   return href?.replace(/\/$/, "") || "";
 }
@@ -217,16 +234,20 @@ function isDuplicateServiceCard(card: SidebarCard, lang: Lang, serviceHrefs: Set
   ].some((pattern) => pattern.test(text));
 }
 
-function Weather() {
+function Weather({ citySlug }: { citySlug: string }) {
   const [data, setData] = useState<WeatherData | null>(null);
 
   useEffect(() => {
+    if (!isPortoAlegreGuide(citySlug)) return;
+
     fetch(
       "https://api.open-meteo.com/v1/forecast?latitude=-30.03&longitude=-51.23&current=temperature_2m,weather_code"
     )
       .then((res) => res.json())
       .then((json) => setData(json.current));
-  }, []);
+  }, [citySlug]);
+
+  if (!isPortoAlegreGuide(citySlug)) return null;
 
   if (!data) return <p className="text-stone-500">Loading weather...</p>;
 
@@ -237,13 +258,63 @@ function Weather() {
   );
 }
 
-export default function CityPage({ lang }: { lang: Lang }) {
-  const [city, setCity] = useState<CityContent | null>(null);
+function localizedField<T extends "title" | "text" | "button" | "href">(
+  card: SidebarCard,
+  field: T,
+  lang: Lang,
+) {
+  const localized = card[`${field}_${lang}`];
+  const english = card[`${field}_en`];
+
+  return localized || english || "";
+}
+
+function fallbackServiceCards({
+  lang,
+  citySlug,
+  cityName,
+}: {
+  lang: Lang;
+  citySlug: string;
+  cityName: string;
+}): ServiceCard[] {
+  const copy = fallbackGuideCopy[lang];
+  const realEstatePrefix =
+    lang === "pt" ? "/pt/imoveis" : lang === "nl" ? "/nl/vastgoed" : "/real-estate";
+
+  return [
+    {
+      title: copy.realEstateTitle(cityName),
+      text: copy.realEstateText,
+      button: copy.realEstateButton,
+      href: `${realEstatePrefix}/${citySlug}`,
+    },
+    {
+      title: copy.supportTitle,
+      text: copy.supportText,
+      button: copy.supportButton,
+      href: "mailto:contact@homeinthe.city",
+    },
+  ];
+}
+
+export default function CityPage({
+  lang,
+  citySlug,
+  initialCity = null,
+}: {
+  lang: Lang;
+  citySlug: string;
+  initialCity?: CityGuideContent | null;
+}) {
+  const [city, setCity] = useState<CityGuideContent | null>(initialCity);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    client.fetch<CityContent | null>(cityQuery, { slug: "porto-alegre" }).then(setCity);
-  }, []);
+    if (initialCity?.slug?.current === citySlug) return;
+
+    client.fetch<CityGuideContent | null>(cityQuery, { slug: citySlug }).then(setCity);
+  }, [citySlug, initialCity]);
 
   const labels = {
     en: {
@@ -251,26 +322,39 @@ export default function CityPage({ lang }: { lang: Lang }) {
       weatherTitle: "Weather today",
       cta: "Talk to me",
       profile: "Profile",
+      fallbackTitle: "City guide coming soon",
     },
     pt: {
       helpTitle: "Precisa de ajuda na cidade?",
       weatherTitle: "Clima hoje",
       cta: "Fale comigo",
       profile: "Perfil",
+      fallbackTitle: "Guia da cidade em breve",
     },
     nl: {
       helpTitle: "Hulp nodig in de stad?",
       weatherTitle: "Weer vandaag",
       cta: "Stuur me een bericht",
       profile: "Profiel",
+      fallbackTitle: "Stadsgids binnenkort",
     },
   };
 
   const t = labels[lang];
+  const cityName = cityGuideName(city, lang, citySlug);
+  const isPortoAlegre = isPortoAlegreGuide(citySlug);
+  const fallbackCopy = fallbackGuideCopy[lang];
+  const headline = localizedCityGuideText(city, "headline", lang);
+  const intro = localizedCityGuideText(city, "intro", lang);
+  const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
   const places: MapPlace[] = city?.mapPlaces || [];
-  const guide = cityGuideContent[lang];
+  const guide = isPortoAlegre ? cityGuideContent[lang] : null;
+  const title = headline || guide?.title || `${cityName}: ${t.fallbackTitle}`;
+  const introText = intro || guide?.intro || fallbackCopy.intro(cityName);
+  const hostLine = guide?.hostLine || fallbackCopy.hostLine;
+  const serviceCards = guide?.serviceCards || fallbackServiceCards({ lang, citySlug, cityName });
   const serviceHrefs = new Set(
-    guide.serviceCards.map((card) => normalizeHref(card.href))
+    serviceCards.map((card) => normalizeHref(card.href))
   );
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
     (card) => !isDuplicateServiceCard(card, lang, serviceHrefs)
@@ -330,39 +414,48 @@ export default function CityPage({ lang }: { lang: Lang }) {
 
         <div className="space-y-8 md:col-span-2">
           <div className="flex gap-3 text-xl">
-            <a href="/brazil/porto-alegre">🇬🇧</a>
-            <a href="/pt/brasil/porto-alegre">🇧🇷</a>
-            <a href="/nl/brazilie/porto-alegre">🇳🇱</a>
+            <a href={cityGuidePath("en", citySlug)}>🇬🇧</a>
+            <a href={cityGuidePath("pt", citySlug)}>🇧🇷</a>
+            <a href={cityGuidePath("nl", citySlug)}>🇳🇱</a>
           </div>
 
           <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
             <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
-              {guide.title}
+              {title}
             </h1>
 
             <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
-              {guide.intro}
+              {introText}
             </p>
 
             <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">
-              {guide.hostLine}
+              {hostLine}
             </p>
 
             <div className="mt-6 space-y-4">
-              {city?.[`introBlocks_${lang}`]?.map(
-                (block: string, index: number) => (
-                  <p
-                    key={index}
-                    className="max-w-2xl leading-relaxed text-stone-700"
-                  >
-                    {block}
-                  </p>
-                )
-              )}
+              {introBlocks.map((block: string, index: number) => (
+                <p
+                  key={index}
+                  className="max-w-2xl leading-relaxed text-stone-700"
+                >
+                  {block}
+                </p>
+              ))}
             </div>
           </div>
 
-          <PortoMap places={places} lang={lang} />
+          {places.length ? (
+            <PortoMap places={places} lang={lang} cityName={cityName} />
+          ) : (
+            <div className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
+              <h2 className="mb-3 text-2xl text-stone-800">
+                {fallbackCopy.placesTitle}
+              </h2>
+              <p className="leading-relaxed text-stone-600">
+                {fallbackCopy.placesText}
+              </p>
+            </div>
+          )}
 
           <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
             <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>
@@ -372,22 +465,24 @@ export default function CityPage({ lang }: { lang: Lang }) {
               target="_blank"
               className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
             >
-              {city?.[`cta_${lang}`] || t.cta}
+              {localizedCityGuideText(city, "cta", lang) || t.cta}
             </a>
           </div>
         </div>
 
         <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
-          <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-            <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
-            <Weather />
-          </div>
+          {isPortoAlegre ? (
+            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+              <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
+              <Weather citySlug={citySlug} />
+            </div>
+          ) : null}
 
           {/* ======================================================
              SECONDARY SERVICE ENTRY POINTS
           ====================================================== */}
 
-          {guide.serviceCards.map((card) => (
+          {serviceCards.map((card) => (
             <div
               key={card.href}
               className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
@@ -400,12 +495,21 @@ export default function CityPage({ lang }: { lang: Lang }) {
                 {card.text}
               </p>
 
-              <Link
-                href={card.href}
-                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-              >
-                {card.button}
-              </Link>
+              {card.href.startsWith("mailto:") ? (
+                <a
+                  href={card.href}
+                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+                >
+                  {card.button}
+                </a>
+              ) : (
+                <Link
+                  href={card.href}
+                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+                >
+                  {card.button}
+                </Link>
+              )}
             </div>
           ))}
 
@@ -414,25 +518,27 @@ export default function CityPage({ lang }: { lang: Lang }) {
           ====================================================== */}
 
           {sidebarCards.map((card, index) => (
-            <div
-              key={`${getLocalizedHref(card, lang)}-${index}`}
-              className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
-            >
-              <h3 className="mb-3 text-lg font-medium text-black">
-                {card[`title_${lang}`]}
-              </h3>
-
-              <p className="mb-5 text-sm leading-relaxed text-stone-700">
-                {card[`text_${lang}`]}
-              </p>
-
-              <a
-                href={card[`href_${lang}`]}
-                className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+            localizedField(card, "title", lang) ? (
+              <div
+                key={`${getLocalizedHref(card, lang)}-${index}`}
+                className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
               >
-                {card[`button_${lang}`]}
-              </a>
-            </div>
+                <h3 className="mb-3 text-lg font-medium text-black">
+                  {localizedField(card, "title", lang)}
+                </h3>
+
+                <p className="mb-5 text-sm leading-relaxed text-stone-700">
+                  {localizedField(card, "text", lang)}
+                </p>
+
+                <a
+                  href={localizedField(card, "href", lang)}
+                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
+                >
+                  {localizedField(card, "button", lang)}
+                </a>
+              </div>
+            ) : null
           ))}
         </div>
       </div>

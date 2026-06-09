@@ -51,10 +51,21 @@ function FlyToPlace({ latitude, longitude }: { latitude?: number; longitude?: nu
   return null;
 }
 
-export default function PortoMap({ places = [], lang }: { places?: MapPlace[]; lang: Lang }) {
+export default function PortoMap({
+  places = [],
+  lang,
+  cityName = "Porto Alegre",
+}: {
+  places?: MapPlace[];
+  lang: Lang;
+  cityName?: string;
+}) {
   const [activeCategory, setActiveCategory] = useState("restaurant");
   const [selectedPlace, setSelectedPlace] = useState<MapPlace | null>(null);
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
+  const mapCenter = places.find(
+    (place) => typeof place.latitude === "number" && typeof place.longitude === "number",
+  );
 
   function selectPlace(place: MapPlace, shouldScroll = true) {
     setSelectedPlace(place);
@@ -86,7 +97,7 @@ export default function PortoMap({ places = [], lang }: { places?: MapPlace[]; l
   return (
     <div className="relative z-0 rounded-3xl bg-white p-5 md:p-6">
       <div className="mb-5">
-        <h2 className="text-2xl text-stone-800">Porto Alegre map</h2>
+        <h2 className="text-2xl text-stone-800">{cityName} map</h2>
         <p className="text-sm text-stone-500">{mapText[lang]}</p>
       </div>
 
@@ -146,7 +157,12 @@ export default function PortoMap({ places = [], lang }: { places?: MapPlace[]; l
       </div>
 
       <div ref={mapSectionRef} className="relative z-0 scroll-mt-28 overflow-hidden rounded-2xl">
-        <MapContainer center={[-30.0346, -51.2177]} zoom={13} scrollWheelZoom={false} className="z-0 h-[420px] w-full md:h-[500px]">
+        <MapContainer
+          center={[mapCenter?.latitude || -30.0346, mapCenter?.longitude || -51.2177]}
+          zoom={13}
+          scrollWheelZoom={false}
+          className="z-0 h-[420px] w-full md:h-[500px]"
+        >
           <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
           {visiblePlaces.map((place) => {

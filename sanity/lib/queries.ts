@@ -7,6 +7,77 @@ export const cityQuery = `
     name_en,
     name_pt,
     name_nl,
+    slug,
+
+    headline_en,
+    headline_pt,
+    headline_nl,
+
+    intro_en,
+    intro_pt,
+    intro_nl,
+
+    introBlocks_en,
+    introBlocks_pt,
+    introBlocks_nl,
+
+    mapPlaces[]{
+      name,
+      category,
+      neighborhood,
+      description_en,
+      description_pt,
+      description_nl,
+      detail_en,
+      detail_pt,
+      detail_nl,
+      latitude,
+      longitude,
+      googleMaps,
+      website,
+      favorite,
+      image{
+        asset->{
+          url
+        }
+      },
+      video{
+        asset->{
+          url
+        }
+      }
+    },
+
+    sidebarCards[]{
+      title_en,
+      title_pt,
+      title_nl,
+
+      text_en,
+      text_pt,
+      text_nl,
+
+      button_en,
+      button_pt,
+      button_nl,
+
+      href_en,
+      href_pt,
+      href_nl
+    },
+
+    cta_en,
+    cta_pt,
+    cta_nl
+  }
+`;
+
+export const cityGuideListQuery = `
+  *[_type == "city" && defined(slug.current)] | order(name_en asc){
+    name_en,
+    name_pt,
+    name_nl,
+    slug,
 
     headline_en,
     headline_pt,

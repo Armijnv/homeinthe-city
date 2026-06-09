@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
+import { cityGuidePath } from "@/app/lib/cityGuides";
 import {
+  cityGuideListQuery,
   propertyListingListQuery,
   providerListQuery,
 } from "@/sanity/lib/queries";
@@ -23,6 +25,12 @@ type SitemapPropertyListing = {
   cityName?: string;
 };
 
+type SitemapCityGuide = {
+  slug?: {
+    current?: string;
+  };
+};
+
 const siteUrl = "https://homeinthe.city";
 
 function citySlugFromName(cityName?: string) {
@@ -42,9 +50,10 @@ function staticEntry(path = "") {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [providers, propertyListings] = await Promise.all([
+  const [providers, propertyListings, cityGuides] = await Promise.all([
     client.fetch<SitemapProvider[]>(providerListQuery),
     client.fetch<SitemapPropertyListing[]>(propertyListingListQuery),
+    client.fetch<SitemapCityGuide[]>(cityGuideListQuery),
   ]);
 
   const providerEntries = providers.flatMap((provider) => {
@@ -67,6 +76,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       staticEntry(`/real-estate/${citySlug}/${listingSlug}`),
       staticEntry(`/pt/imoveis/${citySlug}/${listingSlug}`),
       staticEntry(`/nl/vastgoed/${citySlug}/${listingSlug}`),
+    ];
+  });
+
+  const cityGuideEntries = cityGuides.flatMap((city) => {
+    const citySlug = city.slug?.current;
+    if (!citySlug || citySlug === "porto-alegre") return [];
+
+    return [
+      staticEntry(cityGuidePath("en", citySlug)),
+      staticEntry(cityGuidePath("pt", citySlug)),
+      staticEntry(cityGuidePath("nl", citySlug)),
     ];
   });
 
@@ -216,6 +236,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     ...providerEntries,
+    ...cityGuideEntries,
     ...propertyEntries,
   ];
 }
