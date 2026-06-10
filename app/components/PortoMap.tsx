@@ -54,7 +54,7 @@ function FlyToPlace({ latitude, longitude }: { latitude?: number; longitude?: nu
 export default function PortoMap({
   places = [],
   lang,
-  cityName = "Porto Alegre",
+  cityName = "City",
 }: {
   places?: MapPlace[];
   lang: Lang;

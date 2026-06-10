@@ -144,6 +144,7 @@ export default function Header({
       realEstate: "Real Estate",
       services: "Services",
       explore: "Explore Porto Alegre",
+      exploreCity: (cityName: string) => `Explore ${cityName}`,
       cityGuides: "City Guides",
       propertyListings: "Property Listings",
       about: "About",
@@ -168,6 +169,7 @@ export default function Header({
       realEstate: "Imóveis",
       services: "Serviços",
       explore: "Explore Porto Alegre",
+      exploreCity: (cityName: string) => `Explore ${cityName}`,
       cityGuides: "Guias por Cidade",
       propertyListings: "Anúncios de imóveis",
       about: "Sobre",
@@ -192,6 +194,7 @@ export default function Header({
       realEstate: "Vastgoed",
       services: "Diensten",
       explore: "Ontdek Porto Alegre",
+      exploreCity: (cityName: string) => `Ontdek ${cityName}`,
       cityGuides: "Stadsgidsen",
       propertyListings: "Woningaanbod",
       about: "Over",
@@ -304,6 +307,22 @@ export default function Header({
     : pathname.startsWith("/nl")
     ? "/nl/brazilie/porto-alegre"
     : "/brazil/porto-alegre";
+  const cityGuideSlug =
+    pathname.match(/^\/brazil\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/pt\/brasil\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/nl\/brazilie\/([^/]+)/)?.[1];
+  const currentCityGuide = cityGuides.find(
+    (city) => city.slug?.current === cityGuideSlug,
+  );
+  const currentCityGuideName = cityGuideSlug
+    ? cityGuideName(currentCityGuide, lang, cityGuideSlug)
+    : "";
+  const exploreCityPath = cityGuideSlug
+    ? cityGuidePath(lang, cityGuideSlug)
+    : portoAlegrePath;
+  const exploreTitle = currentCityGuideName
+    ? t.exploreCity(currentCityGuideName)
+    : t.explore;
 
   const hostPath = pathname.startsWith("/pt")
     ? "/pt/hosts/armijn"
@@ -348,20 +367,20 @@ export default function Header({
     {
       title: t.services,
       links: [
-        { label: "Interpreter Porto Alegre", href: interpreterPath },
+        { label: t.interpreter, href: interpreterPath },
         { label: t.translators, href: translatorsPath },
         { label: t.host, href: hostPath },
         { label: t.realEstate, href: realEstatePath },
       ],
     },
     {
-      title: t.explore,
+      title: exploreTitle,
       links: [
-        { label: t.restaurants, href: portoAlegrePath },
-        { label: t.cafes, href: portoAlegrePath },
-        { label: t.parks, href: portoAlegrePath },
-        { label: t.culture, href: portoAlegrePath },
-        { label: t.markets, href: portoAlegrePath },
+        { label: t.restaurants, href: exploreCityPath },
+        { label: t.cafes, href: exploreCityPath },
+        { label: t.parks, href: exploreCityPath },
+        { label: t.culture, href: exploreCityPath },
+        { label: t.markets, href: exploreCityPath },
       ],
     },
     ...(cityGuideLinks.length
@@ -394,7 +413,7 @@ export default function Header({
     },
   ];
   const featuredInterpreter = {
-    label: "Interpreter Porto Alegre",
+    label: t.interpreter,
     href: interpreterPath,
   };
 
