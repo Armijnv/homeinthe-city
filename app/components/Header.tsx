@@ -3,6 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import {
+  cityGuideName,
+  cityGuidePath,
+  type CityGuideContent,
+  type CityGuideLang,
+} from "@/app/lib/cityGuides";
 
 type MenuLink = {
   label: string;
@@ -98,7 +104,11 @@ function MenuContent({
   );
 }
 
-export default function Header() {
+export default function Header({
+  cityGuides = [],
+}: {
+  cityGuides?: CityGuideContent[];
+}) {
   const pathname = usePathname();
   const providerSlug =
     pathname.match(/^\/providers\/([^/]+)/)?.[1] ||
@@ -119,7 +129,7 @@ export default function Header() {
   const realEstateCitySlug = realEstateMatch?.[1];
   const realEstateListingSlug = realEstateMatch?.[2];
 
-  const lang = pathname.startsWith("/pt")
+  const lang: CityGuideLang = pathname.startsWith("/pt")
     ? "pt"
     : pathname.startsWith("/nl")
     ? "nl"
@@ -134,6 +144,7 @@ export default function Header() {
       realEstate: "Real Estate",
       services: "Services",
       explore: "Explore Porto Alegre",
+      cityGuides: "City Guides",
       propertyListings: "Property Listings",
       about: "About",
       restaurants: "Restaurants",
@@ -157,6 +168,7 @@ export default function Header() {
       realEstate: "Imóveis",
       services: "Serviços",
       explore: "Explore Porto Alegre",
+      cityGuides: "Guias por Cidade",
       propertyListings: "Anúncios de imóveis",
       about: "Sobre",
       restaurants: "Restaurantes",
@@ -180,6 +192,7 @@ export default function Header() {
       realEstate: "Vastgoed",
       services: "Diensten",
       explore: "Ontdek Porto Alegre",
+      cityGuides: "Stadsgidsen",
       propertyListings: "Woningaanbod",
       about: "Over",
       restaurants: "Restaurants",
@@ -318,6 +331,18 @@ export default function Header() {
   const portoAlegreRealEstatePath = `${realEstatePath}/porto-alegre`;
   const florianopolisRealEstatePath = `${realEstatePath}/florianopolis`;
   const aboutPath = homePath;
+  const cityGuideLinks = cityGuides.flatMap((city) => {
+    const citySlug = city.slug?.current;
+
+    if (!citySlug) return [];
+
+    return [
+      {
+        label: cityGuideName(city, lang, citySlug),
+        href: cityGuidePath(lang, citySlug),
+      },
+    ];
+  });
 
   const menuSections = [
     {
@@ -339,6 +364,14 @@ export default function Header() {
         { label: t.markets, href: portoAlegrePath },
       ],
     },
+    ...(cityGuideLinks.length
+      ? [
+          {
+            title: t.cityGuides,
+            links: cityGuideLinks,
+          },
+        ]
+      : []),
     {
       title: t.propertyListings,
       links: [

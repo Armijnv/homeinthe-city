@@ -2,6 +2,9 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { JsonLdScript, organizationId, websiteId } from "@/app/lib/structuredData";
+import type { CityGuideContent } from "@/app/lib/cityGuides";
+import { client } from "@/sanity/lib/client";
+import { cityNavigationQuery } from "@/sanity/lib/queries";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { headers } from "next/headers";
@@ -106,6 +109,9 @@ export default async function RootLayout({
 }) {
   const requestHeaders = await headers();
   const pathname = requestHeaders.get("x-homeinthecity-pathname") || "/";
+  const cityGuides = await client
+    .fetch<CityGuideContent[]>(cityNavigationQuery)
+    .catch(() => []);
 
   return (
     <html lang={getDocumentLang(pathname)}>
@@ -129,7 +135,7 @@ export default async function RootLayout({
               HEADER
           ====================================================== */}
 
-          <Header />
+          <Header cityGuides={cityGuides} />
 
           {/* ======================================================
               PAGE CONTENT

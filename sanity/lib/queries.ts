@@ -112,6 +112,19 @@ ${cityGuideProjection}
   }
 `;
 
+export const cityNavigationQuery = `
+  *[
+    _type == "city" &&
+    defined(slug.current) &&
+    coalesce(guideStatus, "live") != "hidden"
+  ] | order(name_en asc){
+    name_en,
+    name_pt,
+    name_nl,
+    slug
+  }
+`;
+
 /* ======================================================
    SERVICE PAGE QUERY
 ====================================================== */
