@@ -2,11 +2,9 @@ import type { Metadata } from "next";
 import CityPage from "@/app/components/CityPage";
 import {
   cityGuideDisplayContent,
-  type CityGuideContent,
 } from "@/app/lib/cityGuides";
+import { getCityPageData } from "@/app/lib/cityPageData";
 import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
-import { client } from "@/sanity/lib/client";
-import { cityQuery } from "@/sanity/lib/queries";
 
 const pageUrl = "https://homeinthe.city/brazil/porto-alegre";
 const pageDescription =
@@ -48,9 +46,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const city = await client.fetch<CityGuideContent | null>(cityQuery, {
-    slug: "porto-alegre",
-  });
+  const { city, propertyListings } = await getCityPageData("porto-alegre");
 
   return (
     <div className="relative isolate">
@@ -62,6 +58,7 @@ export default async function Page() {
         lang="en"
         citySlug="porto-alegre"
         initialCity={cityGuideDisplayContent(city, "porto-alegre")}
+        initialPropertyListings={propertyListings}
       />
     </div>
   );

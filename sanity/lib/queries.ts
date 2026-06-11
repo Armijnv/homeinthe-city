@@ -487,6 +487,51 @@ export const propertyListingsByCityQuery = `
   }
 `;
 
+export const cityMapPropertyListingsQuery = `
+  *[
+    _type == "propertyListing" &&
+    status in ["available", "reserved", "sold", "rented"] &&
+    defined(slug.current) &&
+    defined(mapCoordinates.lat) &&
+    defined(mapCoordinates.lng) &&
+    (
+      city->slug.current == $citySlug ||
+      cityName in $cityNames
+    )
+  ] | order(_createdAt desc){
+    title_en,
+    title_pt,
+    title_nl,
+    slug,
+    listingType,
+    status,
+    city->{
+      name_en,
+      name_pt,
+      name_nl,
+      slug
+    },
+    cityName,
+    neighborhood,
+    price,
+    currency,
+    bedrooms,
+    bathrooms,
+    parkingSpaces,
+    areaM2,
+    shortDescription_en,
+    shortDescription_pt,
+    shortDescription_nl,
+    mainImage{
+      alt,
+      asset->{
+        url
+      }
+    },
+    mapCoordinates
+  }
+`;
+
 export const realtorProviderQuery = `
   *[
     _type == "provider" &&

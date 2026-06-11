@@ -15,13 +15,14 @@ import {
   type CityGuideProvider,
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
+import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-const PortoMap = dynamic(
-  () => import("@/app/components/PortoMap").then((mod) => mod.default),
+const CityMap = dynamic(
+  () => import("@/app/components/CityMap").then((mod) => mod.default),
   {
     ssr: false,
     loading: () => (
@@ -31,6 +32,8 @@ const PortoMap = dynamic(
     ),
   }
 );
+
+type CityMapEntry = import("@/app/components/CityMap").CityMapEntry;
 
 type WeatherData = {
   temperature_2m: number;
@@ -226,29 +229,13 @@ function getLocalizedHref(card: SidebarCard, lang: Lang) {
   return normalizeHref(card[`href_${lang}`]);
 }
 
-function getLocalizedCardText(card: SidebarCard, lang: Lang) {
-  return [
-    card[`title_${lang}`],
-    card[`text_${lang}`],
-    card[`button_${lang}`],
-    card[`href_${lang}`],
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-}
-
-function isDuplicateServiceCard(card: SidebarCard, lang: Lang, serviceHrefs: Set<string>) {
-  if (serviceHrefs.has(getLocalizedHref(card, lang))) return true;
-
-  const text = getLocalizedCardText(card, lang);
-
-  return [
-    /interpreter|int[eé]rprete|tolk/,
-    /translation|translator|tradu[cç][aã]o|tradutor|vertaling|vertaler/,
-    /real estate|apartment|apartamento|im[oó]ve|vastgoed/,
-    /business support|apoio empresarial|lokale zakelijke hulp/,
-  ].some((pattern) => pattern.test(text));
+function isExactDuplicateSidebarCard(
+  card: SidebarCard,
+  lang: Lang,
+  serviceHrefs: Set<string>,
+) {
+  const href = getLocalizedHref(card, lang);
+  return Boolean(href && serviceHrefs.has(href));
 }
 
 function Weather({ citySlug }: { citySlug: string }) {
@@ -422,23 +409,269 @@ function portoAlegreFallbackHost(lang: Lang): DisplayHost {
   };
 }
 
+const legacyMapCategoryLabels: Record<Lang, Record<string, string>> = {
+  en: {
+    restaurant: "Restaurants",
+    coffee: "Cafés",
+    cafe: "Cafés",
+    museum: "Museums",
+    liveMusic: "Music",
+    business: "Business Services",
+    walk: "Walks",
+    yoga: "Yoga schools",
+    organicFair: "Organic markets",
+    other: "Other",
+  },
+  pt: {
+    restaurant: "Restaurantes",
+    coffee: "Cafés",
+    cafe: "Cafés",
+    museum: "Museus",
+    liveMusic: "Música",
+    business: "Serviços empresariais",
+    walk: "Caminhadas",
+    yoga: "Escolas de yoga",
+    organicFair: "Orgânicos",
+    other: "Outros",
+  },
+  nl: {
+    restaurant: "Restaurants",
+    coffee: "Cafés",
+    cafe: "Cafés",
+    museum: "Musea",
+    liveMusic: "Muziek",
+    business: "Zakelijke diensten",
+    walk: "Wandelingen",
+    yoga: "Yogascholen",
+    organicFair: "Biologische markten",
+    other: "Overig",
+  },
+};
+
+const propertyMapLabels = {
+  en: {
+    rentCategory: "Rentals",
+    saleCategory: "Properties for Sale",
+    rentBadge: "For rent",
+    saleBadge: "For sale",
+    viewProperty: "View property",
+    bedrooms: "bed",
+    bathrooms: "bath",
+    parking: "parking",
+  },
+  pt: {
+    rentCategory: "Aluguéis",
+    saleCategory: "Imóveis à venda",
+    rentBadge: "Para alugar",
+    saleBadge: "À venda",
+    viewProperty: "Ver imóvel",
+    bedrooms: "quartos",
+    bathrooms: "banheiros",
+    parking: "vagas",
+  },
+  nl: {
+    rentCategory: "Huurwoningen",
+    saleCategory: "Woningen te koop",
+    rentBadge: "Te huur",
+    saleBadge: "Te koop",
+    viewProperty: "Bekijk woning",
+    bedrooms: "slaapkamers",
+    bathrooms: "badkamers",
+    parking: "parkeren",
+  },
+};
+
+const localeByLang: Record<Lang, string> = {
+  en: "en-US",
+  pt: "pt-BR",
+  nl: "nl-NL",
+};
+
+function humanizeCategory(value: string) {
+  return value
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function mapCategoryLabel(category: string | undefined, lang: Lang) {
+  const categoryId = category || "other";
+  return legacyMapCategoryLabels[lang][categoryId] || humanizeCategory(categoryId);
+}
+
+function localizedListingText(
+  listing: PropertyListing,
+  field: "title" | "shortDescription",
+  lang: Lang,
+) {
+  const values = listing as Record<string, unknown>;
+  const localized = values[`${field}_${lang}`];
+  const english = values[`${field}_en`];
+
+  if (typeof localized === "string" && localized.trim()) return localized;
+  if (typeof english === "string" && english.trim()) return english;
+
+  return "";
+}
+
+function listingUrl(lang: Lang, citySlug: string, listingSlug: string) {
+  const prefix =
+    lang === "pt" ? "/pt/imoveis" : lang === "nl" ? "/nl/vastgoed" : "/real-estate";
+  return `${prefix}/${citySlug}/${listingSlug}`;
+}
+
+function normalizedCoordinates(latitude?: number, longitude?: number) {
+  const valid =
+    typeof latitude === "number" &&
+    Number.isFinite(latitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    typeof longitude === "number" &&
+    Number.isFinite(longitude) &&
+    longitude >= -180 &&
+    longitude <= 180;
+
+  return valid ? { latitude, longitude } : null;
+}
+
+function formatListingPrice(listing: PropertyListing, lang: Lang) {
+  if (typeof listing.price !== "number") return "";
+
+  return new Intl.NumberFormat(localeByLang[lang], {
+    style: "currency",
+    currency: listing.currency || "BRL",
+    maximumFractionDigits: 0,
+  }).format(listing.price);
+}
+
+function listingDetail(listing: PropertyListing, lang: Lang) {
+  const t = propertyMapLabels[lang];
+  const details = [
+    formatListingPrice(listing, lang),
+    typeof listing.bedrooms === "number" ? `${listing.bedrooms} ${t.bedrooms}` : "",
+    typeof listing.bathrooms === "number" ? `${listing.bathrooms} ${t.bathrooms}` : "",
+    typeof listing.parkingSpaces === "number"
+      ? `${listing.parkingSpaces} ${t.parking}`
+      : "",
+    typeof listing.areaM2 === "number" ? `${listing.areaM2} m²` : "",
+  ].filter(Boolean);
+
+  return details.join(" · ");
+}
+
+function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[] {
+  return places.flatMap((place, index) => {
+    const coordinates = normalizedCoordinates(place.latitude, place.longitude);
+
+    if (!coordinates) return [];
+
+    const categoryId = place.category || "other";
+
+    return [
+      {
+        id: `place-${categoryId}-${place.name}-${index}`,
+        sourceType: "place",
+        categoryId,
+        categoryLabel: mapCategoryLabel(categoryId, lang),
+        title: place.name,
+        subtitle: place.neighborhood,
+        detail: place[`detail_${lang}`] || place.detail_en,
+        description: place[`description_${lang}`] || place.description_en,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        googleMaps: place.googleMaps,
+        website: place.website,
+        favorite: place.favorite,
+        image: place.image?.asset?.url
+          ? {
+              url: place.image.asset.url,
+              alt: place.name,
+            }
+          : undefined,
+        videoUrl: place.video?.asset?.url,
+      },
+    ];
+  });
+}
+
+function cityMapEntriesFromListings({
+  listings,
+  lang,
+  citySlug,
+}: {
+  listings: PropertyListing[];
+  lang: Lang;
+  citySlug: string;
+}): CityMapEntry[] {
+  const t = propertyMapLabels[lang];
+
+  return listings.flatMap((listing) => {
+    const coordinates = normalizedCoordinates(
+      listing.mapCoordinates?.lat,
+      listing.mapCoordinates?.lng,
+    );
+    const listingSlug = listing.slug?.current;
+
+    if (!listingSlug || !coordinates) return [];
+
+    const listingCitySlug = listing.city?.slug?.current || citySlug;
+    const isSale = listing.listingType === "sale";
+    const categoryId = isSale ? "property-sale" : "property-rent";
+
+    return [
+      {
+        id: `property-${listingSlug}`,
+        sourceType: "property",
+        categoryId,
+        categoryLabel: isSale ? t.saleCategory : t.rentCategory,
+        title: localizedListingText(listing, "title", lang) || listingSlug,
+        subtitle: listing.neighborhood,
+        detail: listingDetail(listing, lang),
+        description: localizedListingText(listing, "shortDescription", lang),
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        href: listingUrl(lang, listingCitySlug, listingSlug),
+        actionLabel: t.viewProperty,
+        badge: isSale ? t.saleBadge : t.rentBadge,
+        image: listing.mainImage?.asset?.url
+          ? {
+              url: listing.mainImage.asset.url,
+              alt: listing.mainImage.alt || localizedListingText(listing, "title", lang),
+            }
+          : undefined,
+      },
+    ];
+  });
+}
+
 export default function CityPage({
   lang,
   citySlug,
   initialCity = null,
+  initialPropertyListings = [],
 }: {
   lang: Lang;
   citySlug: string;
   initialCity?: CityGuideContent | null;
+  initialPropertyListings?: PropertyListing[];
 }) {
   const [city, setCity] = useState<CityGuideContent | null>(initialCity);
+  const [propertyListings, setPropertyListings] = useState<PropertyListing[]>(
+    initialPropertyListings,
+  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (initialCity?.slug?.current === citySlug) return;
+    if (initialCity?.slug?.current === citySlug) {
+      return;
+    }
 
-    client.fetch<CityGuideContent | null>(cityQuery, { slug: citySlug }).then(setCity);
-  }, [citySlug, initialCity]);
+    client.fetch<CityGuideContent | null>(cityQuery, { slug: citySlug }).then((nextCity) => {
+      setCity(nextCity);
+      setPropertyListings([]);
+    });
+  }, [citySlug, initialCity, initialPropertyListings]);
 
   const labels = {
     en: {
@@ -475,6 +708,10 @@ export default function CityPage({
   const intro = localizedCityGuideText(city, "intro", lang);
   const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
   const places: MapPlace[] = city?.mapPlaces || [];
+  const mapEntries = [
+    ...cityMapEntriesFromPlaces(places, lang),
+    ...cityMapEntriesFromListings({ listings: propertyListings, lang, citySlug }),
+  ];
   const guide = isPortoAlegre ? cityGuideContent[lang] : null;
   const title = guide?.title || headline || `${cityName}: ${t.fallbackTitle}`;
   const introText = guide?.intro || intro || fallbackCopy.intro(cityName);
@@ -489,7 +726,7 @@ export default function CityPage({
     serviceCards.map((card) => normalizeHref(card.href))
   );
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
-    (card) => !isDuplicateServiceCard(card, lang, serviceHrefs)
+    (card) => !isExactDuplicateSidebarCard(card, lang, serviceHrefs)
   );
 
   return (
@@ -575,8 +812,13 @@ export default function CityPage({
             </div>
           </div>
 
-          {places.length ? (
-            <PortoMap places={places} lang={lang} cityName={cityName} />
+          {mapEntries.length ? (
+            <CityMap
+              entries={mapEntries}
+              lang={lang}
+              cityName={cityName}
+              cityCenter={{ latitude: city?.latitude, longitude: city?.longitude }}
+            />
           ) : (
             <div className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
               <h2 className="mb-3 text-2xl text-stone-800">

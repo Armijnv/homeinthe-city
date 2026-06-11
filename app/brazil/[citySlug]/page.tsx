@@ -10,6 +10,7 @@ import {
   cityGuideTitle,
   type CityGuideContent,
 } from "@/app/lib/cityGuides";
+import { getCityPageData } from "@/app/lib/cityPageData";
 import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
@@ -33,7 +34,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { citySlug } = await params;
-  const city = await getCity(citySlug);
+  const { city, propertyListings } = await getCityPageData(citySlug);
 
   if (!city) notFound();
 
@@ -50,7 +51,12 @@ export default async function Page({ params }: PageProps) {
           inLanguage: cityGuideInLanguage.en,
         })}
       />
-      <CityPage lang="en" citySlug={citySlug} initialCity={city} />
+      <CityPage
+        lang="en"
+        citySlug={citySlug}
+        initialCity={city}
+        initialPropertyListings={propertyListings}
+      />
     </div>
   );
 }
