@@ -23,15 +23,15 @@ const sections: GuideSection[] = [
   {
     title: "Provider accounts",
     body: [
-      "Providers sign in with Clerk and open /account.",
-      "The account page matches the signed-in email to a provider record by ownership contact email.",
+      "Providers sign in with Clerk and open /dashboard.",
+      "The dashboard matches the signed-in account to a provider record by ownership user id or contact email.",
     ],
   },
   {
     title: "How Luciana logs in",
     body: [
       "Luciana uses the normal /sign-in page.",
-      "After signing in, she opens /account. If her email matches a provider record, she can open the provider edit page.",
+      "After signing in, she opens /dashboard. If her email matches a provider record, she can open the provider edit page.",
     ],
   },
   {
@@ -53,7 +53,7 @@ const sections: GuideSection[] = [
     body: [
       "Create a provider record in Sanity Studio.",
       "Set the provider status, public profile details, slug, locale visibility, and ownership contact email.",
-      "The ownership contact email must match the provider's Clerk login email for /account access.",
+      "The ownership contact email or owner user id must match the provider's Clerk account for dashboard access.",
     ],
   },
 ];

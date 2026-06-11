@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 
-const isAccountRoute = createRouteMatcher(["/account(.*)"]);
+const isAccountRoute = createRouteMatcher(["/account(.*)", "/dashboard(.*)"]);
 const developmentClockSkewInMs = 60 * 60 * 1000;
 const clerkProxyPath = "/__clerk";
 

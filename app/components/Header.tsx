@@ -28,6 +28,7 @@ function MenuContent({
   portuguesePath,
   dutchPath,
   featuredInterpreter,
+  providerLogin,
 }: {
   mobile?: boolean;
   menuSections: MenuSection[];
@@ -35,6 +36,7 @@ function MenuContent({
   portuguesePath: string;
   dutchPath: string;
   featuredInterpreter: MenuLink;
+  providerLogin: MenuLink;
 }) {
   return (
     <nav
@@ -59,12 +61,20 @@ function MenuContent({
       ) : null}
 
       {mobile ? (
-        <Link
-          href={featuredInterpreter.href}
-          className="rounded-lg border border-[#d7b46a]/50 bg-[#d7b46a]/10 px-4 py-3 text-sm font-medium text-white"
-        >
-          {featuredInterpreter.label}
-        </Link>
+        <div className="grid gap-3">
+          <Link
+            href={featuredInterpreter.href}
+            className="rounded-lg border border-[#d7b46a]/50 bg-[#d7b46a]/10 px-4 py-3 text-sm font-medium text-white"
+          >
+            {featuredInterpreter.label}
+          </Link>
+          <Link
+            href={providerLogin.href}
+            className="rounded-lg bg-[#d7b46a] px-4 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efcf88]"
+          >
+            {providerLogin.label}
+          </Link>
+        </div>
       ) : null}
 
       <div
@@ -160,6 +170,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Your local guide · Wherever business takes you",
+      providerLogin: "Provider Login",
     },
     pt: {
       menu: "Menu",
@@ -185,6 +196,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Seu apoio local · Onde os negócios levarem você",
+      providerLogin: "Login de prestador",
     },
     nl: {
       menu: "Menu",
@@ -210,6 +222,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Je lokale gids · Waar je zakenreis je ook brengt",
+      providerLogin: "Provider Login",
     },
   };
 
@@ -416,6 +429,10 @@ export default function Header({
     label: t.interpreter,
     href: interpreterPath,
   };
+  const providerLogin = {
+    label: t.providerLogin,
+    href: "/dashboard",
+  };
 
   function closeMenuOnLinkClick(event: React.MouseEvent<HTMLDetailsElement>) {
     const target = event.target as HTMLElement;
@@ -456,6 +473,13 @@ export default function Header({
             {t.interpreter}
           </Link>
 
+          <Link
+            href={providerLogin.href}
+            className="rounded-full bg-[#d7b46a] px-5 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efcf88]"
+          >
+            {providerLogin.label}
+          </Link>
+
           <details className="relative" onClick={closeMenuOnLinkClick}>
             <summary className="cursor-pointer list-none rounded-full border border-white/15 px-5 py-2 text-sm text-white/80 transition hover:border-white/35 hover:text-white [&::-webkit-details-marker]:hidden">
               {t.menu}
@@ -467,6 +491,7 @@ export default function Header({
               portuguesePath={portuguesePath}
               dutchPath={dutchPath}
               featuredInterpreter={featuredInterpreter}
+              providerLogin={providerLogin}
             />
           </details>
 
@@ -500,6 +525,7 @@ export default function Header({
             portuguesePath={portuguesePath}
             dutchPath={dutchPath}
             featuredInterpreter={featuredInterpreter}
+            providerLogin={providerLogin}
           />
         </details>
       </div>

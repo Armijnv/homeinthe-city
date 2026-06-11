@@ -365,10 +365,10 @@ export default async function Page({ searchParams }: PageProps) {
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
       <div className="mx-auto max-w-5xl">
         <Link
-          href="/account"
+          href="/dashboard"
           className="mb-8 inline-flex text-sm text-stone-300 underline-offset-4 hover:text-white hover:underline"
         >
-          Back to account
+          Back to dashboard
         </Link>
 
         <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">

@@ -17,14 +17,14 @@ export default async function Page() {
           <section className="w-full max-w-md rounded-lg border border-white/10 bg-white/10 p-6 text-center">
             <h1 className="text-2xl font-light">Already signed in</h1>
             <p className="mt-3 text-sm leading-relaxed text-stone-300">
-              Open your account, or sign out to create a different account.
+              Open your dashboard, or sign out to create a different account.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
-                href="/account"
+                href="/dashboard"
                 className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efc878]"
               >
-                Go to account
+                Go to dashboard
               </Link>
               <SignOutButton redirectUrl="/sign-up">
                 <button className="rounded-lg border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]">
@@ -38,7 +38,7 @@ export default async function Page() {
             path="/sign-up"
             routing="path"
             signInUrl="/sign-in"
-            fallbackRedirectUrl="/account"
+            fallbackRedirectUrl="/dashboard"
           />
         )}
       </div>
