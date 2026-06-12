@@ -12,8 +12,22 @@ import {
   cityName,
   getDashboardContext,
   managedCities,
+  type DashboardCity,
   providerRoleLabel,
 } from "@/app/lib/dashboard";
+import { client } from "@/sanity/lib/client";
+
+const allCitiesForAdminDashboardQuery = `
+  *[_type == "city"]|order(name_en asc){
+    _id,
+    name_en,
+    name_pt,
+    name_nl,
+    slug,
+    guideStatus,
+    country
+  }
+`;
 
 export const metadata: Metadata = {
   title: "Provider Dashboard",
@@ -24,6 +38,9 @@ export default async function DashboardPage() {
     await getDashboardContext();
   const providerSlug = provider?.slug?.current;
   const managedProviderCities = managedCities(provider);
+  const editableCities = isAdmin
+    ? await client.fetch<DashboardCity[]>(allCitiesForAdminDashboardQuery)
+    : managedProviderCities;
   const providerCards: DashboardCardProps[] = [
     {
       title: "Provider profile",
@@ -44,21 +61,27 @@ export default async function DashboardPage() {
       status: providerSlug ? "Published view" : "Pending",
     },
   ];
-  const cityHostCards: DashboardCardProps[] = isCityHost
+  const cityHostCards: DashboardCardProps[] = isAdmin || isCityHost
     ? [
         {
-          title: "Managed cities",
-          text: `Open city-host tools for ${managedProviderCities.map(cityName).join(", ")}.`,
+          title: isAdmin ? "All cities" : "Managed cities",
+          text: isAdmin
+            ? "Open city tools for every city in Sanity."
+            : `Open city-host tools for ${editableCities.map(cityName).join(", ")}.`,
           href: "/dashboard/cities",
           action: "Manage city tools",
-          status: "City host",
+          status: isAdmin ? "Admin" : "City host",
         },
-        ...managedProviderCities.map((city) => ({
+        ...editableCities
+          .filter((city) => city.slug?.current)
+          .map((city) => ({
           title: cityName(city),
-          text: "Prepare city content, recommendations, map places, and coordinate tools for this city.",
+          text: isAdmin
+            ? "Admin access to city content, recommendations, map places, and coordinate tools."
+            : "Prepare city content, recommendations, map places, and coordinate tools for this city.",
           href: `/dashboard/cities/${city.slug?.current}`,
           action: "Open city dashboard",
-          status: "Assigned city",
+          status: isAdmin ? city.guideStatus || "live" : "Managed city",
         })),
       ]
     : [];

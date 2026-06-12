@@ -56,11 +56,11 @@ export default async function CityHostCitiesPage() {
 
   return (
     <DashboardShell
-      eyebrow="City host"
-      title="Assigned cities"
+      eyebrow={context.isAdmin ? "Admin cities" : "City host"}
+      title={context.isAdmin ? "All cities" : "Managed cities"}
       intro={
         context.isAdmin
-          ? "Admin view of every city dashboard foundation."
+          ? "Admin view of every city dashboard foundation. This list comes from all Sanity city documents, not managed city assignments."
           : "City dashboards are available only for cities explicitly assigned as managed cities."
       }
     >
