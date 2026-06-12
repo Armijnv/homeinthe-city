@@ -198,7 +198,7 @@ export function isManagedCity(
 
 export function accessLevel(provider: DashboardProvider | null, isAdmin: boolean) {
   if (isAdmin) return "Admin";
-  if (hasHostRole(provider) && managedCities(provider).length) return "City host";
+  if (managedCities(provider).length) return "City host";
   if (provider) return "Provider";
   return "Unmatched account";
 }
@@ -230,7 +230,7 @@ export async function getDashboardContext(returnTo = "/dashboard") {
     signedInEmail,
     isAdmin: adminStatus.isAdmin,
     adminReason: adminStatus.reason,
-    isCityHost: hasHostRole(provider) && managedCities(provider).length > 0,
+    isCityHost: managedCities(provider).length > 0,
   } satisfies DashboardContext;
 }
 
