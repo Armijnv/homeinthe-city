@@ -1,7 +1,14 @@
 import type { Metadata } from "next";
-import MapPlaceForm from "@/app/dashboard/MapPlaceForm";
-import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
-import { addMapPlaceAction } from "@/app/dashboard/map-place-actions";
+import MapPlaceManagement, {
+  type MapPlaceProperty,
+} from "@/app/dashboard/MapPlaceManagement";
+import type { EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
+import { BackToDashboard, TableLink } from "@/app/dashboard/dashboard-ui";
+import {
+  addMapPlaceAction,
+  deleteMapPlaceAction,
+  updateMapPlaceAction,
+} from "@/app/dashboard/map-place-actions";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityName, requireCityHost } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -12,38 +19,46 @@ type PageProps = {
   }>;
 };
 
-type CityMapHealth = {
-  mapPlaceTotal?: number;
-  mapPlaceWithCoordinates?: number;
-  propertyWithCoordinates?: number;
-  propertyMissingCoordinates?: number;
+type CityMapManagementData = {
+  mapPlaces?: EditableMapPlace[];
+  propertyListings?: MapPlaceProperty[];
 };
 
-const publicListingStatuses = ["available", "reserved"];
+const publicListingStatuses = ["available", "reserved", "sold", "rented"];
 
-const cityMapHealthQuery = `
+const cityMapManagementQuery = `
   *[_type == "city" && slug.current == $citySlug][0]{
-    "mapPlaceTotal": count(mapPlaces),
-    "mapPlaceWithCoordinates": count(mapPlaces[defined(latitude) && defined(longitude)]),
-    "propertyWithCoordinates": count(*[
+    mapPlaces[]{
+      _key,
+      name,
+      categoryPreset,
+      category,
+      categoryLabel_en,
+      categoryLabel_pt,
+      categoryLabel_nl,
+      neighborhood,
+      latitude,
+      longitude,
+      detail_en,
+      description_en,
+      website
+    },
+    "propertyListings": *[
       _type == "propertyListing" &&
       status in $publicStatuses &&
       (
         city._ref == ^._id ||
         cityName in [^.name_en, ^.name_pt, ^.name_nl, ^.slug.current]
-      ) &&
-      defined(mapCoordinates.lat) &&
-      defined(mapCoordinates.lng)
-    ]),
-    "propertyMissingCoordinates": count(*[
-      _type == "propertyListing" &&
-      status in $publicStatuses &&
-      (
-        city._ref == ^._id ||
-        cityName in [^.name_en, ^.name_pt, ^.name_nl, ^.slug.current]
-      ) &&
-      (!defined(mapCoordinates.lat) || !defined(mapCoordinates.lng))
-    ])
+      )
+    ] | order(_createdAt desc){
+      _id,
+      title_en,
+      title_pt,
+      title_nl,
+      listingType,
+      status,
+      mapCoordinates
+    }
   }
 `;
 
@@ -54,58 +69,29 @@ export const metadata: Metadata = {
 export default async function CityMapDashboardPage({ params }: PageProps) {
   const { citySlug } = await params;
   const { city } = await requireCityHost(citySlug);
-  const health = await client.fetch<CityMapHealth | null>(cityMapHealthQuery, {
+  const mapData = await client.fetch<CityMapManagementData | null>(cityMapManagementQuery, {
     citySlug,
     publicStatuses: publicListingStatuses,
   });
-  const totalListings =
-    (health?.propertyWithCoordinates || 0) +
-    (health?.propertyMissingCoordinates || 0);
 
   return (
     <DashboardShell
       eyebrow="City host"
       title={`${cityName(city)} map`}
-      intro="Add quick city map places while traveling, then review map and property coordinate health."
+      intro="Manage map places for this city without opening Sanity Studio."
     >
-      <BackToDashboard />
+      <div className="mb-8 flex flex-wrap gap-3">
+        <BackToDashboard />
+        <TableLink href={`/dashboard/cities/${citySlug}`}>Back to city tools</TableLink>
+      </div>
 
-      <section className="mb-10">
-        <h2 className="mb-5 text-2xl font-light text-white">Quick Add Map Place</h2>
-        <MapPlaceForm action={addMapPlaceAction.bind(null, citySlug)} />
-      </section>
-
-      <DataTable headers={["Area", "Current state", "Future tool"]}>
-        <tr>
-          <td className="px-5 py-4 font-medium text-white">Map places</td>
-          <td className="px-5 py-4">
-            {health?.mapPlaceWithCoordinates || 0} of {health?.mapPlaceTotal || 0}{" "}
-            have coordinates.
-          </td>
-          <td className="px-5 py-4">Add, edit, categorize, and geocode places.</td>
-        </tr>
-        <tr>
-          <td className="px-5 py-4 font-medium text-white">Property listings</td>
-          <td className="px-5 py-4">
-            {health?.propertyWithCoordinates || 0} with coordinates,{" "}
-            {health?.propertyMissingCoordinates || 0} missing coordinates.
-          </td>
-          <td className="px-5 py-4">Fix coordinates and listing city assignment.</td>
-        </tr>
-        <tr>
-          <td className="px-5 py-4 font-medium text-white">Warnings</td>
-          <td className="px-5 py-4">
-            {totalListings > 0 && (health?.propertyWithCoordinates || 0) === 0
-              ? "Listings exist, but none have usable coordinates."
-              : "No obvious coordinate warning."}
-          </td>
-          <td className="px-5 py-4">
-            <TableLink href={`/dashboard/cities/${citySlug}`}>
-              Back to city tools
-            </TableLink>
-          </td>
-        </tr>
-      </DataTable>
+      <MapPlaceManagement
+        places={mapData?.mapPlaces || []}
+        properties={mapData?.propertyListings || []}
+        addAction={addMapPlaceAction.bind(null, citySlug)}
+        updateAction={updateMapPlaceAction.bind(null, citySlug)}
+        deleteAction={deleteMapPlaceAction.bind(null, citySlug)}
+      />
     </DashboardShell>
   );
 }

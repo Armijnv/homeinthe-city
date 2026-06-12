@@ -35,17 +35,17 @@ export default async function CityDashboardPage({ params }: PageProps) {
     },
     {
       title: "Map places",
-      text: "Future tools for city map locations and category hygiene.",
+      text: "Add, edit, and delete city map places directly from the dashboard.",
       href: `/dashboard/cities/${citySlug}/map`,
-      action: "Open map foundation",
-      status: "Foundation ready",
+      action: "Manage map places",
+      status: "Available now",
     },
     {
       title: "Coordinates",
-      text: "Future tools for finding incomplete coordinates and keeping city maps healthy.",
+      text: "Review map place and property listing coordinate status.",
       href: `/dashboard/cities/${citySlug}/map`,
-      action: "Review map health",
-      status: "Foundation ready",
+      action: "Review coordinates",
+      status: "Available now",
     },
     {
       title: "Public city page",
@@ -60,7 +60,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
     <DashboardShell
       eyebrow="City host"
       title={name}
-      intro="A city-specific dashboard foundation. This is where future city copy, recommendations, map places, and coordinates tools will live."
+      intro="A city-specific dashboard. Map place management is available now; content and recommendations tools can be added next."
     >
       <BackToDashboard />
       <div className="grid gap-5 md:grid-cols-2">

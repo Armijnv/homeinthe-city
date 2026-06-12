@@ -1,10 +1,28 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { mapCategoryPresets } from "@/app/lib/mapCategories";
+import { mapCategoryForPlace, mapCategoryPresets } from "@/app/lib/mapCategories";
+
+export type EditableMapPlace = {
+  _key?: string;
+  name?: string;
+  categoryPreset?: string;
+  category?: string;
+  categoryLabel_en?: string;
+  categoryLabel_pt?: string;
+  categoryLabel_nl?: string;
+  neighborhood?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  detail_en?: string;
+  description_en?: string;
+  website?: string;
+};
 
 type MapPlaceFormProps = {
   action: (formData: FormData) => void | Promise<void>;
+  place?: EditableMapPlace;
+  submitLabel?: string;
 };
 
 function Field({
@@ -27,10 +45,23 @@ function Field({
 const inputClass =
   "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-stone-400";
 
-export default function MapPlaceForm({ action }: MapPlaceFormProps) {
-  const [categoryPreset, setCategoryPreset] = useState("restaurant");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+export default function MapPlaceForm({
+  action,
+  place,
+  submitLabel = "Add Map Place",
+}: MapPlaceFormProps) {
+  const resolvedCategory = place ? mapCategoryForPlace(place, "en") : null;
+  const initialPreset =
+    place?.categoryPreset ||
+    (resolvedCategory?.id.startsWith("custom-") ? "custom" : resolvedCategory?.id) ||
+    "restaurant";
+  const [categoryPreset, setCategoryPreset] = useState(initialPreset);
+  const [latitude, setLatitude] = useState(
+    typeof place?.latitude === "number" ? String(place.latitude) : "",
+  );
+  const [longitude, setLongitude] = useState(
+    typeof place?.longitude === "number" ? String(place.longitude) : "",
+  );
   const [locationMessage, setLocationMessage] = useState("");
   const isCustom = categoryPreset === "custom";
 
@@ -54,9 +85,17 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
 
   return (
     <form action={action} className="space-y-4 rounded-2xl border border-white/10 bg-white/10 p-6">
+      {place?._key ? <input type="hidden" name="placeKey" value={place._key} /> : null}
+
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Name">
-          <input name="name" required className={inputClass} placeholder="Place name" />
+          <input
+            name="name"
+            required
+            className={inputClass}
+            placeholder="Place name"
+            defaultValue={place?.name || ""}
+          />
         </Field>
 
         <Field label="Category">
@@ -85,6 +124,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
               name="customCategory"
               className={inputClass}
               placeholder="repair shop"
+              defaultValue={place?.category || ""}
             />
           </Field>
           <Field label="English label">
@@ -92,6 +132,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
               name="categoryLabel_en"
               className={inputClass}
               placeholder="Repair shop"
+              defaultValue={place?.categoryLabel_en || ""}
             />
           </Field>
           <Field label="Portuguese label">
@@ -99,6 +140,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
               name="categoryLabel_pt"
               className={inputClass}
               placeholder="Oficina de conserto"
+              defaultValue={place?.categoryLabel_pt || ""}
             />
           </Field>
           <Field label="Dutch label">
@@ -106,6 +148,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
               name="categoryLabel_nl"
               className={inputClass}
               placeholder="Reparatiewinkel"
+              defaultValue={place?.categoryLabel_nl || ""}
             />
           </Field>
         </div>
@@ -113,10 +156,20 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Neighborhood">
-          <input name="neighborhood" className={inputClass} placeholder="Area" />
+          <input
+            name="neighborhood"
+            className={inputClass}
+            placeholder="Area"
+            defaultValue={place?.neighborhood || ""}
+          />
         </Field>
         <Field label="Website / Instagram">
-          <input name="website" className={inputClass} placeholder="instagram.com/place" />
+          <input
+            name="website"
+            className={inputClass}
+            placeholder="instagram.com/place"
+            defaultValue={place?.website || ""}
+          />
         </Field>
       </div>
 
@@ -162,6 +215,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
           className={inputClass}
           rows={3}
           placeholder="Why this place should be on the guide"
+          defaultValue={place?.detail_en || place?.description_en || ""}
         />
       </Field>
 
@@ -169,7 +223,7 @@ export default function MapPlaceForm({ action }: MapPlaceFormProps) {
         type="submit"
         className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"
       >
-        Add Map Place
+        {submitLabel}
       </button>
     </form>
   );
