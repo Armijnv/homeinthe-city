@@ -132,9 +132,20 @@ export const provider = defineType({
 
     defineField({
       name: "cities",
-      title: "Cities",
+      title: "Cities Served",
       type: "array",
       of: [{ type: "reference", to: [{ type: "city" }] }],
+      description:
+        "Public profile coverage: cities where this provider works or serves clients. This does not grant city dashboard editing access.",
+    }),
+
+    defineField({
+      name: "managedCities",
+      title: "Managed Cities",
+      type: "array",
+      of: [{ type: "reference", to: [{ type: "city" }] }],
+      description:
+        "Dashboard permissions: cities this provider can manage as a city host. Keep this separate from Cities Served.",
     }),
 
     defineField({

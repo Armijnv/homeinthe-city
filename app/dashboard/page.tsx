@@ -11,6 +11,7 @@ import {
   accessLevel,
   cityName,
   getDashboardContext,
+  managedCities,
   providerRoleLabel,
 } from "@/app/lib/dashboard";
 
@@ -22,7 +23,7 @@ export default async function DashboardPage() {
   const { user, provider, signedInEmail, isAdmin, isCityHost } =
     await getDashboardContext();
   const providerSlug = provider?.slug?.current;
-  const assignedCities = provider?.cities?.filter((city) => city.slug?.current) || [];
+  const managedProviderCities = managedCities(provider);
   const providerCards: DashboardCardProps[] = [
     {
       title: "Provider profile",
@@ -46,13 +47,13 @@ export default async function DashboardPage() {
   const cityHostCards: DashboardCardProps[] = isCityHost
     ? [
         {
-          title: "Assigned cities",
-          text: `Open city-host tools for ${assignedCities.map(cityName).join(", ")}.`,
+          title: "Managed cities",
+          text: `Open city-host tools for ${managedProviderCities.map(cityName).join(", ")}.`,
           href: "/dashboard/cities",
           action: "Manage city tools",
           status: "City host",
         },
-        ...assignedCities.map((city) => ({
+        ...managedProviderCities.map((city) => ({
           title: cityName(city),
           text: "Prepare city content, recommendations, map places, and coordinate tools for this city.",
           href: `/dashboard/cities/${city.slug?.current}`,
@@ -64,31 +65,38 @@ export default async function DashboardPage() {
   const adminCards: DashboardCardProps[] = isAdmin
     ? [
         {
-          title: "Admin dashboard",
+          title: "Admin Dashboard",
           text: "Global management entry point for cities, providers, properties, and map health.",
           href: "/dashboard/admin",
           action: "Open admin",
           status: "Admin",
         },
         {
-          title: "Cities",
+          title: "City Management",
           text: "Review city documents, publication status, and future city dashboard links.",
           href: "/dashboard/admin/cities",
           action: "Manage cities",
           status: "Admin",
         },
         {
-          title: "Providers",
+          title: "Provider Management",
           text: "Review provider ownership, roles, status, and public profile links.",
           href: "/dashboard/admin/providers",
           action: "Manage providers",
           status: "Admin",
         },
         {
-          title: "Properties",
+          title: "Property Management",
           text: "Review property listing status, city assignment, and coordinate readiness.",
           href: "/dashboard/admin/properties",
           action: "Manage properties",
+          status: "Admin",
+        },
+        {
+          title: "Approval Center",
+          text: "Review pending provider profile changes and approve or reject them without opening Studio.",
+          href: "/dashboard/admin/approvals",
+          action: "Open approvals",
           status: "Admin",
         },
         {
@@ -120,6 +128,11 @@ export default async function DashboardPage() {
           </p>
           <p className="mt-2 text-lg text-white">{signedInEmail || user.id}</p>
           <div className="mt-4 flex flex-wrap gap-2">
+            {isAdmin ? (
+              <span className="rounded-full border border-[#d6a85a] bg-[#d6a85a] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#1a1f2e]">
+                ADMIN
+              </span>
+            ) : null}
             <Pill>{accessLevel(provider, isAdmin)}</Pill>
             {provider?.status ? <Pill>{provider.status}</Pill> : null}
             {provider?.primaryRole ? (
@@ -162,7 +175,7 @@ export default async function DashboardPage() {
 
       {cityHostCards.length > 0 ? (
         <section className="mb-10">
-          <h2 className="mb-5 text-2xl font-light text-white">City host tools</h2>
+          <h2 className="mb-5 text-2xl font-light text-white">Managed city tools</h2>
           <div className="grid gap-5 md:grid-cols-2">
             {cityHostCards.map((card) => (
               <DashboardCard key={card.title} {...card} />

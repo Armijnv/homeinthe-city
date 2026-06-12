@@ -24,6 +24,7 @@ export type DashboardProvider = {
   roles?: string[];
   primaryRole?: string;
   cities?: DashboardCity[];
+  managedCities?: DashboardCity[];
   ownership?: {
     contactEmail?: string;
     ownerUserId?: string;
@@ -38,6 +39,7 @@ export type DashboardContext = {
   emails: string[];
   signedInEmail: string;
   isAdmin: boolean;
+  adminReason: string;
   isCityHost: boolean;
 };
 
@@ -56,6 +58,15 @@ export const matchedProviderForDashboardQuery = `
     roles,
     primaryRole,
     cities[]->{
+      _id,
+      name_en,
+      name_pt,
+      name_nl,
+      slug,
+      guideStatus,
+      country
+    },
+    managedCities[]->{
       _id,
       name_en,
       name_pt,
@@ -99,15 +110,56 @@ function metadataValues(metadata: User["publicMetadata"]) {
   };
 }
 
-export function isAdminUser(user: User) {
+const bootstrapAdminEmails = ["armijn@homeinthe.city"];
+
+export function configuredAdminEmails() {
+  const raw = [
+    process.env.DASHBOARD_ADMIN_EMAILS,
+    process.env.ADMIN_EMAILS,
+  ]
+    .filter(Boolean)
+    .join(",");
+
+  return Array.from(
+    new Set(
+      raw
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  );
+}
+
+export function recognizedAdminEmails() {
+  return Array.from(
+    new Set([...bootstrapAdminEmails, ...configuredAdminEmails()]),
+  );
+}
+
+export function adminStatusForUser(user: User, emails: string[]) {
   const { role, roles, permissions } = metadataValues(user.publicMetadata);
 
-  return (
-    role === "admin" ||
-    roles.includes("admin") ||
-    permissions.includes("admin") ||
-    permissions.includes("dashboard:admin")
+  if (role === "admin") return { isAdmin: true, reason: "Clerk publicMetadata.role" };
+  if (roles.includes("admin")) {
+    return { isAdmin: true, reason: "Clerk publicMetadata.roles" };
+  }
+  if (permissions.includes("admin") || permissions.includes("dashboard:admin")) {
+    return { isAdmin: true, reason: "Clerk publicMetadata.permissions" };
+  }
+
+  const matchedEmail = emails.find((email) =>
+    recognizedAdminEmails().includes(email.toLowerCase()),
   );
+
+  if (matchedEmail) {
+    return { isAdmin: true, reason: `dashboard admin email: ${matchedEmail}` };
+  }
+
+  return { isAdmin: false, reason: "none" };
+}
+
+export function isAdminUser(user: User, emails: string[] = []) {
+  return adminStatusForUser(user, emails).isAdmin;
 }
 
 export function cityName(city: DashboardCity | null | undefined) {
@@ -131,18 +183,22 @@ export function hasHostRole(provider: DashboardProvider | null | undefined) {
   return provider?.roles?.includes("host") || provider?.primaryRole === "host";
 }
 
-export function isAssignedToCity(
+export function managedCities(provider: DashboardProvider | null | undefined) {
+  return provider?.managedCities?.filter((city) => city.slug?.current) || [];
+}
+
+export function isManagedCity(
   provider: DashboardProvider | null | undefined,
   citySlug: string,
 ) {
   return Boolean(
-    provider?.cities?.some((city) => city.slug?.current === citySlug),
+    managedCities(provider).some((city) => city.slug?.current === citySlug),
   );
 }
 
 export function accessLevel(provider: DashboardProvider | null, isAdmin: boolean) {
   if (isAdmin) return "Admin";
-  if (hasHostRole(provider) && provider?.cities?.length) return "City host";
+  if (hasHostRole(provider) && managedCities(provider).length) return "City host";
   if (provider) return "Provider";
   return "Unmatched account";
 }
@@ -165,15 +221,16 @@ export async function getDashboardContext(returnTo = "/dashboard") {
       emails,
     },
   );
-  const isAdmin = isAdminUser(user);
+  const adminStatus = adminStatusForUser(user, emails);
 
   return {
     user,
     provider,
     emails,
     signedInEmail,
-    isAdmin,
-    isCityHost: hasHostRole(provider) && Boolean(provider?.cities?.length),
+    isAdmin: adminStatus.isAdmin,
+    adminReason: adminStatus.reason,
+    isCityHost: hasHostRole(provider) && managedCities(provider).length > 0,
   } satisfies DashboardContext;
 }
 
@@ -199,7 +256,7 @@ export async function requireCityHost(citySlug: string) {
 
   if (
     !context.isAdmin &&
-    (!context.isCityHost || !isAssignedToCity(context.provider, citySlug))
+    (!context.isCityHost || !isManagedCity(context.provider, citySlug))
   ) {
     notFound();
   }

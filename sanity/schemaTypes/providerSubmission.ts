@@ -116,9 +116,17 @@ const profileSnapshotFields = [
   }),
   defineField({
     name: "cities",
-    title: "Cities",
+    title: "Cities Served",
     type: "array",
     of: [{ type: "reference", to: [{ type: "city" }] }],
+  }),
+  defineField({
+    name: "managedCities",
+    title: "Managed Cities",
+    type: "array",
+    of: [{ type: "reference", to: [{ type: "city" }] }],
+    description:
+      "Admin-managed city dashboard permissions. Normally this should be changed by an admin, not through provider self-editing.",
   }),
   defineField({
     name: "languages",

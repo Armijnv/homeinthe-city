@@ -6,7 +6,12 @@ import {
   DashboardShell,
   type DashboardCardProps,
 } from "@/app/dashboard/dashboard-ui";
-import { cityName, getDashboardContext, type DashboardCity } from "@/app/lib/dashboard";
+import {
+  cityName,
+  getDashboardContext,
+  managedCities,
+  type DashboardCity,
+} from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 
 const allCitiesForHostsQuery = `
@@ -34,7 +39,7 @@ export default async function CityHostCitiesPage() {
 
   const cities = context.isAdmin
     ? await client.fetch<DashboardCity[]>(allCitiesForHostsQuery)
-    : context.provider?.cities || [];
+    : managedCities(context.provider);
   const cards: DashboardCardProps[] = cities
     .filter((city) => city.slug?.current)
     .map((city) => {
@@ -56,7 +61,7 @@ export default async function CityHostCitiesPage() {
       intro={
         context.isAdmin
           ? "Admin view of every city dashboard foundation."
-          : "City dashboards are available only for cities assigned to your provider profile."
+          : "City dashboards are available only for cities explicitly assigned as managed cities."
       }
     >
       <BackToDashboard />

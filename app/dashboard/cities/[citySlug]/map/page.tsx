@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import MapPlaceForm from "@/app/dashboard/MapPlaceForm";
 import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { addMapPlaceAction } from "@/app/dashboard/map-place-actions";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityName, requireCityHost } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -64,9 +66,15 @@ export default async function CityMapDashboardPage({ params }: PageProps) {
     <DashboardShell
       eyebrow="City host"
       title={`${cityName(city)} map`}
-      intro="A read-only foundation for future map place management, property coordinate cleanup, and city map quality checks."
+      intro="Add quick city map places while traveling, then review map and property coordinate health."
     >
       <BackToDashboard />
+
+      <section className="mb-10">
+        <h2 className="mb-5 text-2xl font-light text-white">Quick Add Map Place</h2>
+        <MapPlaceForm action={addMapPlaceAction.bind(null, citySlug)} />
+      </section>
+
       <DataTable headers={["Area", "Current state", "Future tool"]}>
         <tr>
           <td className="px-5 py-4 font-medium text-white">Map places</td>

@@ -37,6 +37,13 @@ export default async function AdminDashboardPage() {
       status: "Admin",
     },
     {
+      title: "Approval Center",
+      text: "Review provider profile edits, inspect draft snapshots, and approve or reject submissions.",
+      href: "/dashboard/admin/approvals",
+      action: "Open approvals",
+      status: "Admin",
+    },
+    {
       title: "Map health",
       text: "Find cities with map places, property coordinates, and listings that need coordinate cleanup.",
       href: "/dashboard/admin/map",

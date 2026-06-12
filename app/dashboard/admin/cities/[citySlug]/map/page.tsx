@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import MapPlaceForm from "@/app/dashboard/MapPlaceForm";
 import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { addMapPlaceAction } from "@/app/dashboard/map-place-actions";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityGuidePath } from "@/app/lib/cityGuides";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
@@ -151,6 +153,11 @@ export default async function AdminCityMapPage({ params }: PageProps) {
         <TableLink href={cityGuidePath("en", citySlug)}>Public city page</TableLink>
         <TableLink href="/studio/structure/city">Studio fallback</TableLink>
       </div>
+
+      <section className="mb-10">
+        <h2 className="mb-5 text-2xl font-light text-white">Quick Add Map Place</h2>
+        <MapPlaceForm action={addMapPlaceAction.bind(null, citySlug)} />
+      </section>
 
       <section className="mb-10">
         <h2 className="mb-5 text-2xl font-light text-white">Map places</h2>
