@@ -48,7 +48,11 @@ const cityGuideProjection = `
 
     mapPlaces[]{
       name,
+      categoryPreset,
       category,
+      categoryLabel_en,
+      categoryLabel_pt,
+      categoryLabel_nl,
       neighborhood,
       description_en,
       description_pt,
@@ -492,8 +496,6 @@ export const cityMapPropertyListingsQuery = `
     _type == "propertyListing" &&
     status in ["available", "reserved", "sold", "rented"] &&
     defined(slug.current) &&
-    defined(mapCoordinates.lat) &&
-    defined(mapCoordinates.lng) &&
     (
       city->slug.current == $citySlug ||
       cityName in $cityNames

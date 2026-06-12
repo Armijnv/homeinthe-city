@@ -11,7 +11,11 @@ export type CityGuideImage = {
 
 export type CityGuideMapPlace = {
   name: string;
+  categoryPreset?: string;
   category?: string;
+  categoryLabel_en?: string;
+  categoryLabel_pt?: string;
+  categoryLabel_nl?: string;
   neighborhood?: string;
   description_en?: string;
   description_pt?: string;

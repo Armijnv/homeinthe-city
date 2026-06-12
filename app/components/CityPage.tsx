@@ -277,29 +277,38 @@ function fallbackServiceCards({
   lang,
   citySlug,
   cityName,
+  includeRealEstate,
 }: {
   lang: Lang;
   citySlug: string;
   cityName: string;
+  includeRealEstate: boolean;
 }): ServiceCard[] {
   const copy = fallbackGuideCopy[lang];
   const realEstatePrefix =
     lang === "pt" ? "/pt/imoveis" : lang === "nl" ? "/nl/vastgoed" : "/real-estate";
 
-  return [
-    {
+  const cards: ServiceCard[] = [];
+
+  if (includeRealEstate) {
+    cards.push({
       title: copy.realEstateTitle(cityName),
       text: copy.realEstateText,
       button: copy.realEstateButton,
       href: `${realEstatePrefix}/${citySlug}`,
-    },
+    });
+  }
+
+  cards.push(
     {
       title: copy.supportTitle,
       text: copy.supportText,
       button: copy.supportButton,
       href: "mailto:contact@homeinthe.city",
     },
-  ];
+  );
+
+  return cards;
 }
 
 const roleLabels: Record<Lang, Record<string, string>> = {
@@ -409,49 +418,113 @@ function portoAlegreFallbackHost(lang: Lang): DisplayHost {
   };
 }
 
-const legacyMapCategoryLabels: Record<Lang, Record<string, string>> = {
-  en: {
-    restaurant: "Restaurants",
-    coffee: "Cafés",
-    cafe: "Cafés",
-    museum: "Museums",
-    liveMusic: "Music",
-    business: "Business Services",
-    walk: "Walks",
-    yoga: "Yoga schools",
-    organicFair: "Organic markets",
-    other: "Other",
+const mapCategoryPresets = [
+  {
+    id: "restaurant",
+    labels: { en: "Restaurant", pt: "Restaurante", nl: "Restaurant" },
+    aliases: ["restaurant", "restaurants", "restaurante", "restaurantes"],
   },
-  pt: {
-    restaurant: "Restaurantes",
-    coffee: "Cafés",
-    cafe: "Cafés",
-    museum: "Museus",
-    liveMusic: "Música",
-    business: "Serviços empresariais",
-    walk: "Caminhadas",
-    yoga: "Escolas de yoga",
-    organicFair: "Orgânicos",
-    other: "Outros",
+  {
+    id: "cafe",
+    labels: { en: "Café", pt: "Café", nl: "Café" },
+    aliases: ["cafe", "cafes", "café", "cafés", "coffee"],
   },
-  nl: {
-    restaurant: "Restaurants",
-    coffee: "Cafés",
-    cafe: "Cafés",
-    museum: "Musea",
-    liveMusic: "Muziek",
-    business: "Zakelijke diensten",
-    walk: "Wandelingen",
-    yoga: "Yogascholen",
-    organicFair: "Biologische markten",
-    other: "Overig",
+  {
+    id: "bakery",
+    labels: { en: "Bakery", pt: "Padaria", nl: "Bakkerij" },
+    aliases: ["bakery", "bakeries", "padaria", "padarias", "bakkerij", "bakkerijen"],
   },
-};
+  {
+    id: "beach",
+    labels: { en: "Beach", pt: "Praia", nl: "Strand" },
+    aliases: ["beach", "beaches", "praia", "praias", "strand", "stranden"],
+  },
+  {
+    id: "surfShop",
+    labels: { en: "Surf Shop", pt: "Loja de Surf", nl: "Surfwinkel" },
+    aliases: ["surf shop", "surf shops", "surfshop", "loja de surf", "surfwinkel"],
+  },
+  {
+    id: "surfboardRepair",
+    labels: {
+      en: "Surfboard Repair",
+      pt: "Conserto de Pranchas",
+      nl: "Surfplank Reparatie",
+    },
+    aliases: [
+      "surfboard repair",
+      "surfboard repairs",
+      "board repair",
+      "conserto de pranchas",
+      "surfplank reparatie",
+    ],
+  },
+  {
+    id: "organicMarket",
+    labels: {
+      en: "Organic Market",
+      pt: "Feira Orgânica",
+      nl: "Biologische Markt",
+    },
+    aliases: [
+      "organic market",
+      "organic markets",
+      "organic fair",
+      "organicfair",
+      "feira organica",
+      "feira orgânica",
+      "biologische markt",
+      "biologische markten",
+    ],
+  },
+  {
+    id: "coworking",
+    labels: { en: "Coworking", pt: "Coworking", nl: "Coworking" },
+    aliases: ["coworking", "coworking space", "coworking spaces"],
+  },
+  {
+    id: "walk",
+    labels: { en: "Walk", pt: "Caminhada", nl: "Wandeling" },
+    aliases: ["walk", "walks", "caminhada", "caminhadas", "wandeling", "wandelingen"],
+  },
+  {
+    id: "museum",
+    labels: { en: "Museum", pt: "Museu", nl: "Museum" },
+    aliases: ["museum", "museums", "museu", "museus", "musea"],
+  },
+  {
+    id: "liveMusic",
+    labels: { en: "Live Music", pt: "Música ao Vivo", nl: "Live Muziek" },
+    aliases: ["live music", "livemusic", "music", "musica ao vivo", "música ao vivo", "live muziek"],
+  },
+  {
+    id: "businessService",
+    labels: {
+      en: "Business Service",
+      pt: "Serviço Empresarial",
+      nl: "Zakelijke Dienst",
+    },
+    aliases: [
+      "business",
+      "business service",
+      "business services",
+      "servico empresarial",
+      "serviço empresarial",
+      "zakelijke dienst",
+      "zakelijke diensten",
+    ],
+  },
+  {
+    id: "yogaSchool",
+    labels: { en: "Yoga School", pt: "Escola de Yoga", nl: "Yogaschool" },
+    aliases: ["yoga", "yoga school", "yoga schools", "escola de yoga", "yogaschool"],
+  },
+] as const;
 
 const propertyMapLabels = {
   en: {
-    rentCategory: "Rentals",
-    saleCategory: "Properties for Sale",
+    rentCategory: "Property for Rent",
+    saleCategory: "Property for Sale",
     rentBadge: "For rent",
     saleBadge: "For sale",
     viewProperty: "View property",
@@ -460,8 +533,8 @@ const propertyMapLabels = {
     parking: "parking",
   },
   pt: {
-    rentCategory: "Aluguéis",
-    saleCategory: "Imóveis à venda",
+    rentCategory: "Aluguel",
+    saleCategory: "Imóvel à Venda",
     rentBadge: "Para alugar",
     saleBadge: "À venda",
     viewProperty: "Ver imóvel",
@@ -470,8 +543,8 @@ const propertyMapLabels = {
     parking: "vagas",
   },
   nl: {
-    rentCategory: "Huurwoningen",
-    saleCategory: "Woningen te koop",
+    rentCategory: "Huurwoning",
+    saleCategory: "Koopwoning",
     rentBadge: "Te huur",
     saleBadge: "Te koop",
     viewProperty: "Bekijk woning",
@@ -487,17 +560,67 @@ const localeByLang: Record<Lang, string> = {
   nl: "nl-NL",
 };
 
-function humanizeCategory(value: string) {
-  return value
+function normalizeCategoryAlias(value?: string) {
+  return (value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/[-_]+/g, " ")
+    .replace(/[^a-zA-Z0-9]+/g, " ")
     .trim()
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+    .toLowerCase();
 }
 
-function mapCategoryLabel(category: string | undefined, lang: Lang) {
-  const categoryId = category || "other";
-  return legacyMapCategoryLabels[lang][categoryId] || humanizeCategory(categoryId);
+function slugifyCategory(value: string) {
+  return (
+    normalizeCategoryAlias(value).replace(/\s+/g, "-") ||
+    "other"
+  );
+}
+
+function customCategoryLabel(place: MapPlace, lang: Lang) {
+  return (
+    place[`categoryLabel_${lang}`] ||
+    place.categoryLabel_en ||
+    place.category ||
+    "Other"
+  );
+}
+
+function mapCategoryForPlace(place: MapPlace, lang: Lang) {
+  const preset = place.categoryPreset;
+  const rawCategory = place.category;
+
+  if (preset && preset !== "custom") {
+    const selectedPreset = mapCategoryPresets.find((category) => category.id === preset);
+
+    if (selectedPreset) {
+      return {
+        id: selectedPreset.id,
+        label: selectedPreset.labels[lang],
+      };
+    }
+  }
+
+  const normalizedRaw = normalizeCategoryAlias(rawCategory);
+  const matchedPreset = mapCategoryPresets.find(
+    (category) =>
+      normalizeCategoryAlias(category.id) === normalizedRaw ||
+      category.aliases.some((alias) => normalizeCategoryAlias(alias) === normalizedRaw),
+  );
+
+  if (matchedPreset && preset !== "custom") {
+    return {
+      id: matchedPreset.id,
+      label: matchedPreset.labels[lang],
+    };
+  }
+
+  const label = customCategoryLabel(place, lang);
+
+  return {
+    id: `custom-${slugifyCategory(place.categoryLabel_en || rawCategory || label)}`,
+    label,
+  };
 }
 
 function localizedListingText(
@@ -566,14 +689,14 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
 
     if (!coordinates) return [];
 
-    const categoryId = place.category || "other";
+    const category = mapCategoryForPlace(place, lang);
 
     return [
       {
-        id: `place-${categoryId}-${place.name}-${index}`,
+        id: `place-${category.id}-${place.name}-${index}`,
         sourceType: "place",
-        categoryId,
-        categoryLabel: mapCategoryLabel(categoryId, lang),
+        categoryId: category.id,
+        categoryLabel: category.label,
         title: place.name,
         subtitle: place.neighborhood,
         detail: place[`detail_${lang}`] || place.detail_en,
@@ -716,15 +839,18 @@ export default function CityPage({
   const title = guide?.title || headline || `${cityName}: ${t.fallbackTitle}`;
   const introText = guide?.intro || intro || fallbackCopy.intro(cityName);
   const hostLine = guide?.hostLine || fallbackCopy.hostLine;
-  const serviceCards = guide?.serviceCards || fallbackServiceCards({ lang, citySlug, cityName });
+  const serviceCards = fallbackServiceCards({
+    lang,
+    citySlug,
+    cityName,
+    includeRealEstate: propertyListings.length > 0,
+  });
   const selectedHost = city?.primaryHost
     ? providerDisplayHost({ provider: city.primaryHost, lang })
     : null;
   const displayHost = selectedHost || (isPortoAlegre ? portoAlegreFallbackHost(lang) : null);
   const primaryHostAction = displayHost?.actions[0];
-  const serviceHrefs = new Set(
-    serviceCards.map((card) => normalizeHref(card.href))
-  );
+  const serviceHrefs = new Set(serviceCards.map((card) => normalizeHref(card.href)));
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
     (card) => !isExactDuplicateSidebarCard(card, lang, serviceHrefs)
   );
@@ -893,13 +1019,6 @@ export default function CityPage({
             </div>
           ) : null}
 
-          {isPortoAlegre ? (
-            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-              <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
-              <Weather citySlug={citySlug} />
-            </div>
-          ) : null}
-
           {/* ======================================================
              SECONDARY SERVICE ENTRY POINTS
           ====================================================== */}
@@ -962,6 +1081,13 @@ export default function CityPage({
               </div>
             ) : null
           ))}
+
+          {isPortoAlegre ? (
+            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
+              <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
+              <Weather citySlug={citySlug} />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

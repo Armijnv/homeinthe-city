@@ -1,5 +1,31 @@
 import { defineType, defineField } from "sanity";
 
+const mapCategoryPresets = [
+  { title: "Restaurant / Restaurante / Restaurant", value: "restaurant" },
+  { title: "Café / Café / Café", value: "cafe" },
+  { title: "Bakery / Padaria / Bakkerij", value: "bakery" },
+  { title: "Beach / Praia / Strand", value: "beach" },
+  { title: "Surf Shop / Loja de Surf / Surfwinkel", value: "surfShop" },
+  {
+    title: "Surfboard Repair / Conserto de Pranchas / Surfplank Reparatie",
+    value: "surfboardRepair",
+  },
+  {
+    title: "Organic Market / Feira Orgânica / Biologische Markt",
+    value: "organicMarket",
+  },
+  { title: "Coworking / Coworking / Coworking", value: "coworking" },
+  { title: "Walk / Caminhada / Wandeling", value: "walk" },
+  { title: "Museum / Museu / Museum", value: "museum" },
+  { title: "Live Music / Música ao Vivo / Live Muziek", value: "liveMusic" },
+  {
+    title: "Business Service / Serviço Empresarial / Zakelijke Dienst",
+    value: "businessService",
+  },
+  { title: "Yoga School / Escola de Yoga / Yogaschool", value: "yogaSchool" },
+  { title: "Custom category", value: "custom" },
+];
+
 export const city = defineType({
   name: "city",
   title: "City",
@@ -165,11 +191,46 @@ export const city = defineType({
             },
 
             {
-              name: "category",
-              title: "Category",
+              name: "categoryPreset",
+              title: "Category preset",
               type: "string",
               description:
-                "Free text. Use the category label this city needs, for example: Bakery, Surf shop, Beach, Organic market, Coworking, Repair shop, Restaurant, Café. Existing values such as restaurant, coffee, museum, business and organicFair still work.",
+                "Choose a built-in translated category when possible. Use Custom only when this city needs a category that is not in the presets.",
+              options: {
+                list: mapCategoryPresets,
+              },
+            },
+
+            {
+              name: "category",
+              title: "Legacy / custom category key",
+              type: "string",
+              description:
+                "Existing values still work here, such as restaurant, coffee, museum, business and organicFair. For new custom categories, use a simple English key like repair shop and fill in the translated labels below.",
+            },
+
+            {
+              name: "categoryLabel_en",
+              title: "Custom category label (English)",
+              type: "string",
+              description: "Only needed when Category preset is Custom.",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
+            },
+            {
+              name: "categoryLabel_pt",
+              title: "Custom category label (Portuguese)",
+              type: "string",
+              description:
+                "Only needed when Category preset is Custom. Falls back to English if empty.",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
+            },
+            {
+              name: "categoryLabel_nl",
+              title: "Custom category label (Dutch)",
+              type: "string",
+              description:
+                "Only needed when Category preset is Custom. Falls back to English if empty.",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
             },
 
             {
