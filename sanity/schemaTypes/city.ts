@@ -195,7 +195,7 @@ export const city = defineType({
               title: "Category preset",
               type: "string",
               description:
-                "Choose a built-in translated category when possible. Use Custom only when this city needs a category that is not in the presets.",
+                "Use a preset whenever possible so the public map translates the category automatically. Choose Custom only when this place needs a category that is not in the preset list.",
               options: {
                 list: mapCategoryPresets,
               },
@@ -206,7 +206,9 @@ export const city = defineType({
               title: "Legacy / custom category key",
               type: "string",
               description:
-                "Existing values still work here, such as restaurant, coffee, museum, business and organicFair. For new custom categories, use a simple English key like repair shop and fill in the translated labels below.",
+                "Only visible for old legacy values or Custom categories. Existing values still work, such as restaurant, coffee, museum, business and organicFair. For a new custom category, use a simple English key like repair shop and fill in the translated labels below.",
+              hidden: ({ parent }) =>
+                Boolean(parent?.categoryPreset && parent.categoryPreset !== "custom"),
             },
 
             {

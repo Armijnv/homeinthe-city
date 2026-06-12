@@ -7,10 +7,16 @@ import { client } from "@/sanity/lib/client";
 
 type AdminCity = DashboardCity & {
   mapPlaceCount?: number;
+  propertyListingCount?: number;
   primaryHost?: {
     name?: string;
+    slug?: {
+      current?: string;
+    };
   } | null;
 };
+
+const publicListingStatuses = ["available", "reserved", "sold", "rented"];
 
 const adminCitiesQuery = `
   *[_type == "city"]|order(name_en asc){
@@ -22,7 +28,18 @@ const adminCitiesQuery = `
     guideStatus,
     country,
     "mapPlaceCount": count(mapPlaces),
-    primaryHost->{name}
+    "propertyListingCount": count(*[
+      _type == "propertyListing" &&
+      status in $publicStatuses &&
+      (
+        city._ref == ^._id ||
+        cityName in [^.name_en, ^.name_pt, ^.name_nl, ^.slug.current]
+      )
+    ]),
+    primaryHost->{
+      name,
+      slug
+    }
   }
 `;
 
@@ -32,13 +49,15 @@ export const metadata: Metadata = {
 
 export default async function AdminCitiesPage() {
   await requireAdmin("/dashboard/admin/cities");
-  const cities = await client.fetch<AdminCity[]>(adminCitiesQuery);
+  const cities = await client.fetch<AdminCity[]>(adminCitiesQuery, {
+    publicStatuses: publicListingStatuses,
+  });
 
   return (
     <DashboardShell
       eyebrow="Admin"
       title="Cities"
-      intro="A read-only city index for publication status, slugs, public links, and future city management pages."
+      intro="A city management overview for publication status, primary host assignment, map places, property listings, and city workspace links."
     >
       <BackToDashboard />
       <DataTable
@@ -48,6 +67,8 @@ export default async function AdminCitiesPage() {
           "Country",
           "Status",
           "Map places",
+          "Listings",
+          "Primary host",
           "Links",
         ]}
       >
@@ -68,12 +89,20 @@ export default async function AdminCitiesPage() {
               <td className="px-5 py-4">{city.country || "Brazil"}</td>
               <td className="px-5 py-4">{city.guideStatus || "live"}</td>
               <td className="px-5 py-4">{city.mapPlaceCount || 0}</td>
+              <td className="px-5 py-4">{city.propertyListingCount || 0}</td>
+              <td className="px-5 py-4">
+                {city.primaryHost?.name ? (
+                  <span className="text-stone-200">{city.primaryHost.name}</span>
+                ) : (
+                  <span className="text-[#d6a85a]">Missing</span>
+                )}
+              </td>
               <td className="px-5 py-4">
                 <div className="flex flex-wrap gap-3">
                   {slug ? (
                     <>
-                      <TableLink href={`/dashboard/cities/${slug}`}>
-                        City dashboard
+                      <TableLink href={`/dashboard/admin/cities/${slug}`}>
+                        Admin detail
                       </TableLink>
                       <TableLink href={cityGuidePath("en", slug)}>Public</TableLink>
                     </>

@@ -97,7 +97,7 @@ export default async function AdminMapHealthPage() {
               </td>
               <td className="px-5 py-4">
                 {slug ? (
-                  <TableLink href={`/dashboard/cities/${slug}/map`}>
+                  <TableLink href={`/dashboard/admin/cities/${slug}/map`}>
                     City map tools
                   </TableLink>
                 ) : null}
