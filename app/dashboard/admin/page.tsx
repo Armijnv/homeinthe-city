@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function AdminDashboardPage() {
   await requireAdmin("/dashboard/admin");
 
-  const cards: DashboardCardProps[] = [
+  const dashboardCards: DashboardCardProps[] = [
     {
       title: "Cities",
       text: "Review city status, slugs, public links, and future city dashboard entry points.",
@@ -44,11 +44,55 @@ export default async function AdminDashboardPage() {
       status: "Admin",
     },
     {
-      title: "Sanity Studio",
-      text: "Use Studio for full editing while the dashboard grows its own focused management tools.",
+      title: "Studio shortcuts",
+      text: "Jump straight into the main Sanity Studio sections for full content editing.",
       href: "/studio",
-      action: "Open Studio",
+      action: "Open Full Studio",
       status: "Content tools",
+    },
+  ];
+  const studioCards: DashboardCardProps[] = [
+    {
+      title: "Cities",
+      text: "Open the city documents in Sanity Studio for full city content, sidebar cards, and map places.",
+      href: "/studio/structure/city",
+      action: "Open Studio cities",
+      status: "Studio",
+    },
+    {
+      title: "Property Listings",
+      text: "Open property listings in Sanity Studio for full listing content, status, media, and coordinates.",
+      href: "/studio/structure/propertyListings;propertyListing",
+      action: "Open Studio properties",
+      status: "Studio",
+    },
+    {
+      title: "Providers",
+      text: "Open provider profiles in Sanity Studio for roles, ownership, public profile content, and city assignment.",
+      href: "/studio/structure/providerProfiles;provider",
+      action: "Open Studio providers",
+      status: "Studio",
+    },
+    {
+      title: "Service Pages",
+      text: "Open service pages in Sanity Studio for translation, interpreter, and other service landing pages.",
+      href: "/studio/structure/servicePage",
+      action: "Open Studio services",
+      status: "Studio",
+    },
+    {
+      title: "Legacy Hosts",
+      text: "Open legacy host documents while older host routes still need to remain compatible.",
+      href: "/studio/structure/host",
+      action: "Open Studio hosts",
+      status: "Legacy",
+    },
+    {
+      title: "Full Studio",
+      text: "Open the Studio root if a direct section link ever needs to be reselected manually.",
+      href: "/studio",
+      action: "Open Full Studio",
+      status: "Studio",
     },
   ];
 
@@ -59,11 +103,32 @@ export default async function AdminDashboardPage() {
       intro="Global management entry points for the operational parts of Home in the City. These pages are read-only foundations for future editing tools."
     >
       <BackToDashboard />
-      <div className="grid gap-5 md:grid-cols-2">
-        {cards.map((card) => (
-          <DashboardCard key={card.title} {...card} />
-        ))}
-      </div>
+      <section className="mb-10">
+        <h2 className="mb-5 text-2xl font-light text-white">
+          Dashboard foundations
+        </h2>
+        <div className="grid gap-5 md:grid-cols-2">
+          {dashboardCards.map((card) => (
+            <DashboardCard key={card.title} {...card} />
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h2 className="mb-5 text-2xl font-light text-white">
+          Sanity Studio sections
+        </h2>
+        <p className="mb-5 max-w-3xl text-sm leading-6 text-stone-300">
+          These links target stable Studio structure ids. If Sanity changes its
+          pane URL format later, the Full Studio link remains the reliable
+          fallback.
+        </p>
+        <div className="grid gap-5 md:grid-cols-2">
+          {studioCards.map((card) => (
+            <DashboardCard key={card.title} {...card} />
+          ))}
+        </div>
+      </section>
     </DashboardShell>
   );
 }

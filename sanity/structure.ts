@@ -6,12 +6,15 @@ export const structure: StructureResolver = (S) =>
     .title("Content")
     .items([
       S.listItem()
+        .id("providerProfiles")
         .title("Provider Profiles")
         .child(
           S.list()
+            .id("providerProfilesList")
             .title("Provider Profiles")
             .items([
               S.listItem()
+                .id("publishedProviders")
                 .title("Published Provider Profiles")
                 .child(
                   S.documentTypeList("provider")
@@ -22,12 +25,15 @@ export const structure: StructureResolver = (S) =>
                 ),
               S.documentTypeListItem("provider").title("All Provider Profiles"),
               S.listItem()
+                .id("providerSubmissions")
                 .title("Provider Submissions")
                 .child(
                   S.list()
+                    .id("providerSubmissionsList")
                     .title("Provider Submissions")
                     .items([
                       S.listItem()
+                        .id("providerSubmissionsReview")
                         .title("Pending Review")
                         .child(
                           S.documentTypeList("providerSubmission")
@@ -37,6 +43,7 @@ export const structure: StructureResolver = (S) =>
                             ),
                         ),
                       S.listItem()
+                        .id("providerSubmissionsApproved")
                         .title("Approved")
                         .child(
                           S.documentTypeList("providerSubmission")
@@ -46,6 +53,7 @@ export const structure: StructureResolver = (S) =>
                             ),
                         ),
                       S.listItem()
+                        .id("providerSubmissionsRejected")
                         .title("Rejected")
                         .child(
                           S.documentTypeList("providerSubmission")
@@ -64,12 +72,15 @@ export const structure: StructureResolver = (S) =>
       S.documentTypeListItem("host").title("Legacy Hosts"),
       S.documentTypeListItem("city").title("Cities"),
       S.listItem()
+        .id("propertyListings")
         .title("Property Listings")
         .child(
           S.list()
+            .id("propertyListingsList")
             .title("Property Listings")
             .items([
               S.listItem()
+                .id("publicPropertyListings")
                 .title("Public Property Listings")
                 .child(
                   S.documentTypeList("propertyListing")

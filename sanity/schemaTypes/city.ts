@@ -152,7 +152,7 @@ export const city = defineType({
       title: "Map Places",
       type: "array",
       description:
-        "Places shown in the Porto Alegre map section. Use Business for meeting cafés, coworking spaces, business lunch spots, hotel lobbies, Wi‑Fi-friendly places and practical business-trip locations.",
+        "Places shown in this city's map section. Categories are flexible and are grouped automatically on the frontend when places exist.",
       of: [
         {
           type: "object",
@@ -168,20 +168,8 @@ export const city = defineType({
               name: "category",
               title: "Category",
               type: "string",
-              description: "Controls which map filter this place appears under.",
-              options: {
-                list: [
-                  { title: "Restaurant", value: "restaurant" },
-                  { title: "Café", value: "coffee" },
-                  { title: "Museum", value: "museum" },
-                  { title: "Live Music", value: "liveMusic" },
-                  { title: "Business Trip Useful Place", value: "business" },
-                  { title: "Walk", value: "walk" },
-                  { title: "Yoga School", value: "yoga" },
-                  { title: "Organic Fair", value: "organicFair" },
-                  { title: "Other", value: "other" },
-                ],
-              },
+              description:
+                "Free text. Use the category label this city needs, for example: Bakery, Surf shop, Beach, Organic market, Coworking, Repair shop, Restaurant, Café. Existing values such as restaurant, coffee, museum, business and organicFair still work.",
             },
 
             {
