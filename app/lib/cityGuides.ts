@@ -4,6 +4,7 @@ export type CityGuideLang = "en" | "pt" | "nl";
 export type CityGuideStatus = "live" | "comingSoon" | "hidden";
 
 export type CityGuideImage = {
+  alt?: string;
   asset?: {
     url?: string;
   };
@@ -11,6 +12,9 @@ export type CityGuideImage = {
 
 export type CityGuideMapPlace = {
   name: string;
+  name_en?: string;
+  name_pt?: string;
+  name_nl?: string;
   categoryPreset?: string;
   category?: string;
   categoryLabel_en?: string;

@@ -31,6 +31,9 @@ const cityMapManagementQuery = `
     mapPlaces[]{
       _key,
       name,
+      name_en,
+      name_pt,
+      name_nl,
       categoryPreset,
       category,
       categoryLabel_en,
@@ -40,8 +43,16 @@ const cityMapManagementQuery = `
       latitude,
       longitude,
       detail_en,
+      detail_pt,
+      detail_nl,
       description_en,
-      website
+      description_pt,
+      description_nl,
+      website,
+      image{
+        alt,
+        asset->{url}
+      }
     },
     "propertyListings": *[
       _type == "propertyListing" &&

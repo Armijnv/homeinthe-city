@@ -185,9 +185,29 @@ export const city = defineType({
           fields: [
             {
               name: "name",
-              title: "Place name",
+              title: "Legacy / default place name",
               type: "string",
-              description: "Shown on the small card and detail card.",
+              description:
+                "Existing single-language name. New dashboard entries also fill the English/default name below.",
+            },
+            {
+              name: "name_en",
+              title: "Place name (English / default)",
+              type: "string",
+              description:
+                "Used on the English map and as fallback for Portuguese and Dutch when those names are empty.",
+            },
+            {
+              name: "name_pt",
+              title: "Place name (Portuguese)",
+              type: "string",
+              description: "Falls back to English/default if empty.",
+            },
+            {
+              name: "name_nl",
+              title: "Place name (Dutch)",
+              type: "string",
+              description: "Falls back to English/default if empty.",
             },
 
             {
@@ -260,19 +280,19 @@ export const city = defineType({
 
             {
               name: "description_en",
-              title: "Full description shown under map (English)",
+              title: "Long description shown in map preview (English)",
               type: "text",
               rows: 4,
             },
             {
               name: "description_pt",
-              title: "Full description shown under map (Portuguese)",
+              title: "Long description shown in map preview (Portuguese)",
               type: "text",
               rows: 4,
             },
             {
               name: "description_nl",
-              title: "Full description shown under map (Dutch)",
+              title: "Long description shown in map preview (Dutch)",
               type: "text",
               rows: 4,
             },
@@ -282,7 +302,20 @@ export const city = defineType({
 
             { name: "googleMaps", title: "Google Maps Link", type: "url" },
             { name: "website", title: "Website", type: "url" },
-            { name: "image", title: "Image", type: "image" },
+            {
+              name: "image",
+              title: "Main image",
+              type: "image",
+              description: "One photo for the public map preview. No gallery.",
+              fields: [
+                {
+                  name: "alt",
+                  title: "Alt text",
+                  type: "string",
+                  description: "Short description of the image for accessibility.",
+                },
+              ],
+            },
             {
               name: "video",
               title: "Video",

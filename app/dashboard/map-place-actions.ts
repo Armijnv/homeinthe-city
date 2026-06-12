@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireCityHost } from "@/app/lib/dashboard";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
+const maxMapPlaceImageSize = 10 * 1024 * 1024;
+
 function stringValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
 }
@@ -72,32 +74,86 @@ function placeKeyFromForm(formData: FormData) {
   return /^[A-Za-z0-9_-]+$/.test(placeKey) ? placeKey : "";
 }
 
+async function uploadedMapPlaceImage(formData: FormData, fallbackAlt: string) {
+  const entry = formData.get("image");
+
+  if (!(entry instanceof File) || entry.size === 0) return null;
+
+  if (!entry.type.startsWith("image/")) {
+    throw new Error("Map place photo must be an image file.");
+  }
+
+  if (entry.size > maxMapPlaceImageSize) {
+    throw new Error("Map place photo must be smaller than 10 MB.");
+  }
+
+  const asset = await writeClient.assets.upload("image", entry, {
+    contentType: entry.type,
+    filename: entry.name,
+  });
+
+  return {
+    _type: "image",
+    alt: stringValue(formData, "imageAlt") || fallbackAlt,
+    asset: {
+      _type: "reference",
+      _ref: asset._id,
+    },
+  };
+}
+
+function localizedPlaceText(formData: FormData) {
+  const legacyName = stringValue(formData, "name");
+  const nameEn = stringValue(formData, "name_en") || legacyName;
+  const namePt = stringValue(formData, "name_pt");
+  const nameNl = stringValue(formData, "name_nl");
+  const name = nameEn || namePt || nameNl;
+  const detailEn = stringValue(formData, "detail_en") || stringValue(formData, "detail");
+  const detailPt = stringValue(formData, "detail_pt");
+  const detailNl = stringValue(formData, "detail_nl");
+  const descriptionEn = stringValue(formData, "description_en");
+  const descriptionPt = stringValue(formData, "description_pt");
+  const descriptionNl = stringValue(formData, "description_nl");
+
+  return {
+    name,
+    name_en: nameEn || undefined,
+    name_pt: namePt || undefined,
+    name_nl: nameNl || undefined,
+    detail_en: detailEn || undefined,
+    detail_pt: detailPt || undefined,
+    detail_nl: detailNl || undefined,
+    description_en: descriptionEn || detailEn || undefined,
+    description_pt: descriptionPt || undefined,
+    description_nl: descriptionNl || undefined,
+  };
+}
+
 export async function addMapPlaceAction(citySlug: string, formData: FormData) {
   const { city } = await requireCityHost(citySlug);
   assertSanityWriteToken();
 
-  const name = stringValue(formData, "name");
+  const text = localizedPlaceText(formData);
   const neighborhood = stringValue(formData, "neighborhood");
   const latitude = numberValue(formData, "latitude");
   const longitude = numberValue(formData, "longitude");
-  const detail = stringValue(formData, "detail");
   const website = cleanUrl(stringValue(formData, "website"));
 
-  if (!city._id || !name || latitude === null || longitude === null) {
+  if (!city._id || !text.name || latitude === null || longitude === null) {
     return;
   }
 
+  const image = await uploadedMapPlaceImage(formData, text.name);
   const mapPlace = withoutUndefined({
     _type: "object",
     _key: `place-${Date.now()}`,
-    name,
+    ...text,
     ...categoryFields(formData),
     neighborhood: neighborhood || undefined,
     latitude,
     longitude,
-    detail_en: detail || undefined,
-    description_en: detail || undefined,
     website: website || undefined,
+    image: image || undefined,
   });
 
   await writeClient.patch(city._id).setIfMissing({ mapPlaces: [] }).append("mapPlaces", [
@@ -112,36 +168,48 @@ export async function updateMapPlaceAction(citySlug: string, formData: FormData)
   assertSanityWriteToken();
 
   const placeKey = placeKeyFromForm(formData);
-  const name = stringValue(formData, "name");
+  const text = localizedPlaceText(formData);
   const neighborhood = stringValue(formData, "neighborhood");
   const latitude = numberValue(formData, "latitude");
   const longitude = numberValue(formData, "longitude");
-  const detail = stringValue(formData, "detail");
   const website = cleanUrl(stringValue(formData, "website"));
 
-  if (!city._id || !placeKey || !name || latitude === null || longitude === null) {
+  if (!city._id || !placeKey || !text.name || latitude === null || longitude === null) {
     return;
   }
 
   const selector = `mapPlaces[_key=="${placeKey}"]`;
   const category = categoryFields(formData);
+  const image = await uploadedMapPlaceImage(formData, text.name);
+  const removeImage = stringValue(formData, "removeImage") === "on";
   const setValues: Record<string, unknown> = {
-    [`${selector}.name`]: name,
+    [`${selector}.name`]: text.name,
+    [`${selector}.name_en`]: text.name_en,
+    [`${selector}.name_pt`]: text.name_pt,
+    [`${selector}.name_nl`]: text.name_nl,
     [`${selector}.neighborhood`]: neighborhood || undefined,
     [`${selector}.latitude`]: latitude,
     [`${selector}.longitude`]: longitude,
-    [`${selector}.detail_en`]: detail || undefined,
-    [`${selector}.description_en`]: detail || undefined,
+    [`${selector}.detail_en`]: text.detail_en,
+    [`${selector}.detail_pt`]: text.detail_pt,
+    [`${selector}.detail_nl`]: text.detail_nl,
+    [`${selector}.description_en`]: text.description_en,
+    [`${selector}.description_pt`]: text.description_pt,
+    [`${selector}.description_nl`]: text.description_nl,
     [`${selector}.website`]: website || undefined,
     [`${selector}.categoryPreset`]: category.categoryPreset,
     [`${selector}.category`]: category.category,
     [`${selector}.categoryLabel_en`]: category.categoryLabel_en,
     [`${selector}.categoryLabel_pt`]: category.categoryLabel_pt,
     [`${selector}.categoryLabel_nl`]: category.categoryLabel_nl,
+    ...(image ? { [`${selector}.image`]: image } : {}),
   };
   const unsetPaths = Object.entries(setValues)
     .filter(([, value]) => value === undefined)
     .map(([path]) => path);
+  if (removeImage && !image) {
+    unsetPaths.push(`${selector}.image`);
+  }
   const cleanSetValues = Object.fromEntries(
     Object.entries(setValues).filter(([, value]) => value !== undefined),
   );

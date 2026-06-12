@@ -518,6 +518,23 @@ function listingDetail(listing: PropertyListing, lang: Lang) {
   return details.join(" · ");
 }
 
+function localizedMapPlaceText(
+  place: MapPlace,
+  field: "name" | "detail" | "description",
+  lang: Lang,
+) {
+  const values = place as Record<string, unknown>;
+  const localized = values[`${field}_${lang}`];
+  const english = values[`${field}_en`];
+  const legacy = field === "name" ? place.name : "";
+
+  if (typeof localized === "string" && localized.trim()) return localized;
+  if (typeof english === "string" && english.trim()) return english;
+  if (legacy.trim()) return legacy;
+
+  return "";
+}
+
 function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[] {
   return places.flatMap((place, index) => {
     const coordinates = normalizedCoordinates(place.latitude, place.longitude);
@@ -525,17 +542,21 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
     if (!coordinates) return [];
 
     const category = mapCategoryForPlace(place, lang);
+    const title = localizedMapPlaceText(place, "name", lang);
+    const detail = localizedMapPlaceText(place, "detail", lang);
+    const description =
+      localizedMapPlaceText(place, "description", lang) || detail;
 
     return [
       {
-        id: `place-${category.id}-${place.name}-${index}`,
+        id: `place-${category.id}-${title || place.name}-${index}`,
         sourceType: "place",
         categoryId: category.id,
         categoryLabel: category.label,
-        title: place.name,
+        title: title || place.name,
         subtitle: place.neighborhood,
-        detail: place[`detail_${lang}`] || place.detail_en,
-        description: place[`description_${lang}`] || place.description_en,
+        detail,
+        description,
         latitude: coordinates.latitude,
         longitude: coordinates.longitude,
         googleMaps: place.googleMaps,
@@ -544,7 +565,7 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
         image: place.image?.asset?.url
           ? {
               url: place.image.asset.url,
-              alt: place.name,
+              alt: place.image.alt || title || place.name,
             }
           : undefined,
         videoUrl: place.video?.asset?.url,

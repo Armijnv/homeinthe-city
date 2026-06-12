@@ -48,6 +48,9 @@ const cityGuideProjection = `
 
     mapPlaces[]{
       name,
+      name_en,
+      name_pt,
+      name_nl,
       categoryPreset,
       category,
       categoryLabel_en,
@@ -66,6 +69,7 @@ const cityGuideProjection = `
       website,
       favorite,
       image{
+        alt,
         asset->{
           url
         }

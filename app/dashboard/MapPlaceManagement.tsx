@@ -41,6 +41,10 @@ function propertyTitle(property: MapPlaceProperty) {
   return property.title_en || property.title_pt || property.title_nl || "Untitled listing";
 }
 
+function placeTitle(place: EditableMapPlace) {
+  return place.name_en || place.name || place.name_pt || place.name_nl || "Untitled place";
+}
+
 function DeleteButton() {
   return (
     <button
@@ -77,6 +81,7 @@ export default function MapPlaceManagement({
                   <th className="px-5 py-4 font-medium">Category</th>
                   <th className="px-5 py-4 font-medium">Neighborhood</th>
                   <th className="px-5 py-4 font-medium">Coordinates</th>
+                  <th className="px-5 py-4 font-medium">Photo</th>
                   <th className="px-5 py-4 font-medium">Edit</th>
                   <th className="px-5 py-4 font-medium">Delete</th>
                 </tr>
@@ -89,7 +94,7 @@ export default function MapPlaceManagement({
                   return (
                     <tr key={key}>
                       <td className="px-5 py-4 font-medium text-white">
-                        {place.name || "Untitled place"}
+                        {placeTitle(place)}
                       </td>
                       <td className="px-5 py-4">
                         <div>{category.label}</div>
@@ -102,6 +107,13 @@ export default function MapPlaceManagement({
                       <td className="px-5 py-4">{place.neighborhood || "No area"}</td>
                       <td className="px-5 py-4">
                         {coordinatesText(place.latitude, place.longitude)}
+                      </td>
+                      <td className="px-5 py-4">
+                        {place.image?.asset?.url ? (
+                          <span className="text-stone-200">Added</span>
+                        ) : (
+                          <span className="text-stone-400">None</span>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         <details className="min-w-[280px]">
@@ -122,7 +134,7 @@ export default function MapPlaceManagement({
                           <form
                             action={deleteAction}
                             onSubmit={(event) => {
-                              if (!window.confirm(`Delete ${place.name || "this place"}?`)) {
+                              if (!window.confirm(`Delete ${placeTitle(place)}?`)) {
                                 event.preventDefault();
                               }
                             }}
