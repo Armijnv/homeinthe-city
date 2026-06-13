@@ -5,9 +5,9 @@ import MapPlaceManagement, {
 import type { EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
 import { BackToDashboard, TableLink } from "@/app/dashboard/dashboard-ui";
 import {
-  addMapPlaceAction,
+  addMapPlaceWithState,
   deleteMapPlaceAction,
-  updateMapPlaceAction,
+  updateMapPlaceWithState,
 } from "@/app/dashboard/map-place-actions";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityName, requireCityHost } from "@/app/lib/dashboard";
@@ -16,6 +16,9 @@ import { client } from "@/sanity/lib/client";
 type PageProps = {
   params: Promise<{
     citySlug: string;
+  }>;
+  searchParams?: Promise<{
+    mapPlaceSaved?: string;
   }>;
 };
 
@@ -77,8 +80,16 @@ export const metadata: Metadata = {
   title: "City Map Dashboard",
 };
 
-export default async function CityMapDashboardPage({ params }: PageProps) {
+function savedMessage(status?: string) {
+  if (status === "added") return "Map place saved. It now appears in the dashboard and public city map.";
+  if (status === "updated") return "Map place updated.";
+  if (status === "deleted") return "Map place deleted.";
+  return "";
+}
+
+export default async function CityMapDashboardPage({ params, searchParams }: PageProps) {
   const { citySlug } = await params;
+  const savedStatus = (await searchParams)?.mapPlaceSaved;
   const { city } = await requireCityHost(citySlug);
   const mapData = await client.fetch<CityMapManagementData | null>(cityMapManagementQuery, {
     citySlug,
@@ -99,9 +110,11 @@ export default async function CityMapDashboardPage({ params }: PageProps) {
       <MapPlaceManagement
         places={mapData?.mapPlaces || []}
         properties={mapData?.propertyListings || []}
-        addAction={addMapPlaceAction.bind(null, citySlug)}
-        updateAction={updateMapPlaceAction.bind(null, citySlug)}
+        addAction={addMapPlaceWithState.bind(null, citySlug)}
+        updateAction={updateMapPlaceWithState.bind(null, citySlug)}
         deleteAction={deleteMapPlaceAction.bind(null, citySlug)}
+        returnPath={`/dashboard/cities/${citySlug}/map`}
+        successMessage={savedMessage(savedStatus)}
       />
     </DashboardShell>
   );

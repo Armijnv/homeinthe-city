@@ -6,9 +6,9 @@ import MapPlaceManagement, {
 import type { EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
 import { BackToDashboard, TableLink } from "@/app/dashboard/dashboard-ui";
 import {
-  addMapPlaceAction,
+  addMapPlaceWithState,
   deleteMapPlaceAction,
-  updateMapPlaceAction,
+  updateMapPlaceWithState,
 } from "@/app/dashboard/map-place-actions";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityGuidePath } from "@/app/lib/cityGuides";
@@ -18,6 +18,9 @@ import { client } from "@/sanity/lib/client";
 type PageProps = {
   params: Promise<{
     citySlug: string;
+  }>;
+  searchParams?: Promise<{
+    mapPlaceSaved?: string;
   }>;
 };
 
@@ -85,8 +88,16 @@ export const metadata: Metadata = {
   title: "Admin City Map",
 };
 
-export default async function AdminCityMapPage({ params }: PageProps) {
+function savedMessage(status?: string) {
+  if (status === "added") return "Map place saved. It now appears in the dashboard and public city map.";
+  if (status === "updated") return "Map place updated.";
+  if (status === "deleted") return "Map place deleted.";
+  return "";
+}
+
+export default async function AdminCityMapPage({ params, searchParams }: PageProps) {
   const { citySlug } = await params;
+  const savedStatus = (await searchParams)?.mapPlaceSaved;
   await requireAdmin(`/dashboard/admin/cities/${citySlug}/map`);
   const city = await client.fetch<AdminCityMap | null>(adminCityMapQuery, {
     citySlug,
@@ -115,9 +126,11 @@ export default async function AdminCityMapPage({ params }: PageProps) {
       <MapPlaceManagement
         places={city.mapPlaces || []}
         properties={city.propertyListings || []}
-        addAction={addMapPlaceAction.bind(null, citySlug)}
-        updateAction={updateMapPlaceAction.bind(null, citySlug)}
+        addAction={addMapPlaceWithState.bind(null, citySlug)}
+        updateAction={updateMapPlaceWithState.bind(null, citySlug)}
         deleteAction={deleteMapPlaceAction.bind(null, citySlug)}
+        returnPath={`/dashboard/admin/cities/${citySlug}/map`}
+        successMessage={savedMessage(savedStatus)}
       />
     </DashboardShell>
   );

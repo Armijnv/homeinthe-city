@@ -36,6 +36,27 @@ export type CityGuideMapPlace = {
   video?: CityGuideImage;
 };
 
+export type CityGuideRecommendation = {
+  name?: string;
+  name_en?: string;
+  name_pt?: string;
+  name_nl?: string;
+  categoryPreset?: string;
+  category?: string;
+  categoryLabel_en?: string;
+  categoryLabel_pt?: string;
+  categoryLabel_nl?: string;
+  neighborhood?: string;
+  description_en?: string;
+  description_pt?: string;
+  description_nl?: string;
+  detail_en?: string;
+  detail_pt?: string;
+  detail_nl?: string;
+  website?: string;
+  favorite?: boolean;
+};
+
 export type CityGuideSidebarCard = {
   title_en?: string;
   title_pt?: string;
@@ -92,6 +113,7 @@ export type CityGuideContent = {
   introBlocks_pt?: string[];
   introBlocks_nl?: string[];
   mapPlaces?: CityGuideMapPlace[];
+  recommendations?: CityGuideRecommendation[];
   sidebarCards?: CityGuideSidebarCard[];
   cta_en?: string;
   cta_pt?: string;

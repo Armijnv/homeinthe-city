@@ -1,6 +1,7 @@
 "use client";
 
 import MapPlaceForm, { type EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
+import type { MapPlaceActionState } from "@/app/dashboard/map-place-action-state";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
 
 export type MapPlaceProperty = {
@@ -19,9 +20,17 @@ export type MapPlaceProperty = {
 type MapPlaceManagementProps = {
   places: EditableMapPlace[];
   properties: MapPlaceProperty[];
-  addAction: (formData: FormData) => void | Promise<void>;
-  updateAction: (formData: FormData) => void | Promise<void>;
+  addAction: (
+    previousState: MapPlaceActionState,
+    formData: FormData,
+  ) => Promise<MapPlaceActionState>;
+  updateAction: (
+    previousState: MapPlaceActionState,
+    formData: FormData,
+  ) => Promise<MapPlaceActionState>;
   deleteAction: (formData: FormData) => void | Promise<void>;
+  returnPath: string;
+  successMessage?: string;
 };
 
 function hasCoordinatePair(latitude?: number | null, longitude?: number | null) {
@@ -62,12 +71,20 @@ export default function MapPlaceManagement({
   addAction,
   updateAction,
   deleteAction,
+  returnPath,
+  successMessage,
 }: MapPlaceManagementProps) {
   return (
     <div className="space-y-10">
+      {successMessage ? (
+        <div className="rounded-2xl border border-emerald-300/40 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">
+          {successMessage}
+        </div>
+      ) : null}
+
       <section>
         <h2 className="mb-5 text-2xl font-light text-white">Add Map Place</h2>
-        <MapPlaceForm action={addAction} />
+        <MapPlaceForm action={addAction} returnPath={returnPath} />
       </section>
 
       <section>
@@ -124,6 +141,7 @@ export default function MapPlaceManagement({
                             <MapPlaceForm
                               action={updateAction}
                               place={place}
+                              returnPath={returnPath}
                               submitLabel="Save Map Place"
                             />
                           </div>
@@ -140,6 +158,7 @@ export default function MapPlaceManagement({
                             }}
                           >
                             <input type="hidden" name="placeKey" value={place._key} />
+                            <input type="hidden" name="returnPath" value={returnPath} />
                             <DeleteButton />
                           </form>
                         ) : (

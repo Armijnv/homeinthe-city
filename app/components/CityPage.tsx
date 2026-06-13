@@ -13,6 +13,7 @@ import {
   type CityGuideLang as Lang,
   type CityGuideMapPlace as MapPlace,
   type CityGuideProvider,
+  type CityGuideRecommendation,
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
@@ -45,6 +46,12 @@ type ServiceCard = {
   text: string;
   button: string;
   href: string;
+};
+
+type RecommendationGroup = {
+  id: string;
+  label: string;
+  items: CityGuideRecommendation[];
 };
 
 type HostAction = {
@@ -177,6 +184,9 @@ const fallbackGuideCopy = {
     placesTitle: "Local picks coming soon",
     placesText:
       "Restaurants, cafés, cultural places and practical city tips will be added from the Sanity City document.",
+    recommendationsTitle: "Local recommendations",
+    recommendationLink: "Open link",
+    recommendationPick: "Home in the City pick",
     realEstateTitle: (cityName: string) => `${cityName} real estate`,
     realEstateText:
       "See available property listings while the city guide is being expanded.",
@@ -194,6 +204,9 @@ const fallbackGuideCopy = {
     placesTitle: "Indicações locais em breve",
     placesText:
       "Restaurantes, cafés, espaços culturais e dicas práticas serão adicionados pelo documento de Cidade no Sanity.",
+    recommendationsTitle: "Recomendações locais",
+    recommendationLink: "Abrir link",
+    recommendationPick: "Indicação Home in the City",
     realEstateTitle: (cityName: string) => `Imóveis em ${cityName}`,
     realEstateText:
       "Veja anúncios disponíveis enquanto o guia da cidade está sendo expandido.",
@@ -211,6 +224,9 @@ const fallbackGuideCopy = {
     placesTitle: "Lokale tips binnenkort",
     placesText:
       "Restaurants, cafés, culturele plekken en praktische stadstips worden toegevoegd vanuit het Sanity City-document.",
+    recommendationsTitle: "Lokale aanbevelingen",
+    recommendationLink: "Open link",
+    recommendationPick: "Home in the City tip",
     realEstateTitle: (cityName: string) => `Vastgoed in ${cityName}`,
     realEstateText:
       "Bekijk beschikbaar woningaanbod terwijl de stadsgids wordt uitgebreid.",
@@ -535,6 +551,49 @@ function localizedMapPlaceText(
   return "";
 }
 
+function localizedRecommendationText(
+  recommendation: CityGuideRecommendation,
+  field: "name" | "detail" | "description",
+  lang: Lang,
+) {
+  const values = recommendation as Record<string, unknown>;
+  const localized = values[`${field}_${lang}`];
+  const english = values[`${field}_en`];
+  const legacy = field === "name" ? recommendation.name : "";
+
+  if (typeof localized === "string" && localized.trim()) return localized;
+  if (typeof english === "string" && english.trim()) return english;
+  if (legacy?.trim()) return legacy;
+
+  return "";
+}
+
+function groupedRecommendations(
+  recommendations: CityGuideRecommendation[],
+  lang: Lang,
+): RecommendationGroup[] {
+  return recommendations.reduce<RecommendationGroup[]>((groups, recommendation) => {
+    const title = localizedRecommendationText(recommendation, "name", lang);
+
+    if (!title) return groups;
+
+    const category = mapCategoryForPlace(recommendation, lang);
+    const existing = groups.find((group) => group.id === category.id);
+
+    if (existing) {
+      existing.items.push(recommendation);
+    } else {
+      groups.push({
+        id: category.id,
+        label: category.label,
+        items: [recommendation],
+      });
+    }
+
+    return groups;
+  }, []);
+}
+
 function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[] {
   return places.flatMap((place, index) => {
     const coordinates = normalizedCoordinates(place.latitude, place.longitude);
@@ -687,6 +746,7 @@ export default function CityPage({
   const intro = localizedCityGuideText(city, "intro", lang);
   const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
   const places: MapPlace[] = city?.mapPlaces || [];
+  const recommendationGroups = groupedRecommendations(city?.recommendations || [], lang);
   const mapEntries = [
     ...cityMapEntriesFromPlaces(places, lang),
     ...cityMapEntriesFromListings({ listings: propertyListings, lang, citySlug }),
@@ -811,6 +871,101 @@ export default function CityPage({
               </p>
             </div>
           )}
+
+          {recommendationGroups.length ? (
+            <section className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
+              <h2 className="mb-5 text-2xl text-stone-800">
+                {fallbackCopy.recommendationsTitle}
+              </h2>
+
+              <div className="space-y-7">
+                {recommendationGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
+                  >
+                    <h3 className="mb-4 text-lg font-medium text-stone-900">
+                      {group.label}
+                    </h3>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {group.items.map((recommendation, index) => {
+                        const title = localizedRecommendationText(
+                          recommendation,
+                          "name",
+                          lang,
+                        );
+                        const detail = localizedRecommendationText(
+                          recommendation,
+                          "detail",
+                          lang,
+                        );
+                        const description = localizedRecommendationText(
+                          recommendation,
+                          "description",
+                          lang,
+                        );
+
+                        return (
+                          <article
+                            key={`${group.id}-${title}-${index}`}
+                            className="border-t border-stone-200 pt-4 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0"
+                          >
+                            {recommendation.favorite ? (
+                              <p className="mb-2 text-xs uppercase tracking-widest text-[#9b6b22]">
+                                {fallbackCopy.recommendationPick}
+                              </p>
+                            ) : null}
+
+                            <h4 className="text-base font-medium text-stone-950">
+                              {title}
+                            </h4>
+
+                            {recommendation.neighborhood ? (
+                              <p className="mt-1 text-sm text-stone-500">
+                                {recommendation.neighborhood}
+                              </p>
+                            ) : null}
+
+                            {detail ? (
+                              <p className="mt-3 text-sm leading-6 text-stone-700">
+                                {detail}
+                              </p>
+                            ) : null}
+
+                            {description && description !== detail ? (
+                              <p className="mt-3 text-sm leading-6 text-stone-600">
+                                {description}
+                              </p>
+                            ) : null}
+
+                            {recommendation.website ? (
+                              <a
+                                href={recommendation.website}
+                                target={
+                                  recommendation.website.startsWith("http")
+                                    ? "_blank"
+                                    : undefined
+                                }
+                                rel={
+                                  recommendation.website.startsWith("http")
+                                    ? "noreferrer"
+                                    : undefined
+                                }
+                                className="mt-4 inline-block rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
+                              >
+                                {fallbackCopy.recommendationLink}
+                              </a>
+                            ) : null}
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
             <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>

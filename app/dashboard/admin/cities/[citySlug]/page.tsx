@@ -24,6 +24,7 @@ type AdminCityDetail = DashboardCity & {
   mapPlaceCount?: number;
   sidebarCardCount?: number;
   propertyListingCount?: number;
+  recommendationCount?: number;
   primaryHost?: {
     name?: string;
     slug?: {
@@ -49,6 +50,7 @@ const adminCityDetailQuery = `
     longitude,
     "mapPlaceCount": count(mapPlaces),
     "sidebarCardCount": count(sidebarCards),
+    "recommendationCount": count(recommendations),
     "propertyListingCount": count(*[
       _type == "propertyListing" &&
       status in $publicStatuses &&
@@ -92,6 +94,13 @@ export default async function AdminCityDetailPage({ params }: PageProps) {
   const name = cityName(city);
   const hostSlug = city.primaryHost?.slug?.current;
   const cards: DashboardCardProps[] = [
+    {
+      title: "City dashboard editors",
+      text: "Edit city guide content, sidebar cards, and recommendations with the same permissions as city hosts.",
+      href: `/dashboard/cities/${citySlug}`,
+      action: "Open editors",
+      status: "Admin",
+    },
     {
       title: "Map management",
       text: "Review map places, categories, coordinates, and property listing coordinate readiness for this city.",
@@ -161,6 +170,9 @@ export default async function AdminCityDetailPage({ params }: PageProps) {
             </p>
             <p className="text-sm text-stone-300">
               {city.sidebarCardCount || 0} sidebar cards
+            </p>
+            <p className="text-sm text-stone-300">
+              {city.recommendationCount || 0} recommendations
             </p>
             <p className="text-sm text-stone-300">
               {city.propertyListingCount || 0} property listings

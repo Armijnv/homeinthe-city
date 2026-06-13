@@ -338,6 +338,120 @@ export const city = defineType({
     }),
 
     defineField({
+      name: "recommendations",
+      title: "Recommendations",
+      type: "array",
+      description:
+        "Flexible city recommendation lists for restaurants, cafés, bakeries, beaches, services, attractions, walks, coworking, repairs, markets and custom categories.",
+      of: [
+        {
+          type: "object",
+          fields: [
+            {
+              name: "name",
+              title: "Legacy / default recommendation name",
+              type: "string",
+            },
+            {
+              name: "name_en",
+              title: "Recommendation name (English / default)",
+              type: "string",
+            },
+            {
+              name: "name_pt",
+              title: "Recommendation name (Portuguese)",
+              type: "string",
+            },
+            {
+              name: "name_nl",
+              title: "Recommendation name (Dutch)",
+              type: "string",
+            },
+            {
+              name: "categoryPreset",
+              title: "Category preset",
+              type: "string",
+              options: {
+                list: mapCategoryPresets,
+              },
+            },
+            {
+              name: "category",
+              title: "Legacy / custom category key",
+              type: "string",
+              hidden: ({ parent }) =>
+                Boolean(parent?.categoryPreset && parent.categoryPreset !== "custom"),
+            },
+            {
+              name: "categoryLabel_en",
+              title: "Custom category label (English)",
+              type: "string",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
+            },
+            {
+              name: "categoryLabel_pt",
+              title: "Custom category label (Portuguese)",
+              type: "string",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
+            },
+            {
+              name: "categoryLabel_nl",
+              title: "Custom category label (Dutch)",
+              type: "string",
+              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
+            },
+            {
+              name: "neighborhood",
+              title: "Neighborhood / area",
+              type: "string",
+            },
+            {
+              name: "detail_en",
+              title: "Short note (English)",
+              type: "string",
+            },
+            {
+              name: "detail_pt",
+              title: "Short note (Portuguese)",
+              type: "string",
+            },
+            {
+              name: "detail_nl",
+              title: "Short note (Dutch)",
+              type: "string",
+            },
+            {
+              name: "description_en",
+              title: "Description (English)",
+              type: "text",
+              rows: 4,
+            },
+            {
+              name: "description_pt",
+              title: "Description (Portuguese)",
+              type: "text",
+              rows: 4,
+            },
+            {
+              name: "description_nl",
+              title: "Description (Dutch)",
+              type: "text",
+              rows: 4,
+            },
+            { name: "website", title: "Website / Instagram", type: "url" },
+            { name: "favorite", title: "My pick", type: "boolean" },
+          ],
+          preview: {
+            select: {
+              title: "name_en",
+              subtitle: "categoryPreset",
+            },
+          },
+        },
+      ],
+    }),
+
+    defineField({
       name: "sidebarCards",
       title: "Sidebar Cards",
       type: "array",
