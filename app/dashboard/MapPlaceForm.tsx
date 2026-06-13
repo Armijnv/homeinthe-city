@@ -1,7 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type ReactNode } from "react";
+import {
+  useActionState,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { useFormStatus } from "react-dom";
+import {
+  initialMapPlaceActionState,
+  type MapPlaceActionState,
+} from "@/app/dashboard/map-place-action-state";
 import { mapCategoryForPlace, mapCategoryPresets } from "@/app/lib/mapCategories";
 
 export type EditableMapPlace = {
@@ -34,8 +45,12 @@ export type EditableMapPlace = {
 };
 
 type MapPlaceFormProps = {
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    previousState: MapPlaceActionState,
+    formData: FormData,
+  ) => Promise<MapPlaceActionState>;
   place?: EditableMapPlace;
+  returnPath: string;
   submitLabel?: string;
 };
 
@@ -78,31 +93,120 @@ const inputClass =
 
 const fileInputClass =
   "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-stone-200 file:mr-4 file:rounded-md file:border-0 file:bg-[#d6a85a] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#1a1f2e]";
+const maxMapPlaceImageSize = 10 * 1024 * 1024;
+const heicImageTypes = new Set([
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
+const supportedImageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 
 function textValue(...values: Array<string | undefined>) {
   return values.find((value) => value && value.trim()) || "";
 }
 
+function fileExtension(filename: string) {
+  return filename.split(".").pop()?.toLowerCase() || "";
+}
+
+function selectedImageError(file: File) {
+  const extension = fileExtension(file.name);
+  const type = file.type.toLowerCase();
+
+  if (file.size > maxMapPlaceImageSize) {
+    return "Map place photo must be smaller than 10 MB.";
+  }
+
+  if (heicImageTypes.has(type) || extension === "heic" || extension === "heif") {
+    return "iPhone HEIC/HEIF photos are not accepted yet. Please choose a JPG, PNG, WebP or GIF image.";
+  }
+
+  if (type && !type.startsWith("image/")) {
+    return "Please choose an image file.";
+  }
+
+  if (!type && extension && !supportedImageExtensions.has(extension)) {
+    return "Please choose a JPG, PNG, WebP or GIF image.";
+  }
+
+  return "";
+}
+
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white disabled:cursor-wait disabled:opacity-70"
+    >
+      {pending ? "Saving..." : label}
+    </button>
+  );
+}
+
 export default function MapPlaceForm({
   action,
   place,
+  returnPath,
   submitLabel = "Add Map Place",
 }: MapPlaceFormProps) {
+  const [state, formAction] = useActionState(action, initialMapPlaceActionState);
+
+  return (
+    <MapPlaceFormFields
+      key={state.submittedAt || place?._key || "new-map-place"}
+      place={place}
+      returnPath={returnPath}
+      submitLabel={submitLabel}
+      state={state}
+      formAction={formAction}
+    />
+  );
+}
+
+function MapPlaceFormFields({
+  place,
+  returnPath,
+  submitLabel = "Add Map Place",
+  state,
+  formAction,
+}: Omit<MapPlaceFormProps, "action"> & {
+  state: MapPlaceActionState;
+  formAction: (formData: FormData) => void;
+}) {
+  const stateValues = state.values || {};
   const resolvedCategory = place ? mapCategoryForPlace(place, "en") : null;
   const initialPreset =
+    stateValues.categoryPreset ||
     place?.categoryPreset ||
     (resolvedCategory?.id.startsWith("custom-") ? "custom" : resolvedCategory?.id) ||
     "restaurant";
   const [categoryPreset, setCategoryPreset] = useState(initialPreset);
   const [latitude, setLatitude] = useState(
-    typeof place?.latitude === "number" ? String(place.latitude) : "",
+    stateValues.latitude ||
+      (typeof place?.latitude === "number" ? String(place.latitude) : ""),
   );
   const [longitude, setLongitude] = useState(
-    typeof place?.longitude === "number" ? String(place.longitude) : "",
+    stateValues.longitude ||
+      (typeof place?.longitude === "number" ? String(place.longitude) : ""),
   );
   const [locationMessage, setLocationMessage] = useState("");
+  const [photoError, setPhotoError] = useState("");
+  const [selectedImageMeta, setSelectedImageMeta] = useState({
+    selected: "",
+    name: "",
+    type: "",
+    size: "",
+  });
   const isCustom = categoryPreset === "custom";
   const imageUrl = place?.image?.asset?.url;
+
+  function fieldValue(field: string, fallback = "") {
+    return stateValues[field] ?? fallback;
+  }
 
   function useDeviceLocation() {
     if (!navigator.geolocation) {
@@ -122,9 +226,48 @@ export default function MapPlaceForm({
     );
   }
 
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      setSelectedImageMeta({ selected: "", name: "", type: "", size: "" });
+      setPhotoError("");
+      return;
+    }
+
+    setSelectedImageMeta({
+      selected: "1",
+      name: file.name,
+      type: file.type,
+      size: String(file.size),
+    });
+    setPhotoError(selectedImageError(file));
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (photoError) {
+      event.preventDefault();
+    }
+  }
+
   return (
-    <form action={action} className="space-y-6 rounded-2xl border border-white/10 bg-white/10 p-5 md:p-6">
+    <form
+      action={formAction}
+      onSubmit={handleSubmit}
+      className="space-y-6 rounded-2xl border border-white/10 bg-white/10 p-5 md:p-6"
+    >
       {place?._key ? <input type="hidden" name="placeKey" value={place._key} /> : null}
+      <input type="hidden" name="returnPath" value={returnPath} />
+      <input type="hidden" name="imageSelected" value={selectedImageMeta.selected} />
+      <input type="hidden" name="imageName" value={selectedImageMeta.name} />
+      <input type="hidden" name="imageType" value={selectedImageMeta.type} />
+      <input type="hidden" name="imageSize" value={selectedImageMeta.size} />
+
+      {state.status === "error" && state.message ? (
+        <div className="rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm leading-6 text-red-100">
+          {state.message}
+        </div>
+      ) : null}
 
       <FormSection title="Basic details">
         <div className="grid gap-4 md:grid-cols-3">
@@ -134,7 +277,7 @@ export default function MapPlaceForm({
               required
               className={inputClass}
               placeholder="Place name"
-              defaultValue={textValue(place?.name_en, place?.name)}
+              defaultValue={fieldValue("name_en", textValue(place?.name_en, place?.name))}
             />
           </Field>
           <Field label="Portuguese name">
@@ -142,7 +285,7 @@ export default function MapPlaceForm({
               name="name_pt"
               className={inputClass}
               placeholder="Nome em português"
-              defaultValue={place?.name_pt || ""}
+              defaultValue={fieldValue("name_pt", place?.name_pt || "")}
             />
           </Field>
           <Field label="Dutch name">
@@ -150,7 +293,7 @@ export default function MapPlaceForm({
               name="name_nl"
               className={inputClass}
               placeholder="Nederlandse naam"
-              defaultValue={place?.name_nl || ""}
+              defaultValue={fieldValue("name_nl", place?.name_nl || "")}
             />
           </Field>
         </div>
@@ -161,7 +304,7 @@ export default function MapPlaceForm({
               name="neighborhood"
               className={inputClass}
               placeholder="Area"
-              defaultValue={place?.neighborhood || ""}
+              defaultValue={fieldValue("neighborhood", place?.neighborhood || "")}
             />
           </Field>
           <Field label="Website / Instagram">
@@ -169,7 +312,7 @@ export default function MapPlaceForm({
               name="website"
               className={inputClass}
               placeholder="instagram.com/place"
-              defaultValue={place?.website || ""}
+              defaultValue={fieldValue("website", place?.website || "")}
             />
           </Field>
         </div>
@@ -201,7 +344,7 @@ export default function MapPlaceForm({
                 name="customCategory"
                 className={inputClass}
                 placeholder="repair shop"
-                defaultValue={place?.category || ""}
+                defaultValue={fieldValue("customCategory", place?.category || "")}
               />
             </Field>
             <Field label="English label">
@@ -209,7 +352,7 @@ export default function MapPlaceForm({
                 name="categoryLabel_en"
                 className={inputClass}
                 placeholder="Repair shop"
-                defaultValue={place?.categoryLabel_en || ""}
+                defaultValue={fieldValue("categoryLabel_en", place?.categoryLabel_en || "")}
               />
             </Field>
             <Field label="Portuguese label">
@@ -217,7 +360,7 @@ export default function MapPlaceForm({
                 name="categoryLabel_pt"
                 className={inputClass}
                 placeholder="Oficina de conserto"
-                defaultValue={place?.categoryLabel_pt || ""}
+                defaultValue={fieldValue("categoryLabel_pt", place?.categoryLabel_pt || "")}
               />
             </Field>
             <Field label="Dutch label">
@@ -225,7 +368,7 @@ export default function MapPlaceForm({
                 name="categoryLabel_nl"
                 className={inputClass}
                 placeholder="Reparatiewinkel"
-                defaultValue={place?.categoryLabel_nl || ""}
+                defaultValue={fieldValue("categoryLabel_nl", place?.categoryLabel_nl || "")}
               />
             </Field>
           </div>
@@ -278,7 +421,10 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={3}
               placeholder="One-line card detail"
-              defaultValue={textValue(place?.detail_en, place?.description_en)}
+              defaultValue={fieldValue(
+                "detail_en",
+                textValue(place?.detail_en, place?.description_en),
+              )}
             />
           </Field>
           <Field label="Portuguese short description">
@@ -287,7 +433,7 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={3}
               placeholder="Resumo curto"
-              defaultValue={place?.detail_pt || ""}
+              defaultValue={fieldValue("detail_pt", place?.detail_pt || "")}
             />
           </Field>
           <Field label="Dutch short description">
@@ -296,7 +442,7 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={3}
               placeholder="Korte omschrijving"
-              defaultValue={place?.detail_nl || ""}
+              defaultValue={fieldValue("detail_nl", place?.detail_nl || "")}
             />
           </Field>
         </div>
@@ -308,7 +454,7 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={5}
               placeholder="Useful context for the public city guide"
-              defaultValue={place?.description_en || ""}
+              defaultValue={fieldValue("description_en", place?.description_en || "")}
             />
           </Field>
           <Field label="Portuguese long description">
@@ -317,7 +463,7 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={5}
               placeholder="Contexto para o guia público"
-              defaultValue={place?.description_pt || ""}
+              defaultValue={fieldValue("description_pt", place?.description_pt || "")}
             />
           </Field>
           <Field label="Dutch long description">
@@ -326,7 +472,7 @@ export default function MapPlaceForm({
               className={inputClass}
               rows={5}
               placeholder="Context voor de publieke stadsgids"
-              defaultValue={place?.description_nl || ""}
+              defaultValue={fieldValue("description_nl", place?.description_nl || "")}
             />
           </Field>
         </div>
@@ -358,29 +504,40 @@ export default function MapPlaceForm({
 
           <div className="space-y-4">
             <Field label={imageUrl ? "Replace photo" : "Upload photo"}>
-              <input name="image" type="file" accept="image/*" className={fileInputClass} />
+              <input
+                name="image"
+                type="file"
+                accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+                className={fileInputClass}
+                onChange={handleImageChange}
+              />
             </Field>
+            {photoError ? (
+              <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm leading-6 text-red-100">
+                {photoError}
+              </p>
+            ) : null}
             <Field label="Photo alt text">
               <input
                 name="imageAlt"
                 className={inputClass}
                 placeholder="Short description of the photo"
-                defaultValue={place?.image?.alt || textValue(place?.name_en, place?.name)}
+                defaultValue={fieldValue(
+                  "imageAlt",
+                  place?.image?.alt || textValue(place?.name_en, place?.name),
+                )}
               />
             </Field>
             <p className="text-sm leading-6 text-stone-400">
-              One main image only. Uploading a new image replaces the current photo.
+              One main image only. JPG, PNG, WebP or GIF, up to 10 MB. Uploading a
+              new image replaces the current photo. iPhone HEIC/HEIF photos need to
+              be converted before uploading.
             </p>
           </div>
         </div>
       </FormSection>
 
-      <button
-        type="submit"
-        className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"
-      >
-        {submitLabel}
-      </button>
+      <SubmitButton label={submitLabel} />
     </form>
   );
 }
