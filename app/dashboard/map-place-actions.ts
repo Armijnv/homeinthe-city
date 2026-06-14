@@ -16,18 +16,20 @@ const supportedMapPlaceImageTypes = new Set([
   "image/webp",
   "image/gif",
 ]);
+const heicMapPlaceImageTypes = new Set([
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+]);
 const supportedMapPlaceImageExtensions = new Map([
   ["jpg", "image/jpeg"],
   ["jpeg", "image/jpeg"],
   ["png", "image/png"],
   ["webp", "image/webp"],
   ["gif", "image/gif"],
-]);
-const unsupportedMapPlaceImageTypes = new Set([
-  "image/heic",
-  "image/heif",
-  "image/heic-sequence",
-  "image/heif-sequence",
+  ["heic", "image/heic"],
+  ["heif", "image/heif"],
 ]);
 const mapPlaceFormFields = [
   "name_en",
@@ -54,6 +56,20 @@ const mapPlaceFormFields = [
 ] as const;
 
 class MapPlaceActionError extends Error {}
+
+type MapPlaceImageValue = {
+  _type: "image";
+  alt: string;
+  asset: {
+    _type: "reference";
+    _ref: string;
+  };
+};
+
+type UploadedMapPlaceImage = {
+  image: MapPlaceImageValue | null;
+  warning: boolean;
+};
 
 function stringValue(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -131,14 +147,10 @@ function imageWasSelected(formData: FormData) {
   return stringValue(formData, "imageSelected") === "1";
 }
 
-function unsupportedImageFormatMessage(filename?: string) {
-  const suffix = filename ? ` (${filename})` : "";
-  return `Please upload a JPG, PNG, WebP or GIF image${suffix}. iPhone HEIC/HEIF photos need to be converted before uploading.`;
-}
-
 function supportedImageContentType(file: File) {
   const browserType = file.type.toLowerCase();
   if (supportedMapPlaceImageTypes.has(browserType)) return browserType;
+  if (heicMapPlaceImageTypes.has(browserType)) return browserType;
 
   const extensionType = supportedMapPlaceImageExtensions.get(fileExtension(file.name));
   if (extensionType && (!browserType || browserType === "application/octet-stream")) {
@@ -148,15 +160,48 @@ function supportedImageContentType(file: File) {
   return null;
 }
 
-function isUnsupportedIphonePhoto(file: File) {
+function isHeicImage(file: File, contentType: string | null) {
   const browserType = file.type.toLowerCase();
   const extension = fileExtension(file.name);
 
   return (
-    unsupportedMapPlaceImageTypes.has(browserType) ||
+    heicMapPlaceImageTypes.has(browserType) ||
+    (contentType ? heicMapPlaceImageTypes.has(contentType) : false) ||
     extension === "heic" ||
     extension === "heif"
   );
+}
+
+function jpegFilenameFromHeic(filename: string) {
+  const base = filename.replace(/\.[^.]+$/, "");
+  return `${base || "map-place-photo"}.jpg`;
+}
+
+async function uploadableImageBody(
+  file: File,
+  contentType: string,
+): Promise<{ body: Buffer; contentType: string; filename: string }> {
+  const body = Buffer.from(await file.arrayBuffer());
+
+  if (!isHeicImage(file, contentType)) {
+    return {
+      body,
+      contentType,
+      filename: file.name,
+    };
+  }
+
+  const { default: sharp } = await import("sharp");
+  const jpeg = await sharp(body, { limitInputPixels: 64_000_000 })
+    .rotate()
+    .jpeg({ quality: 90, mozjpeg: true })
+    .toBuffer();
+
+  return {
+    body: jpeg,
+    contentType: "image/jpeg",
+    filename: jpegFilenameFromHeic(file.name),
+  };
 }
 
 function valuesFromForm(formData: FormData) {
@@ -187,71 +232,84 @@ function successRedirectPath(
   citySlug: string,
   formData: FormData,
   status: "added" | "updated" | "deleted",
+  options?: { imageWarning?: boolean },
 ) {
   const returnPath = stringValue(formData, "returnPath");
   const cityPath = `/dashboard/cities/${citySlug}/map`;
   const adminPath = `/dashboard/admin/cities/${citySlug}/map`;
   const safePath = returnPath === adminPath || returnPath === cityPath ? returnPath : cityPath;
+  const query = new URLSearchParams({ mapPlaceSaved: status });
 
-  return `${safePath}?mapPlaceSaved=${status}`;
+  if (options?.imageWarning) {
+    query.set("mapPlaceImage", "skipped");
+  }
+
+  return `${safePath}?${query}`;
 }
 
-async function uploadedMapPlaceImage(formData: FormData, fallbackAlt: string) {
+async function uploadedMapPlaceImage(
+  formData: FormData,
+  fallbackAlt: string,
+): Promise<UploadedMapPlaceImage> {
   const entry = formData.get("image");
 
   if (!(entry instanceof File)) {
     if (imageWasSelected(formData)) {
-      throw new MapPlaceActionError(
-        "Your browser did not send the selected photo. Please choose the image again and retry.",
-      );
+      console.error("Map place image was selected but no file was received");
+      return { image: null, warning: true };
     }
 
-    return null;
+    return { image: null, warning: false };
   }
 
   if (entry.size === 0) {
     if (imageWasSelected(formData)) {
-      throw new MapPlaceActionError(
-        "Your browser sent an empty photo file. Please choose the image again and retry.",
-      );
+      console.error("Map place image upload skipped because the received file was empty");
+      return { image: null, warning: true };
     }
 
-    return null;
-  }
-
-  if (isUnsupportedIphonePhoto(entry)) {
-    throw new MapPlaceActionError(unsupportedImageFormatMessage(entry.name));
+    return { image: null, warning: false };
   }
 
   const contentType = supportedImageContentType(entry);
   if (!contentType) {
-    throw new MapPlaceActionError(unsupportedImageFormatMessage(entry.name));
+    console.error("Map place image upload skipped because the file type is unsupported", {
+      name: entry.name,
+      type: entry.type,
+    });
+    return { image: null, warning: true };
   }
 
   if (entry.size > maxMapPlaceImageSize) {
-    throw new MapPlaceActionError("Map place photo must be smaller than 10 MB.");
+    console.error("Map place image upload skipped because the file is too large", {
+      name: entry.name,
+      size: entry.size,
+    });
+    return { image: null, warning: true };
   }
 
   let asset;
   try {
-    asset = await writeClient.assets.upload("image", entry, {
-      contentType,
-      filename: entry.name,
+    const upload = await uploadableImageBody(entry, contentType);
+    asset = await writeClient.assets.upload("image", upload.body, {
+      contentType: upload.contentType,
+      filename: upload.filename,
     });
   } catch (error) {
     console.error("Map place image upload failed", error);
-    throw new MapPlaceActionError(
-      "The place details are valid, but the photo upload failed. Please retry with a JPG, PNG, WebP or GIF image under 10 MB.",
-    );
+    return { image: null, warning: true };
   }
 
   return {
-    _type: "image",
-    alt: stringValue(formData, "imageAlt") || fallbackAlt,
-    asset: {
-      _type: "reference",
-      _ref: asset._id,
+    image: {
+      _type: "image",
+      alt: stringValue(formData, "imageAlt") || fallbackAlt,
+      asset: {
+        _type: "reference",
+        _ref: asset._id,
+      },
     },
+    warning: false,
   };
 }
 
@@ -291,6 +349,8 @@ export async function addMapPlaceWithState(
   _previousState: MapPlaceActionState,
   formData: FormData,
 ): Promise<MapPlaceActionState> {
+  let imageWarning = false;
+
   try {
     const { city } = await requireCityHost(citySlug);
     assertSanityWriteToken();
@@ -313,7 +373,8 @@ export async function addMapPlaceWithState(
       throw new MapPlaceActionError("Add valid latitude and longitude before saving.");
     }
 
-    const image = await uploadedMapPlaceImage(formData, text.name);
+    const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
+    imageWarning = uploadedImage.warning;
     const mapPlace = withoutUndefined({
       _type: "object",
       _key: `place-${Date.now()}`,
@@ -323,7 +384,7 @@ export async function addMapPlaceWithState(
       latitude,
       longitude,
       website: website || undefined,
-      image: image || undefined,
+      image: uploadedImage.image || undefined,
     });
 
     await writeClient
@@ -334,10 +395,11 @@ export async function addMapPlaceWithState(
 
     revalidateCityMapPaths(citySlug);
   } catch (error) {
+    console.error("Map place add failed", error);
     return actionErrorState(error, formData);
   }
 
-  redirect(successRedirectPath(citySlug, formData, "added"));
+  redirect(successRedirectPath(citySlug, formData, "added", { imageWarning }));
 }
 
 export async function updateMapPlaceAction(citySlug: string, formData: FormData) {
@@ -349,6 +411,8 @@ export async function updateMapPlaceWithState(
   _previousState: MapPlaceActionState,
   formData: FormData,
 ): Promise<MapPlaceActionState> {
+  let imageWarning = false;
+
   try {
     const { city } = await requireCityHost(citySlug);
     assertSanityWriteToken();
@@ -378,7 +442,8 @@ export async function updateMapPlaceWithState(
 
     const selector = `mapPlaces[_key=="${placeKey}"]`;
     const category = categoryFields(formData);
-    const image = await uploadedMapPlaceImage(formData, text.name);
+    const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
+    imageWarning = uploadedImage.warning;
     const removeImage = stringValue(formData, "removeImage") === "on";
     const setValues: Record<string, unknown> = {
       [`${selector}.name`]: text.name,
@@ -400,12 +465,12 @@ export async function updateMapPlaceWithState(
       [`${selector}.categoryLabel_en`]: category.categoryLabel_en,
       [`${selector}.categoryLabel_pt`]: category.categoryLabel_pt,
       [`${selector}.categoryLabel_nl`]: category.categoryLabel_nl,
-      ...(image ? { [`${selector}.image`]: image } : {}),
+      ...(uploadedImage.image ? { [`${selector}.image`]: uploadedImage.image } : {}),
     };
     const unsetPaths = Object.entries(setValues)
       .filter(([, value]) => value === undefined)
       .map(([path]) => path);
-    if (removeImage && !image) {
+    if (removeImage && !uploadedImage.image) {
       unsetPaths.push(`${selector}.image`);
     }
     const cleanSetValues = Object.fromEntries(
@@ -420,10 +485,11 @@ export async function updateMapPlaceWithState(
     await patch.commit();
     revalidateCityMapPaths(citySlug);
   } catch (error) {
+    console.error("Map place update failed", error);
     return actionErrorState(error, formData);
   }
 
-  redirect(successRedirectPath(citySlug, formData, "updated"));
+  redirect(successRedirectPath(citySlug, formData, "updated", { imageWarning }));
 }
 
 export async function deleteMapPlaceAction(citySlug: string, formData: FormData) {
@@ -436,7 +502,8 @@ export async function deleteMapPlaceAction(citySlug: string, formData: FormData)
 
     await writeClient.patch(city._id).unset([`mapPlaces[_key=="${placeKey}"]`]).commit();
     revalidateCityMapPaths(citySlug);
-  } catch {
+  } catch (error) {
+    console.error("Map place delete failed", error);
     return;
   }
 

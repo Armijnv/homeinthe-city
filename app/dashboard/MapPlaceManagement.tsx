@@ -31,6 +31,7 @@ type MapPlaceManagementProps = {
   deleteAction: (formData: FormData) => void | Promise<void>;
   returnPath: string;
   successMessage?: string;
+  warningMessage?: string;
 };
 
 function hasCoordinatePair(latitude?: number | null, longitude?: number | null) {
@@ -73,12 +74,19 @@ export default function MapPlaceManagement({
   deleteAction,
   returnPath,
   successMessage,
+  warningMessage,
 }: MapPlaceManagementProps) {
   return (
     <div className="space-y-10">
       {successMessage ? (
         <div className="rounded-2xl border border-emerald-300/40 bg-emerald-950/30 p-4 text-sm leading-6 text-emerald-100">
           {successMessage}
+        </div>
+      ) : null}
+
+      {warningMessage ? (
+        <div className="rounded-2xl border border-amber-300/40 bg-amber-950/30 p-4 text-sm leading-6 text-amber-100">
+          {warningMessage}
         </div>
       ) : null}
 

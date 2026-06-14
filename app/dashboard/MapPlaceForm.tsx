@@ -94,13 +94,15 @@ const inputClass =
 const fileInputClass =
   "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-stone-200 file:mr-4 file:rounded-md file:border-0 file:bg-[#d6a85a] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#1a1f2e]";
 const maxMapPlaceImageSize = 10 * 1024 * 1024;
-const heicImageTypes = new Set([
-  "image/heic",
-  "image/heif",
-  "image/heic-sequence",
-  "image/heif-sequence",
+const supportedImageExtensions = new Set([
+  "jpg",
+  "jpeg",
+  "png",
+  "webp",
+  "gif",
+  "heic",
+  "heif",
 ]);
-const supportedImageExtensions = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
 
 function textValue(...values: Array<string | undefined>) {
   return values.find((value) => value && value.trim()) || "";
@@ -118,16 +120,12 @@ function selectedImageError(file: File) {
     return "Map place photo must be smaller than 10 MB.";
   }
 
-  if (heicImageTypes.has(type) || extension === "heic" || extension === "heif") {
-    return "iPhone HEIC/HEIF photos are not accepted yet. Please choose a JPG, PNG, WebP or GIF image.";
-  }
-
-  if (type && !type.startsWith("image/")) {
+  if (type && !type.startsWith("image/") && !supportedImageExtensions.has(extension)) {
     return "Please choose an image file.";
   }
 
   if (!type && extension && !supportedImageExtensions.has(extension)) {
-    return "Please choose a JPG, PNG, WebP or GIF image.";
+    return "Please choose a JPG, PNG, HEIC/HEIF, WebP or GIF image.";
   }
 
   return "";

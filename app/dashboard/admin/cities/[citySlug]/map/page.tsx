@@ -21,6 +21,7 @@ type PageProps = {
   }>;
   searchParams?: Promise<{
     mapPlaceSaved?: string;
+    mapPlaceImage?: string;
   }>;
 };
 
@@ -95,9 +96,19 @@ function savedMessage(status?: string) {
   return "";
 }
 
+function imageWarningMessage(status?: string) {
+  if (status === "skipped") {
+    return "The place was saved, but the photo could not be uploaded. Please edit the place and try the photo again.";
+  }
+
+  return "";
+}
+
 export default async function AdminCityMapPage({ params, searchParams }: PageProps) {
   const { citySlug } = await params;
-  const savedStatus = (await searchParams)?.mapPlaceSaved;
+  const resolvedSearchParams = await searchParams;
+  const savedStatus = resolvedSearchParams?.mapPlaceSaved;
+  const imageStatus = resolvedSearchParams?.mapPlaceImage;
   await requireAdmin(`/dashboard/admin/cities/${citySlug}/map`);
   const city = await client.fetch<AdminCityMap | null>(adminCityMapQuery, {
     citySlug,
@@ -131,6 +142,7 @@ export default async function AdminCityMapPage({ params, searchParams }: PagePro
         deleteAction={deleteMapPlaceAction.bind(null, citySlug)}
         returnPath={`/dashboard/admin/cities/${citySlug}/map`}
         successMessage={savedMessage(savedStatus)}
+        warningMessage={imageWarningMessage(imageStatus)}
       />
     </DashboardShell>
   );
