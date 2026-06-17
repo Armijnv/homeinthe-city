@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
 import {
   cityGuideEnabledLanguages,
+  cityGuideIsPublic,
   cityGuidePath,
   type CityGuideContent,
 } from "@/app/lib/cityGuides";
@@ -29,7 +30,7 @@ type SitemapPropertyListing = {
   cityName?: string;
 };
 
-type SitemapCityGuide = Pick<CityGuideContent, "slug" | "enabledLanguages">;
+type SitemapCityGuide = CityGuideContent;
 
 const siteUrl = "https://homeinthe.city";
 
@@ -81,9 +82,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const cityGuideEntries = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
-    if (!citySlug || citySlug === "porto-alegre") return [];
+    if (!citySlug || !cityGuideIsPublic(city)) return [];
 
-    return cityGuideEnabledLanguages(city, citySlug).map((language) =>
+    return cityGuideEnabledLanguages(city).map((language) =>
       staticEntry(cityGuidePath(language, citySlug)),
     );
   });
@@ -105,25 +106,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     {
       url: "https://homeinthe.city/nl",
-      lastModified: new Date(),
-    },
-
-    /* ======================================================
-       CITY PAGES
-    ====================================================== */
-
-    {
-      url: "https://homeinthe.city/brazil/porto-alegre",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/pt/brasil/porto-alegre",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/nl/brazilie/porto-alegre",
       lastModified: new Date(),
     },
 

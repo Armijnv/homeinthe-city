@@ -5,6 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   cityGuideEnabledLanguages,
+  cityGuideIsPublic,
   cityGuideLanguageEnabled,
   cityGuideName,
   cityGuidePath,
@@ -335,7 +336,9 @@ export default function Header({
     ? cityGuideName(currentCityGuide, lang, cityGuideSlug)
     : "";
   const availableLanguages = cityGuideSlug
-    ? cityGuideEnabledLanguages(currentCityGuide, cityGuideSlug)
+    ? cityGuideIsPublic(currentCityGuide)
+      ? cityGuideEnabledLanguages(currentCityGuide)
+      : []
     : (["en", "pt", "nl"] as CityGuideLang[]);
   const exploreCityPath = cityGuideSlug
     ? cityGuidePath(lang, cityGuideSlug)
@@ -373,7 +376,13 @@ export default function Header({
   const cityGuideLinks = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
 
-    if (!citySlug || !cityGuideLanguageEnabled(city, citySlug, lang)) return [];
+    if (
+      !citySlug ||
+      !cityGuideIsPublic(city) ||
+      !cityGuideLanguageEnabled(city, citySlug, lang)
+    ) {
+      return [];
+    }
 
     return [
       {

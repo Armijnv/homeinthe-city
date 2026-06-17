@@ -86,8 +86,7 @@ export const city = defineType({
       title: "Enabled City Guide Languages",
       type: "array",
       description:
-        "Only these languages are published and shown in the city page language switcher.",
-      initialValue: ["en", "pt"],
+        "Optional admin override. Leave unset to inherit languages from the assigned Primary Host. When set, only these languages are published.",
       of: [{ type: "string" }],
       options: {
         layout: "grid",
@@ -97,15 +96,7 @@ export const city = defineType({
           { title: "Dutch", value: "nl" },
         ],
       },
-      validation: (Rule) =>
-        Rule.required()
-          .min(1)
-          .unique()
-          .custom((languages) =>
-            Array.isArray(languages) && languages.includes("en")
-              ? true
-              : "English must remain enabled as the fallback language.",
-          ),
+      validation: (Rule) => Rule.unique().min(1),
     }),
 
     defineField({

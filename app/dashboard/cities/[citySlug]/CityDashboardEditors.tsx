@@ -47,6 +47,7 @@ export type CityDashboardRecommendation = {
 
 export type CityDashboardEditorData = {
   enabledLanguages?: Lang[];
+  hostLanguages?: Lang[];
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -62,6 +63,7 @@ export type CityDashboardEditorData = {
 
 type EditorProps = {
   city: CityDashboardEditorData;
+  canManageLanguages: boolean;
   saveContentAction: (
     previousState: CityDashboardActionState,
     formData: FormData,
@@ -212,10 +214,31 @@ function LanguageFields({
   );
 }
 
-function EnabledLanguageFields({ city }: { city: CityDashboardEditorData }) {
-  const enabled = city.enabledLanguages?.length
-    ? city.enabledLanguages
-    : (["en", "pt"] as Lang[]);
+function EnabledLanguageFields({
+  city,
+  canManageLanguages,
+}: {
+  city: CityDashboardEditorData;
+  canManageLanguages: boolean;
+}) {
+  const hasOverride = Array.isArray(city.enabledLanguages);
+  const enabled = hasOverride ? city.enabledLanguages || [] : city.hostLanguages || [];
+  const [inheritHostLanguages, setInheritHostLanguages] = useState(!hasOverride);
+
+  if (!canManageLanguages) {
+    return (
+      <section className="rounded-xl border border-white/10 bg-black/10 p-4">
+        <h3 className="text-sm font-medium uppercase tracking-widest text-white">
+          Published languages
+        </h3>
+        <p className="mt-3 text-sm leading-6 text-stone-300">
+          {enabled.length
+            ? `${enabled.map((lang) => lang.toUpperCase()).join(", ")} — ${hasOverride ? "set by an admin" : "inherited from the primary host"}.`
+            : "No public languages are available. Ask an admin to review the primary host assignment."}
+        </p>
+      </section>
+    );
+  }
 
   return (
     <fieldset className="rounded-xl border border-white/10 bg-black/10 p-4">
@@ -223,9 +246,19 @@ function EnabledLanguageFields({ city }: { city: CityDashboardEditorData }) {
         Published languages
       </legend>
       <p className="mb-4 text-sm leading-6 text-stone-300">
-        Only enabled languages appear in the public city language switcher.
-        English remains the fallback language.
+        By default, public flags follow the primary host’s provider languages.
+        An admin override can limit or replace that list.
       </p>
+      <label className="mb-4 flex items-center gap-2 text-sm text-stone-200">
+        <input
+          type="checkbox"
+          name="inheritHostLanguages"
+          defaultChecked={!hasOverride}
+          onChange={(event) => setInheritHostLanguages(event.target.checked)}
+          className="size-4 accent-[#d6a85a]"
+        />
+        Use primary host languages
+      </label>
       <div className="flex flex-wrap gap-5">
         {languages.map((language) => (
           <label key={language.id} className="flex items-center gap-2 text-sm">
@@ -234,13 +267,12 @@ function EnabledLanguageFields({ city }: { city: CityDashboardEditorData }) {
               name="enabledLanguages"
               value={language.id}
               defaultChecked={enabled.includes(language.id)}
-              disabled={language.id === "en"}
+              disabled={inheritHostLanguages}
               className="size-4 accent-[#d6a85a]"
             />
             {language.label}
           </label>
         ))}
-        <input type="hidden" name="enabledLanguages" value="en" />
       </div>
     </fieldset>
   );
@@ -631,6 +663,7 @@ function RecommendationEditor({
 
 export default function CityDashboardEditors({
   city,
+  canManageLanguages,
   saveContentAction,
   saveRecommendationsAction,
 }: EditorProps) {
@@ -650,7 +683,10 @@ export default function CityDashboardEditors({
       <Panel eyebrow="City content" title="Public guide copy">
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
-          <EnabledLanguageFields city={city} />
+          <EnabledLanguageFields
+            city={city}
+            canManageLanguages={canManageLanguages}
+          />
           <LanguageFields city={city} />
 
           <div className="space-y-4 border-t border-white/10 pt-6">

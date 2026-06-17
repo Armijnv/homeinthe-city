@@ -38,6 +38,7 @@ const cityDashboardQuery = `
     slug,
     guideStatus,
     enabledLanguages,
+    "hostLanguages": primaryHost->languages[].language,
     country,
     headline_en,
     headline_pt,
@@ -89,7 +90,7 @@ const cityDashboardQuery = `
 
 export default async function CityDashboardPage({ params }: PageProps) {
   const { citySlug } = await params;
-  await requireCityHost(citySlug);
+  const context = await requireCityHost(citySlug);
   const city = await client.fetch<CityDashboardData | null>(cityDashboardQuery, {
     citySlug,
   });
@@ -97,12 +98,6 @@ export default async function CityDashboardPage({ params }: PageProps) {
   if (!city) {
     notFound();
   }
-
-  city.enabledLanguages = city.enabledLanguages?.length
-    ? city.enabledLanguages
-    : citySlug === "porto-alegre"
-      ? ["en", "pt", "nl"]
-      : ["en", "pt"];
 
   const name = cityName(city);
   const cards: DashboardCardProps[] = [
@@ -144,6 +139,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
 
       <CityDashboardEditors
         city={city}
+        canManageLanguages={context.isAdmin}
         saveContentAction={saveCityContentAction.bind(null, citySlug)}
         saveRecommendationsAction={saveCityRecommendationsAction.bind(null, citySlug)}
       />

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import CityPage from "@/app/components/CityPage";
 import {
   cityGuideDisplayContent,
+  cityGuideIsPublic,
+  cityGuideLanguageEnabled,
+  cityGuideMetadata,
 } from "@/app/lib/cityGuides";
 import { getCityPageData } from "@/app/lib/cityPageData";
 import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
@@ -21,29 +25,13 @@ const structuredData = cityGuideJsonLd({
    PORTO ALEGRE PAGE METADATA / SEO
 ====================================================== */
 
-export const metadata: Metadata = {
-  title: "Porto Alegre Lokale Gids",
-  description: pageDescription,
-
-  alternates: {
-    canonical: pageUrl,
-    languages: {
-      en: "https://homeinthe.city/brazil/porto-alegre",
-      pt: "https://homeinthe.city/pt/brasil/porto-alegre",
-      nl: "https://homeinthe.city/nl/brazilie/porto-alegre",
-    },
-  },
-
-  openGraph: {
-    title: "Porto Alegre Lokale Gids | Home in the City",
-    description:
-      "Restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten in Porto Alegre.",
-    url: pageUrl,
-    siteName: "Home in the City",
-    locale: "nl_NL",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { city } = await getCityPageData("porto-alegre");
+  if (!city || !cityGuideIsPublic(city) || !cityGuideLanguageEnabled(city, "porto-alegre", "nl")) {
+    notFound();
+  }
+  return cityGuideMetadata({ city, lang: "nl", citySlug: "porto-alegre" });
+}
 
 /* ======================================================
    PORTO ALEGRE PAGE
@@ -51,6 +39,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const { city, propertyListings } = await getCityPageData("porto-alegre");
+  if (!city || !cityGuideIsPublic(city) || !cityGuideLanguageEnabled(city, "porto-alegre", "nl")) {
+    notFound();
+  }
 
   return (
     <div className="relative isolate">

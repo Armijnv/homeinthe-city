@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import CityPage from "@/app/components/CityPage";
 import {
   cityGuideDisplayContent,
+  cityGuideIsPublic,
+  cityGuideLanguageEnabled,
+  cityGuideMetadata,
 } from "@/app/lib/cityGuides";
 import { getCityPageData } from "@/app/lib/cityPageData";
 import { cityGuideJsonLd, JsonLdScript } from "@/app/lib/structuredData";
@@ -21,29 +25,13 @@ const structuredData = cityGuideJsonLd({
    PORTO ALEGRE PAGE METADATA / SEO
 ====================================================== */
 
-export const metadata: Metadata = {
-  title: "Guia Local de Porto Alegre",
-  description: pageDescription,
-
-  alternates: {
-    canonical: pageUrl,
-    languages: {
-      en: "https://homeinthe.city/brazil/porto-alegre",
-      pt: "https://homeinthe.city/pt/brasil/porto-alegre",
-      nl: "https://homeinthe.city/nl/brazilie/porto-alegre",
-    },
-  },
-
-  openGraph: {
-    title: "Guia Local de Porto Alegre | Home in the City",
-    description:
-      "Restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis em Porto Alegre.",
-    url: pageUrl,
-    siteName: "Home in the City",
-    locale: "pt_BR",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { city } = await getCityPageData("porto-alegre");
+  if (!city || !cityGuideIsPublic(city) || !cityGuideLanguageEnabled(city, "porto-alegre", "pt")) {
+    notFound();
+  }
+  return cityGuideMetadata({ city, lang: "pt", citySlug: "porto-alegre" });
+}
 
 /* ======================================================
    PORTO ALEGRE PAGE
@@ -51,6 +39,9 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const { city, propertyListings } = await getCityPageData("porto-alegre");
+  if (!city || !cityGuideIsPublic(city) || !cityGuideLanguageEnabled(city, "porto-alegre", "pt")) {
+    notFound();
+  }
 
   return (
     <div className="relative isolate">

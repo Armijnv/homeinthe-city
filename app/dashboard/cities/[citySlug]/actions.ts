@@ -316,18 +316,28 @@ export async function saveCityContentAction(
 
     const setValues: Record<string, unknown> = {
       sidebarCards,
-      enabledLanguages: Array.from(
+    };
+
+    if (context.isAdmin) {
+      const inheritHostLanguages = stringValue(formData, "inheritHostLanguages") === "on";
+      const enabledLanguages = Array.from(
         new Set(
           formData
             .getAll("enabledLanguages")
             .map(String)
             .filter((lang) => languages.includes(lang as (typeof languages)[number])),
         ),
-      ),
-    };
+      );
 
-    if (!(setValues.enabledLanguages as string[]).includes("en")) {
-      throw new CityDashboardActionError("English must remain enabled.");
+      if (!inheritHostLanguages && !enabledLanguages.length) {
+        throw new CityDashboardActionError(
+          "Choose at least one language or use the primary host languages.",
+        );
+      }
+
+      setValues.enabledLanguages = inheritHostLanguages
+        ? undefined
+        : enabledLanguages;
     }
 
     for (const lang of languages) {
@@ -350,7 +360,7 @@ export async function saveCityContentAction(
       context,
       city,
       changeType: "cityContent",
-      description: "Updated city guide content, sidebar cards, or languages.",
+      description: "Updated city guide content or sidebar cards.",
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();

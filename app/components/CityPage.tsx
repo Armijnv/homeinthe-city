@@ -825,7 +825,7 @@ export default function CityPage({
 
         <div className="space-y-8 md:col-span-2">
           <div className="flex gap-3 text-xl" aria-label="City guide languages">
-            {cityGuideEnabledLanguages(city, citySlug).map((language) => (
+            {cityGuideEnabledLanguages(city).map((language) => (
               <a
                 key={language}
                 href={cityGuidePath(language, citySlug)}

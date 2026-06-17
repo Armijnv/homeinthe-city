@@ -80,6 +80,9 @@ export type CityGuideProvider = {
   status?: string;
   roles?: string[];
   primaryRole?: string;
+  languages?: Array<{
+    language?: string;
+  }>;
   contactOptions?: {
     email?: string;
     phone?: string;
@@ -152,18 +155,50 @@ export function cityGuidePath(lang: CityGuideLang, citySlug: string) {
 
 export function cityGuideEnabledLanguages(
   city: CityGuideContent | null | undefined,
-  citySlug: string,
 ) {
-  const configured = city?.enabledLanguages?.filter(
-    (lang): lang is CityGuideLang => ["en", "pt", "nl"].includes(lang),
+  if (Array.isArray(city?.enabledLanguages)) {
+    return Array.from(
+      new Set(
+        city.enabledLanguages.filter(
+          (lang): lang is CityGuideLang => ["en", "pt", "nl"].includes(lang),
+        ),
+      ),
+    );
+  }
+
+  return Array.from(
+    new Set(
+      (city?.primaryHost?.languages || [])
+        .map((entry) => entry.language)
+        .filter(
+          (lang): lang is CityGuideLang =>
+            typeof lang === "string" && ["en", "pt", "nl"].includes(lang),
+        ),
+    ),
+  );
+}
+
+export function cityGuideIsPublic(city: CityGuideContent | null | undefined) {
+  if (!city || city.guideStatus === "hidden") return false;
+  if (!city.primaryHost || city.primaryHost.status !== "published") return false;
+
+  const values = city as Record<string, unknown>;
+  const localizedContent = (["en", "pt", "nl"] as const).some(
+    (lang) =>
+      (typeof values[`headline_${lang}`] === "string" &&
+        Boolean((values[`headline_${lang}`] as string).trim())) ||
+      (typeof values[`intro_${lang}`] === "string" &&
+        Boolean((values[`intro_${lang}`] as string).trim())) ||
+      (Array.isArray(values[`introBlocks_${lang}`]) &&
+        (values[`introBlocks_${lang}`] as unknown[]).length > 0),
   );
 
-  if (configured?.length) return Array.from(new Set(configured));
-
-  // Compatibility defaults for existing city documents until the field is saved.
-  return citySlug === "porto-alegre"
-    ? (["en", "pt", "nl"] as CityGuideLang[])
-    : (["en", "pt"] as CityGuideLang[]);
+  return Boolean(
+    localizedContent ||
+      city.mapPlaces?.length ||
+      city.recommendations?.length ||
+      city.sidebarCards?.length,
+  );
 }
 
 export function cityGuideLanguageEnabled(
@@ -171,7 +206,7 @@ export function cityGuideLanguageEnabled(
   citySlug: string,
   lang: CityGuideLang,
 ) {
-  return cityGuideEnabledLanguages(city, citySlug).includes(lang);
+  return cityGuideEnabledLanguages(city).includes(lang);
 }
 
 export function cityGuideAlternates(
@@ -179,7 +214,7 @@ export function cityGuideAlternates(
   city?: CityGuideContent | null,
 ) {
   return Object.fromEntries(
-    cityGuideEnabledLanguages(city, citySlug).map((lang) => [
+    cityGuideEnabledLanguages(city).map((lang) => [
       lang,
       `${cityGuideSiteUrl}${cityGuidePath(lang, citySlug)}`,
     ]),
@@ -256,7 +291,7 @@ export function providerProfilePath(lang: CityGuideLang, providerSlug: string) {
 
 export function publishedCityGuides(cities: CityGuideContent[]) {
   return cities.filter(
-    (city) => Boolean(city.slug?.current) && cityGuideStatus(city) !== "hidden",
+    (city) => Boolean(city.slug?.current) && cityGuideIsPublic(city),
   );
 }
 

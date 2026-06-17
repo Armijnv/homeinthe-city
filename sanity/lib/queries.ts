@@ -18,6 +18,9 @@ const cityGuideProjection = `
       status,
       roles,
       primaryRole,
+      languages[]{
+        language
+      },
 
       contactOptions{
         email,
@@ -152,7 +155,24 @@ export const cityNavigationQuery = `
     name_pt,
     name_nl,
     enabledLanguages,
-    slug
+    slug,
+    guideStatus,
+    headline_en,
+    headline_pt,
+    headline_nl,
+    intro_en,
+    intro_pt,
+    intro_nl,
+    introBlocks_en,
+    introBlocks_pt,
+    introBlocks_nl,
+    mapPlaces[]{_key},
+    recommendations[]{_key},
+    sidebarCards[]{_key},
+    primaryHost->{
+      status,
+      languages[]{language}
+    }
   }
 `;
 
