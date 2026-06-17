@@ -1,5 +1,85 @@
 # Project TODO
 
+# Home in the City - Architecture Decisions
+
+## Current model
+
+### Network structure
+
+- Home in the City is a curated provider network.
+- Public users cannot create provider profiles.
+- Admin creates and manages providers.
+- Admin can edit, disable, and reassign any provider.
+- Admin can edit all cities.
+- City hosts can manage their assigned city.
+- City hosts should later be able to add or invite providers for their own city, but not outside it.
+
+### Roles
+
+#### Admin
+- Full control over providers, cities, permissions, and visibility.
+- Can assign city hosts.
+- Can assign managed cities.
+- Can override all content.
+
+#### City Host
+- Can manage assigned cities only.
+- Can edit city content, recommendations, and map places.
+- Can later add/invite providers for assigned cities.
+- Cannot assign providers to cities they do not manage.
+- All changes are logged.
+
+#### Provider / Interpreter
+- Can edit own profile.
+- Can be connected to one or more cities.
+- Can later manage their own language layer for a city.
+- Cannot edit the main city settings unless they are also the city host.
+
+### Cities and languages
+
+- City languages inherit from the primary city host by default.
+- Admin can override language availability when needed.
+- Disabled languages should not appear as public flags.
+- Nonexistent city/language routes should return 404.
+
+### Future language host model
+
+Goal:
+
+- Jon = City Host Florianópolis.
+- Claudia = City Host São Paulo.
+- German interpreter = German Porto Alegre language page.
+- Korean interpreter = Korean São Paulo language page.
+- Swedish interpreter = Swedish Florianópolis language page.
+
+Language specialists should eventually manage their own city-language layer without becoming the main city host.
+
+Example:
+
+- Jon manages the main Florianópolis city page.
+- A Swedish interpreter manages the Swedish Florianópolis page.
+- A German interpreter manages the German Porto Alegre page.
+- A Korean interpreter manages the Korean São Paulo page.
+
+### Lead management
+
+Planned:
+
+- Track email leads.
+- Track WhatsApp lead clicks.
+- Notify admin when leads are sent.
+- Maintain visibility into provider response quality.
+
+### Recent implementations
+
+Completed June 2026:
+- City host permissions.
+- Managed city access control.
+- City change audit logging.
+- Language inheritance system.
+- Admin provider creation and editing.
+- Provider change audit logging.
+
 ## Urgent before Monday
 
 - [ ] Test mobile map place photo upload from an iPhone.
