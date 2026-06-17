@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
+  cityGuideEnabledLanguages,
+  cityGuideLanguageEnabled,
   cityGuideName,
   cityGuidePath,
   type CityGuideContent,
@@ -27,6 +29,7 @@ function MenuContent({
   englishPath,
   portuguesePath,
   dutchPath,
+  availableLanguages,
   featuredInterpreter,
   providerLogin,
 }: {
@@ -35,6 +38,7 @@ function MenuContent({
   englishPath: string;
   portuguesePath: string;
   dutchPath: string;
+  availableLanguages: CityGuideLang[];
   featuredInterpreter: MenuLink;
   providerLogin: MenuLink;
 }) {
@@ -48,15 +52,15 @@ function MenuContent({
     >
       {mobile ? (
         <div className="flex gap-3 border-b border-white/10 pb-4 text-xl">
-          <Link href={englishPath} aria-label="English">
-            🇬🇧
-          </Link>
-          <Link href={portuguesePath} aria-label="Portuguese">
-            🇧🇷
-          </Link>
-          <Link href={dutchPath} aria-label="Dutch">
-            🇳🇱
-          </Link>
+          {availableLanguages.includes("en") ? (
+            <Link href={englishPath} aria-label="English">🇬🇧</Link>
+          ) : null}
+          {availableLanguages.includes("pt") ? (
+            <Link href={portuguesePath} aria-label="Portuguese">🇧🇷</Link>
+          ) : null}
+          {availableLanguages.includes("nl") ? (
+            <Link href={dutchPath} aria-label="Dutch">🇳🇱</Link>
+          ) : null}
         </div>
       ) : null}
 
@@ -330,6 +334,9 @@ export default function Header({
   const currentCityGuideName = cityGuideSlug
     ? cityGuideName(currentCityGuide, lang, cityGuideSlug)
     : "";
+  const availableLanguages = cityGuideSlug
+    ? cityGuideEnabledLanguages(currentCityGuide, cityGuideSlug)
+    : (["en", "pt", "nl"] as CityGuideLang[]);
   const exploreCityPath = cityGuideSlug
     ? cityGuidePath(lang, cityGuideSlug)
     : portoAlegrePath;
@@ -366,7 +373,7 @@ export default function Header({
   const cityGuideLinks = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
 
-    if (!citySlug) return [];
+    if (!citySlug || !cityGuideLanguageEnabled(city, citySlug, lang)) return [];
 
     return [
       {
@@ -490,21 +497,22 @@ export default function Header({
               englishPath={englishPath}
               portuguesePath={portuguesePath}
               dutchPath={dutchPath}
+              availableLanguages={availableLanguages}
               featuredInterpreter={featuredInterpreter}
               providerLogin={providerLogin}
             />
           </details>
 
           <div className="ml-2 flex items-center gap-2 text-lg">
-            <Link href={englishPath} aria-label="English">
-              🇬🇧
-            </Link>
-            <Link href={portuguesePath} aria-label="Portuguese">
-              🇧🇷
-            </Link>
-            <Link href={dutchPath} aria-label="Dutch">
-              🇳🇱
-            </Link>
+            {availableLanguages.includes("en") ? (
+              <Link href={englishPath} aria-label="English">🇬🇧</Link>
+            ) : null}
+            {availableLanguages.includes("pt") ? (
+              <Link href={portuguesePath} aria-label="Portuguese">🇧🇷</Link>
+            ) : null}
+            {availableLanguages.includes("nl") ? (
+              <Link href={dutchPath} aria-label="Dutch">🇳🇱</Link>
+            ) : null}
           </div>
         </div>
 
@@ -524,6 +532,7 @@ export default function Header({
             englishPath={englishPath}
             portuguesePath={portuguesePath}
             dutchPath={dutchPath}
+            availableLanguages={availableLanguages}
             featuredInterpreter={featuredInterpreter}
             providerLogin={providerLogin}
           />

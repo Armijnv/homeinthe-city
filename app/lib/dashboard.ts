@@ -12,6 +12,7 @@ export type DashboardCity = {
   };
   guideStatus?: string;
   country?: string;
+  enabledLanguages?: string[];
 };
 
 export type DashboardProvider = {
@@ -64,7 +65,8 @@ export const matchedProviderForDashboardQuery = `
       name_nl,
       slug,
       guideStatus,
-      country
+      country,
+      enabledLanguages
     },
     managedCities[]->{
       _id,
@@ -73,7 +75,8 @@ export const matchedProviderForDashboardQuery = `
       name_nl,
       slug,
       guideStatus,
-      country
+      country,
+      enabledLanguages
     },
     ownership{
       contactEmail,
@@ -92,7 +95,8 @@ export const cityForDashboardQuery = `
     name_nl,
     slug,
     guideStatus,
-    country
+    country,
+    enabledLanguages
   }
 `;
 

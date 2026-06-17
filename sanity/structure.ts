@@ -71,6 +71,7 @@ export const structure: StructureResolver = (S) =>
         ),
       S.documentTypeListItem("host").title("Legacy Hosts"),
       S.documentTypeListItem("city").title("Cities"),
+      S.documentTypeListItem("cityChangeLog").title("City Change Log"),
       S.listItem()
         .id("propertyListings")
         .title("Property Listings")

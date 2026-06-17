@@ -6,6 +6,7 @@ import {
   initialMapPlaceActionState,
   type MapPlaceActionState,
 } from "@/app/dashboard/map-place-action-state";
+import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 import { requireCityHost } from "@/app/lib/dashboard";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
@@ -126,6 +127,7 @@ function categoryFields(formData: FormData) {
 function revalidateCityMapPaths(citySlug: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
+  revalidatePath("/dashboard/admin/city-changes");
   revalidatePath(`/dashboard/cities/${citySlug}`);
   revalidatePath(`/dashboard/cities/${citySlug}/map`);
   revalidatePath(`/dashboard/admin/cities/${citySlug}/map`);
@@ -352,7 +354,8 @@ export async function addMapPlaceWithState(
   let imageWarning = false;
 
   try {
-    const { city } = await requireCityHost(citySlug);
+    const context = await requireCityHost(citySlug);
+    const { city } = context;
     assertSanityWriteToken();
 
     const text = localizedPlaceText(formData);
@@ -387,11 +390,17 @@ export async function addMapPlaceWithState(
       image: uploadedImage.image || undefined,
     });
 
-    await writeClient
-      .patch(city._id)
-      .setIfMissing({ mapPlaces: [] })
-      .append("mapPlaces", [mapPlace])
-      .commit();
+    const transaction = writeClient.transaction().patch(city._id, (patch) =>
+      patch.setIfMissing({ mapPlaces: [] }).append("mapPlaces", [mapPlace]),
+    );
+    const changeLog = cityChangeLogDocument({
+      context,
+      city,
+      changeType: "mapPlaceAdded",
+      description: `Added map place: ${text.name}.`,
+    });
+    if (changeLog) transaction.create(changeLog);
+    await transaction.commit();
 
     revalidateCityMapPaths(citySlug);
   } catch (error) {
@@ -414,7 +423,8 @@ export async function updateMapPlaceWithState(
   let imageWarning = false;
 
   try {
-    const { city } = await requireCityHost(citySlug);
+    const context = await requireCityHost(citySlug);
+    const { city } = context;
     assertSanityWriteToken();
 
     const placeKey = placeKeyFromForm(formData);
@@ -476,13 +486,18 @@ export async function updateMapPlaceWithState(
     const cleanSetValues = Object.fromEntries(
       Object.entries(setValues).filter(([, value]) => value !== undefined),
     );
-    let patch = writeClient.patch(city._id).set(cleanSetValues);
-
-    if (unsetPaths.length) {
-      patch = patch.unset(unsetPaths);
-    }
-
-    await patch.commit();
+    const transaction = writeClient.transaction().patch(city._id, (patch) => {
+      const nextPatch = patch.set(cleanSetValues);
+      return unsetPaths.length ? nextPatch.unset(unsetPaths) : nextPatch;
+    });
+    const changeLog = cityChangeLogDocument({
+      context,
+      city,
+      changeType: "mapPlaceUpdated",
+      description: `Updated map place: ${text.name}.`,
+    });
+    if (changeLog) transaction.create(changeLog);
+    await transaction.commit();
     revalidateCityMapPaths(citySlug);
   } catch (error) {
     console.error("Map place update failed", error);
@@ -494,13 +509,26 @@ export async function updateMapPlaceWithState(
 
 export async function deleteMapPlaceAction(citySlug: string, formData: FormData) {
   try {
-    const { city } = await requireCityHost(citySlug);
+    const context = await requireCityHost(citySlug);
+    const { city } = context;
     assertSanityWriteToken();
 
     const placeKey = placeKeyFromForm(formData);
     if (!city._id || !placeKey) return;
 
-    await writeClient.patch(city._id).unset([`mapPlaces[_key=="${placeKey}"]`]).commit();
+    const transaction = writeClient
+      .transaction()
+      .patch(city._id, (patch) =>
+        patch.unset([`mapPlaces[_key=="${placeKey}"]`]),
+      );
+    const changeLog = cityChangeLogDocument({
+      context,
+      city,
+      changeType: "mapPlaceDeleted",
+      description: `Deleted map place (${placeKey}).`,
+    });
+    if (changeLog) transaction.create(changeLog);
+    await transaction.commit();
     revalidateCityMapPaths(citySlug);
   } catch (error) {
     console.error("Map place delete failed", error);

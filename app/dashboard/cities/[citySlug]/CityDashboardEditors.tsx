@@ -46,6 +46,7 @@ export type CityDashboardRecommendation = {
 };
 
 export type CityDashboardEditorData = {
+  enabledLanguages?: Lang[];
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -208,6 +209,40 @@ function LanguageFields({
         </div>
       ))}
     </div>
+  );
+}
+
+function EnabledLanguageFields({ city }: { city: CityDashboardEditorData }) {
+  const enabled = city.enabledLanguages?.length
+    ? city.enabledLanguages
+    : (["en", "pt"] as Lang[]);
+
+  return (
+    <fieldset className="rounded-xl border border-white/10 bg-black/10 p-4">
+      <legend className="px-2 text-sm font-medium uppercase tracking-widest text-white">
+        Published languages
+      </legend>
+      <p className="mb-4 text-sm leading-6 text-stone-300">
+        Only enabled languages appear in the public city language switcher.
+        English remains the fallback language.
+      </p>
+      <div className="flex flex-wrap gap-5">
+        {languages.map((language) => (
+          <label key={language.id} className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              name="enabledLanguages"
+              value={language.id}
+              defaultChecked={enabled.includes(language.id)}
+              disabled={language.id === "en"}
+              className="size-4 accent-[#d6a85a]"
+            />
+            {language.label}
+          </label>
+        ))}
+        <input type="hidden" name="enabledLanguages" value="en" />
+      </div>
+    </fieldset>
   );
 }
 
@@ -615,6 +650,7 @@ export default function CityDashboardEditors({
       <Panel eyebrow="City content" title="Public guide copy">
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
+          <EnabledLanguageFields city={city} />
           <LanguageFields city={city} />
 
           <div className="space-y-4 border-t border-white/10 pt-6">

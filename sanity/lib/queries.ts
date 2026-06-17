@@ -8,6 +8,7 @@ const cityGuideProjection = `
     name_nl,
     slug,
     guideStatus,
+    enabledLanguages,
     latitude,
     longitude,
 
@@ -150,6 +151,7 @@ export const cityNavigationQuery = `
     name_en,
     name_pt,
     name_nl,
+    enabledLanguages,
     slug
   }
 `;

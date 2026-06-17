@@ -16,6 +16,13 @@ export default async function AdminDashboardPage() {
 
   const dashboardCards: DashboardCardProps[] = [
     {
+      title: "City changes",
+      text: "Review recent city content and map changes made by non-admin city hosts.",
+      href: "/dashboard/admin/city-changes",
+      action: "Review city changes",
+      status: "Audit log",
+    },
+    {
       title: "Cities",
       text: "Review city status, slugs, public links, and future city dashboard entry points.",
       href: "/dashboard/admin/cities",

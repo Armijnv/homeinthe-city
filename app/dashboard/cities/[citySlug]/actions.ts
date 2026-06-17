@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { mapCategoryPresets } from "@/app/lib/mapCategories";
+import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 import { requireCityHost } from "@/app/lib/dashboard";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
@@ -284,6 +285,7 @@ function actionErrorState(error: unknown): CityDashboardActionState {
 function revalidateCityPaths(citySlug: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
+  revalidatePath("/dashboard/admin/city-changes");
   revalidatePath(`/dashboard/cities/${citySlug}`);
   revalidatePath(`/dashboard/admin/cities/${citySlug}`);
   revalidatePath(`/brazil/${citySlug}`);
@@ -297,7 +299,8 @@ export async function saveCityContentAction(
   formData: FormData,
 ): Promise<CityDashboardActionState> {
   try {
-    const { city } = await requireCityHost(citySlug);
+    const context = await requireCityHost(citySlug);
+    const { city } = context;
     assertSanityWriteToken();
 
     if (!city._id) {
@@ -313,7 +316,19 @@ export async function saveCityContentAction(
 
     const setValues: Record<string, unknown> = {
       sidebarCards,
+      enabledLanguages: Array.from(
+        new Set(
+          formData
+            .getAll("enabledLanguages")
+            .map(String)
+            .filter((lang) => languages.includes(lang as (typeof languages)[number])),
+        ),
+      ),
     };
+
+    if (!(setValues.enabledLanguages as string[]).includes("en")) {
+      throw new CityDashboardActionError("English must remain enabled.");
+    }
 
     for (const lang of languages) {
       setValues[`headline_${lang}`] = stringValue(formData, `headline_${lang}`) || undefined;
@@ -327,13 +342,18 @@ export async function saveCityContentAction(
     const cleanSetValues = Object.fromEntries(
       Object.entries(setValues).filter(([, value]) => value !== undefined),
     );
-    let patch = writeClient.patch(city._id).set(cleanSetValues);
-
-    if (unsetPaths.length) {
-      patch = patch.unset(unsetPaths);
-    }
-
-    await patch.commit();
+    const transaction = writeClient.transaction().patch(city._id, (patch) => {
+      const nextPatch = patch.set(cleanSetValues);
+      return unsetPaths.length ? nextPatch.unset(unsetPaths) : nextPatch;
+    });
+    const changeLog = cityChangeLogDocument({
+      context,
+      city,
+      changeType: "cityContent",
+      description: "Updated city guide content, sidebar cards, or languages.",
+    });
+    if (changeLog) transaction.create(changeLog);
+    await transaction.commit();
     revalidateCityPaths(citySlug);
 
     return {
@@ -352,7 +372,8 @@ export async function saveCityRecommendationsAction(
   formData: FormData,
 ): Promise<CityDashboardActionState> {
   try {
-    const { city } = await requireCityHost(citySlug);
+    const context = await requireCityHost(citySlug);
+    const { city } = context;
     assertSanityWriteToken();
 
     if (!city._id) {
@@ -366,7 +387,17 @@ export async function saveCityRecommendationsAction(
       ),
     );
 
-    await writeClient.patch(city._id).set({ recommendations }).commit();
+    const transaction = writeClient
+      .transaction()
+      .patch(city._id, { set: { recommendations } });
+    const changeLog = cityChangeLogDocument({
+      context,
+      city,
+      changeType: "recommendations",
+      description: `Updated ${recommendations.length} city recommendation${recommendations.length === 1 ? "" : "s"}.`,
+    });
+    if (changeLog) transaction.create(changeLog);
+    await transaction.commit();
     revalidateCityPaths(citySlug);
 
     return {

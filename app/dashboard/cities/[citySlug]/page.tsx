@@ -37,6 +37,7 @@ const cityDashboardQuery = `
     name_nl,
     slug,
     guideStatus,
+    enabledLanguages,
     country,
     headline_en,
     headline_pt,
@@ -96,6 +97,12 @@ export default async function CityDashboardPage({ params }: PageProps) {
   if (!city) {
     notFound();
   }
+
+  city.enabledLanguages = city.enabledLanguages?.length
+    ? city.enabledLanguages
+    : citySlug === "porto-alegre"
+      ? ["en", "pt", "nl"]
+      : ["en", "pt"];
 
   const name = cityName(city);
   const cards: DashboardCardProps[] = [

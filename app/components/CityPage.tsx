@@ -4,6 +4,7 @@ import { client } from "@/sanity/lib/client";
 import { cityQuery } from "@/sanity/lib/queries";
 import {
   cityGuideName,
+  cityGuideEnabledLanguages,
   cityGuidePath,
   isPortoAlegreGuide,
   localizedCityGuideList,
@@ -823,10 +824,23 @@ export default function CityPage({
         ) : null}
 
         <div className="space-y-8 md:col-span-2">
-          <div className="flex gap-3 text-xl">
-            <a href={cityGuidePath("en", citySlug)}>🇬🇧</a>
-            <a href={cityGuidePath("pt", citySlug)}>🇧🇷</a>
-            <a href={cityGuidePath("nl", citySlug)}>🇳🇱</a>
+          <div className="flex gap-3 text-xl" aria-label="City guide languages">
+            {cityGuideEnabledLanguages(city, citySlug).map((language) => (
+              <a
+                key={language}
+                href={cityGuidePath(language, citySlug)}
+                aria-label={
+                  language === "en"
+                    ? "English"
+                    : language === "pt"
+                      ? "Portuguese"
+                      : "Dutch"
+                }
+                aria-current={language === lang ? "page" : undefined}
+              >
+                {language === "en" ? "🇬🇧" : language === "pt" ? "🇧🇷" : "🇳🇱"}
+              </a>
+            ))}
           </div>
 
           <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">

@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { client } from "@/sanity/lib/client";
-import { cityGuidePath } from "@/app/lib/cityGuides";
+import {
+  cityGuideEnabledLanguages,
+  cityGuidePath,
+  type CityGuideContent,
+} from "@/app/lib/cityGuides";
 import {
   cityGuideListQuery,
   propertyListingListQuery,
@@ -25,11 +29,7 @@ type SitemapPropertyListing = {
   cityName?: string;
 };
 
-type SitemapCityGuide = {
-  slug?: {
-    current?: string;
-  };
-};
+type SitemapCityGuide = Pick<CityGuideContent, "slug" | "enabledLanguages">;
 
 const siteUrl = "https://homeinthe.city";
 
@@ -83,11 +83,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const citySlug = city.slug?.current;
     if (!citySlug || citySlug === "porto-alegre") return [];
 
-    return [
-      staticEntry(cityGuidePath("en", citySlug)),
-      staticEntry(cityGuidePath("pt", citySlug)),
-      staticEntry(cityGuidePath("nl", citySlug)),
-    ];
+    return cityGuideEnabledLanguages(city, citySlug).map((language) =>
+      staticEntry(cityGuidePath(language, citySlug)),
+    );
   });
 
   return [

@@ -82,6 +82,33 @@ export const city = defineType({
     }),
 
     defineField({
+      name: "enabledLanguages",
+      title: "Enabled City Guide Languages",
+      type: "array",
+      description:
+        "Only these languages are published and shown in the city page language switcher.",
+      initialValue: ["en", "pt"],
+      of: [{ type: "string" }],
+      options: {
+        layout: "grid",
+        list: [
+          { title: "English", value: "en" },
+          { title: "Portuguese", value: "pt" },
+          { title: "Dutch", value: "nl" },
+        ],
+      },
+      validation: (Rule) =>
+        Rule.required()
+          .min(1)
+          .unique()
+          .custom((languages) =>
+            Array.isArray(languages) && languages.includes("en")
+              ? true
+              : "English must remain enabled as the fallback language.",
+          ),
+    }),
+
+    defineField({
       name: "latitude",
       title: "City Latitude",
       type: "number",

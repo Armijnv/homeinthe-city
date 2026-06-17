@@ -100,6 +100,7 @@ export type CityGuideContent = {
     current?: string;
   };
   guideStatus?: CityGuideStatus;
+  enabledLanguages?: CityGuideLang[];
   latitude?: number;
   longitude?: number;
   primaryHost?: CityGuideProvider | null;
@@ -149,12 +150,40 @@ export function cityGuidePath(lang: CityGuideLang, citySlug: string) {
   return `/brazil/${citySlug}`;
 }
 
-export function cityGuideAlternates(citySlug: string) {
-  return {
-    en: `${cityGuideSiteUrl}${cityGuidePath("en", citySlug)}`,
-    pt: `${cityGuideSiteUrl}${cityGuidePath("pt", citySlug)}`,
-    nl: `${cityGuideSiteUrl}${cityGuidePath("nl", citySlug)}`,
-  };
+export function cityGuideEnabledLanguages(
+  city: CityGuideContent | null | undefined,
+  citySlug: string,
+) {
+  const configured = city?.enabledLanguages?.filter(
+    (lang): lang is CityGuideLang => ["en", "pt", "nl"].includes(lang),
+  );
+
+  if (configured?.length) return Array.from(new Set(configured));
+
+  // Compatibility defaults for existing city documents until the field is saved.
+  return citySlug === "porto-alegre"
+    ? (["en", "pt", "nl"] as CityGuideLang[])
+    : (["en", "pt"] as CityGuideLang[]);
+}
+
+export function cityGuideLanguageEnabled(
+  city: CityGuideContent | null | undefined,
+  citySlug: string,
+  lang: CityGuideLang,
+) {
+  return cityGuideEnabledLanguages(city, citySlug).includes(lang);
+}
+
+export function cityGuideAlternates(
+  citySlug: string,
+  city?: CityGuideContent | null,
+) {
+  return Object.fromEntries(
+    cityGuideEnabledLanguages(city, citySlug).map((lang) => [
+      lang,
+      `${cityGuideSiteUrl}${cityGuidePath(lang, citySlug)}`,
+    ]),
+  );
 }
 
 export function localizedCityGuideText(
@@ -357,7 +386,7 @@ export function cityGuideMetadata({
     description,
     alternates: {
       canonical: url,
-      languages: cityGuideAlternates(citySlug),
+      languages: cityGuideAlternates(citySlug, city),
     },
     openGraph: {
       title: `${title} | Home in the City`,

@@ -4,6 +4,7 @@ import CityPage from "@/app/components/CityPage";
 import {
   cityGuideDescription,
   cityGuideInLanguage,
+  cityGuideLanguageEnabled,
   cityGuideMetadata,
   cityGuidePath,
   cityGuideSiteUrl,
@@ -29,6 +30,8 @@ export async function generateMetadata({
   const { citySlug } = await params;
   const city = await getCity(citySlug);
 
+  if (city && !cityGuideLanguageEnabled(city, citySlug, "nl")) notFound();
+
   return cityGuideMetadata({ city, lang: "nl", citySlug });
 }
 
@@ -37,6 +40,7 @@ export default async function Page({ params }: PageProps) {
   const { city, propertyListings } = await getCityPageData(citySlug);
 
   if (!city) notFound();
+  if (!cityGuideLanguageEnabled(city, citySlug, "nl")) notFound();
 
   const url = `${cityGuideSiteUrl}${cityGuidePath("nl", citySlug)}`;
   const description = cityGuideDescription({ city, lang: "nl", citySlug });
