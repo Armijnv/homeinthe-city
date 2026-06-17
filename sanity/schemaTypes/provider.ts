@@ -54,6 +54,7 @@ export const provider = defineType({
           { title: "Draft", value: "draft" },
           { title: "Review", value: "review" },
           { title: "Published", value: "published" },
+          { title: "Disabled / Hidden", value: "disabled" },
         ],
       },
       validation: (Rule) => Rule.required(),

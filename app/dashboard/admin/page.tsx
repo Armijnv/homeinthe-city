@@ -31,10 +31,17 @@ export default async function AdminDashboardPage() {
     },
     {
       title: "Providers",
-      text: "Review provider roles, publication status, ownership email, and public profile links.",
+      text: "Create and edit providers, roles, languages, visibility, account email, and city assignments.",
       href: "/dashboard/admin/providers",
       action: "Open providers",
       status: "Admin",
+    },
+    {
+      title: "Provider changes",
+      text: "Review provider creation, editing, and managed-city assignment history.",
+      href: "/dashboard/admin/provider-changes",
+      action: "Review provider changes",
+      status: "Audit log",
     },
     {
       title: "Properties",

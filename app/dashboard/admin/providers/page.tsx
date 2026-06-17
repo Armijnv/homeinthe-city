@@ -64,9 +64,15 @@ export default async function AdminProvidersPage() {
     <DashboardShell
       eyebrow="Admin"
       title="Providers"
-      intro="A read-only provider index for profile status, roles, ownership email, public city coverage, and managed city permissions."
+      intro="Create and edit curated provider profiles, publication status, roles, languages, public city coverage, and managed city permissions."
     >
       <BackToDashboard />
+      <div className="mb-6 flex flex-wrap gap-4">
+        <TableLink href="/dashboard/admin/providers/new">Create provider</TableLink>
+        <TableLink href="/dashboard/admin/provider-changes">
+          Provider change log
+        </TableLink>
+      </div>
       <DataTable
         headers={[
           "Name",
@@ -158,11 +164,16 @@ export default async function AdminProvidersPage() {
                 </p>
               </td>
               <td className="px-5 py-4">
-                {slug ? (
-                  <TableLink href={providerProfilePath("en", slug)}>
-                    Public profile
+                <div className="flex flex-col gap-2">
+                  <TableLink href={`/dashboard/admin/providers/${provider._id}`}>
+                    Edit provider
                   </TableLink>
-                ) : null}
+                  {slug && provider.status === "published" ? (
+                    <TableLink href={providerProfilePath("en", slug)}>
+                      Public profile
+                    </TableLink>
+                  ) : null}
+                </div>
               </td>
             </tr>
           );
