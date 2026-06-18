@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { updateCityStatusAction } from "@/app/dashboard/admin/cities/actions";
 import {
   BackToDashboard,
   DashboardCard,
@@ -15,6 +16,10 @@ import { client } from "@/sanity/lib/client";
 type PageProps = {
   params: Promise<{
     citySlug: string;
+  }>;
+  searchParams: Promise<{
+    error?: string;
+    saved?: string;
   }>;
 };
 
@@ -79,8 +84,11 @@ function coordinateText(city: AdminCityDetail) {
   return hasCoordinates ? `${city.latitude}, ${city.longitude}` : "Missing";
 }
 
-export default async function AdminCityDetailPage({ params }: PageProps) {
-  const { citySlug } = await params;
+export default async function AdminCityDetailPage({ params, searchParams }: PageProps) {
+  const [{ citySlug }, { error, saved }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   await requireAdmin(`/dashboard/admin/cities/${citySlug}`);
   const city = await client.fetch<AdminCityDetail | null>(adminCityDetailQuery, {
     citySlug,
@@ -132,6 +140,17 @@ export default async function AdminCityDetailPage({ params }: PageProps) {
     >
       <BackToDashboard />
 
+      {error ? (
+        <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
+          {error}
+        </p>
+      ) : null}
+      {saved === "status" ? (
+        <p className="mb-6 rounded-xl border border-emerald-300/30 bg-emerald-950/20 p-4 text-sm text-emerald-100">
+          City visibility updated.
+        </p>
+      ) : null}
+
       <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
         <div className="mb-5 flex flex-wrap gap-2">
           <Pill>{city.country || "Brazil"}</Pill>
@@ -179,6 +198,34 @@ export default async function AdminCityDetailPage({ params }: PageProps) {
             </p>
           </div>
         </div>
+
+        <form
+          action={updateCityStatusAction}
+          className="mt-6 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-end"
+        >
+          <input type="hidden" name="cityId" value={city._id} />
+          <input type="hidden" name="citySlug" value={citySlug} />
+          <label className="flex-1">
+            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
+              Marketing visibility
+            </span>
+            <select
+              name="guideStatus"
+              defaultValue={city.guideStatus || "live"}
+              className="w-full rounded-lg border border-white/15 bg-[#1a1f2e] px-4 py-3 text-sm text-white"
+            >
+              <option value="hidden">Hidden — nowhere public</option>
+              <option value="comingSoon">Coming soon — marketing only</option>
+              <option value="live">Active — guide available when complete</option>
+            </select>
+          </label>
+          <button
+            type="submit"
+            className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"
+          >
+            Save visibility
+          </button>
+        </form>
       </section>
 
       <div className="grid gap-5 md:grid-cols-2">

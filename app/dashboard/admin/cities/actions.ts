@@ -49,12 +49,13 @@ function optionalFields(values: Record<string, string>) {
 function cityErrorMessage(error: unknown) {
   if (error instanceof CityAdminError) return error.message;
   if (error instanceof Error && error.message.includes("SANITY_API_WRITE_TOKEN")) {
-    return "City creation is not configured. Check the Sanity write token.";
+    return "City saving is not configured. Check the Sanity write token.";
   }
-  return "The city could not be created. Please review the fields and try again.";
+  return "The city could not be saved. Please review the fields and try again.";
 }
 
 function revalidateCityManagement(citySlug: string) {
+  revalidatePath("/", "layout");
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
   revalidatePath("/dashboard/admin/cities");
@@ -152,4 +153,41 @@ export async function createCityAction(formData: FormData) {
   }
 
   redirect(`/dashboard/cities/${citySlug}`);
+}
+
+export async function updateCityStatusAction(formData: FormData) {
+  await requireAdmin("/dashboard/admin/cities");
+
+  const cityId = cleanDocumentId(formString(formData, "cityId"));
+  const citySlug = cleanSlug(formString(formData, "citySlug"));
+  const guideStatus = formString(formData, "guideStatus");
+
+  if (!cityId || !citySlug) redirect("/dashboard/admin/cities");
+
+  try {
+    assertSanityWriteToken();
+
+    if (!allowedGuideStatuses.has(guideStatus)) {
+      throw new CityAdminError("Choose a valid city visibility status.");
+    }
+
+    const existingId = await client.fetch<string | null>(
+      `*[
+        _type == "city" &&
+        _id == $cityId &&
+        slug.current == $citySlug
+      ][0]._id`,
+      { cityId, citySlug },
+    );
+    if (!existingId) throw new CityAdminError("City not found.");
+
+    await writeClient.patch(cityId).set({ guideStatus }).commit();
+    revalidateCityManagement(citySlug);
+  } catch (error) {
+    redirect(
+      `/dashboard/admin/cities/${citySlug}?error=${encodeURIComponent(cityErrorMessage(error))}`,
+    );
+  }
+
+  redirect(`/dashboard/admin/cities/${citySlug}?saved=status`);
 }

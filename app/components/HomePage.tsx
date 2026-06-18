@@ -2,9 +2,10 @@ import GlobeComponent from "./Globe";
 import Link from "next/link";
 import {
   cityGuideGlobeCities,
+  cityGuideIsPublic,
   cityGuideName,
   cityGuidePath,
-  cityGuideStatus,
+  discoverableCityGuides,
   providerProfilePath,
   publishedCityGuides,
   type CityGuideContent,
@@ -227,13 +228,14 @@ export default function HomePage({
 }) {
   const t = content[lang];
   const cityT = cityDiscoveryContent[lang];
-  const publicCities = publishedCityGuides(cityGuides);
-  const globeCities = cityGuideGlobeCities(publicCities, lang);
-  const liveCities = publicCities.filter((city) => cityGuideStatus(city) === "live");
-  const comingSoonCities = publicCities.filter(
-    (city) => cityGuideStatus(city) === "comingSoon",
+  const visibleCities = discoverableCityGuides(cityGuides);
+  const publicCities = publishedCityGuides(visibleCities);
+  const globeCities = cityGuideGlobeCities(visibleCities, lang);
+  const liveCities = publicCities;
+  const comingSoonCities = visibleCities.filter(
+    (city) => !cityGuideIsPublic(city),
   );
-  const primaryCity = liveCities[0] || publicCities[0] || null;
+  const primaryCity = liveCities[0] || null;
   const primaryCitySlug = primaryCity?.slug?.current;
   const primaryCityName = primaryCitySlug
     ? cityGuideName(primaryCity, lang, primaryCitySlug)
@@ -304,7 +306,7 @@ export default function HomePage({
             <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm">
               {liveSummary ? cityT.liveSummary(liveSummary) : t.liveCity}
             </span>
-            {(comingSoonSummary || !publicCities.length) && (
+            {(comingSoonSummary || !visibleCities.length) && (
               <span className="rounded-full border border-white/15 bg-black/10 px-3 py-1.5 backdrop-blur-sm">
                 {comingSoonSummary ? cityT.nextSummary(comingSoonSummary) : t.nextCity}
               </span>
@@ -320,38 +322,49 @@ export default function HomePage({
               {cityT.title}
             </h2>
 
-            {publicCities.length ? (
+            {visibleCities.length ? (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {publicCities.map((city) => {
+                {visibleCities.map((city) => {
                   const citySlug = city.slug?.current;
                   if (!citySlug) return null;
 
                   const cityName = cityGuideName(city, lang, citySlug);
-                  const status = cityGuideStatus(city);
+                  const isPublic = cityGuideIsPublic(city);
 
-                  return (
-                    <Link
-                      key={citySlug}
-                      href={cityGuidePath(lang, citySlug)}
-                      className="group rounded-lg border border-stone-200 bg-white/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#b99455]"
-                    >
+                  const cardContent = (
+                    <>
                       <div className="mb-4 flex items-start justify-between gap-4">
                         <h3 className="text-lg font-medium text-[#1a1f2e]">
                           {cityName}
                         </h3>
                         <span className="rounded-full border border-stone-200 px-3 py-1 text-[11px] uppercase tracking-[0.16em] text-stone-500">
-                          {status === "comingSoon"
-                            ? cityT.comingSoon
-                            : cityT.available}
+                          {isPublic ? cityT.available : cityT.comingSoon}
                         </span>
                       </div>
                       <p className="mb-5 text-sm leading-relaxed text-stone-600">
                         {cityT.cityText(cityName)}
                       </p>
                       <span className="text-sm font-medium text-[#1a1f2e] group-hover:underline">
-                        {cityT.open}
+                        {isPublic ? cityT.open : cityT.comingSoon}
                       </span>
+                    </>
+                  );
+
+                  return isPublic ? (
+                    <Link
+                      key={citySlug}
+                      href={cityGuidePath(lang, citySlug)}
+                      className="group rounded-lg border border-stone-200 bg-white/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-stone-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+                    >
+                      {cardContent}
                     </Link>
+                  ) : (
+                    <article
+                      key={citySlug}
+                      className="rounded-lg border border-stone-200 bg-white/70 p-5 shadow-sm"
+                    >
+                      {cardContent}
+                    </article>
                   );
                 })}
               </div>

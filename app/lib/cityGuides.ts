@@ -129,7 +129,7 @@ export type CityGuideGlobeCity = {
   lng: number;
   name: string;
   status: "live" | "comingSoon";
-  href: string;
+  href?: string;
   ariaLabel: string;
 };
 
@@ -179,7 +179,7 @@ export function cityGuideEnabledLanguages(
 }
 
 export function cityGuideIsPublic(city: CityGuideContent | null | undefined) {
-  if (!city || city.guideStatus === "hidden") return false;
+  if (!city || cityGuideStatus(city) !== "live") return false;
   if (!city.primaryHost || city.primaryHost.status !== "published") return false;
 
   const values = city as Record<string, unknown>;
@@ -295,11 +295,18 @@ export function publishedCityGuides(cities: CityGuideContent[]) {
   );
 }
 
+export function discoverableCityGuides(cities: CityGuideContent[]) {
+  return cities.filter(
+    (city) =>
+      Boolean(city.slug?.current) && cityGuideStatus(city) !== "hidden",
+  );
+}
+
 export function cityGuideGlobeCities(
   cities: CityGuideContent[],
   lang: CityGuideLang,
 ): CityGuideGlobeCity[] {
-  return publishedCityGuides(cities).flatMap((city) => {
+  return discoverableCityGuides(cities).flatMap((city) => {
     const citySlug = city.slug?.current;
     const lat = city.latitude;
     const lng = city.longitude;
@@ -309,9 +316,8 @@ export function cityGuideGlobeCities(
     }
 
     const name = cityGuideName(city, lang, citySlug);
-    const status = cityGuideStatus(city);
     const pinStatus: CityGuideGlobeCity["status"] =
-      status === "comingSoon" ? "comingSoon" : "live";
+      cityGuideIsPublic(city) ? "live" : "comingSoon";
 
     return [
       {
@@ -319,9 +325,9 @@ export function cityGuideGlobeCities(
         lng,
         name,
         status: pinStatus,
-        href: cityGuidePath(lang, citySlug),
+        href: pinStatus === "live" ? cityGuidePath(lang, citySlug) : undefined,
         ariaLabel:
-          status === "comingSoon"
+          pinStatus === "comingSoon"
             ? `${name} city guide coming soon`
             : `Open ${name} city guide`,
       },

@@ -9,6 +9,7 @@ import {
   cityGuideLanguageEnabled,
   cityGuideName,
   cityGuidePath,
+  cityGuideStatus,
   type CityGuideContent,
   type CityGuideLang,
 } from "@/app/lib/cityGuides";
@@ -17,6 +18,7 @@ type MenuLink = {
   label: string;
   href: string;
   external?: boolean;
+  disabled?: boolean;
 };
 
 type MenuSection = {
@@ -95,7 +97,11 @@ function MenuContent({
 
             <div className="flex flex-col gap-3 text-sm text-white/75">
               {section.links.map((link) =>
-                link.external ? (
+                link.disabled ? (
+                  <span key={link.label} className="text-white/45">
+                    {link.label}
+                  </span>
+                ) : link.external ? (
                   <a
                     key={link.label}
                     href={link.href}
@@ -176,6 +182,7 @@ export default function Header({
       contact: "WhatsApp",
       tagline: "Your local guide · Wherever business takes you",
       providerLogin: "Provider Login",
+      comingSoon: "Coming soon",
     },
     pt: {
       menu: "Menu",
@@ -202,6 +209,7 @@ export default function Header({
       contact: "WhatsApp",
       tagline: "Seu apoio local · Onde os negócios levarem você",
       providerLogin: "Login de prestador",
+      comingSoon: "Em breve",
     },
     nl: {
       menu: "Menu",
@@ -228,6 +236,7 @@ export default function Header({
       contact: "WhatsApp",
       tagline: "Je lokale gids · Waar je zakenreis je ook brengt",
       providerLogin: "Provider Login",
+      comingSoon: "Binnenkort",
     },
   };
 
@@ -376,9 +385,21 @@ export default function Header({
   const cityGuideLinks = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
 
+    if (!citySlug || cityGuideStatus(city) === "hidden") return [];
+
+    const label = cityGuideName(city, lang, citySlug);
+
+    if (!cityGuideIsPublic(city)) {
+      return [
+        {
+          label: `${label} — ${t.comingSoon}`,
+          href: "",
+          disabled: true,
+        },
+      ];
+    }
+
     if (
-      !citySlug ||
-      !cityGuideIsPublic(city) ||
       !cityGuideLanguageEnabled(city, citySlug, lang)
     ) {
       return [];
@@ -386,7 +407,7 @@ export default function Header({
 
     return [
       {
-        label: cityGuideName(city, lang, citySlug),
+        label,
         href: cityGuidePath(lang, citySlug),
       },
     ];

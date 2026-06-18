@@ -99,8 +99,7 @@ export default async function NewCityPage({ searchParams }: PageProps) {
             <Field label="Status / visibility">
               <select name="guideStatus" defaultValue="hidden" className={inputClass}>
                 <option value="hidden">Hidden — not public</option>
-                <option value="comingSoon">Coming soon</option>
-                <option value="live">Live</option>
+                <option value="comingSoon">Coming soon — marketing only</option>
               </select>
             </Field>
             <Field label="Primary host (optional)">

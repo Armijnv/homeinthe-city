@@ -13,7 +13,7 @@ export type GlobeCity = {
   lng: number;
   name: string;
   status: "live" | "comingSoon";
-  href: string;
+  href?: string;
   ariaLabel: string;
 };
 
@@ -80,17 +80,17 @@ export default function GlobeComponent({ cities }: { cities: GlobeCity[] }) {
   if (!supported) {
     return (
       <div className="flex h-[420px] w-[420px] flex-col items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 text-center text-sm text-stone-400">
-        {cities.map((city) => (
-          <Link
-            key={city.href}
-            href={city.href}
-            className={city.status === "live" ? "hover:text-white" : "text-xs hover:text-white"}
-          >
-            {city.status === "live"
-              ? `${city.name} is available now`
-              : `${city.name} coming soon`}
-          </Link>
-        ))}
+        {cities.map((city) =>
+          city.status === "live" && city.href ? (
+            <Link key={city.name} href={city.href} className="hover:text-white">
+              {city.name} is available now
+            </Link>
+          ) : (
+            <span key={city.name} className="text-xs">
+              {city.name} coming soon
+            </span>
+          ),
+        )}
       </div>
     );
   }
@@ -121,9 +121,15 @@ export default function GlobeComponent({ cities }: { cities: GlobeCity[] }) {
 
     label.append(name, status);
     marker.append(dot, label);
-    marker.addEventListener("click", () => {
-      window.location.href = city.href;
-    });
+    if (city.href) {
+      const href = city.href;
+      marker.addEventListener("click", () => {
+        window.location.href = href;
+      });
+    } else {
+      marker.disabled = true;
+      marker.classList.add("cursor-default");
+    }
 
     return marker;
   }
