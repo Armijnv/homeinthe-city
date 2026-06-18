@@ -100,23 +100,24 @@ export default function GlobeComponent({ cities }: { cities: GlobeCity[] }) {
     marker.type = "button";
     marker.setAttribute("aria-label", city.ariaLabel);
     marker.className =
-      "group pointer-events-auto flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border border-white/25 bg-[#1a1f2e]/90 px-3 py-2 text-left text-white shadow-2xl shadow-black/40 backdrop-blur-md transition hover:border-white/60 hover:bg-[#253047] focus:outline-none focus:ring-2 focus:ring-[#d7b46a]";
+      "group pointer-events-auto flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border border-white/25 bg-[#1a1f2e]/90 px-4 py-2.5 text-left text-white shadow-2xl shadow-black/40 backdrop-blur-md transition hover:border-white/60 hover:bg-[#253047] focus:outline-none focus:ring-2 focus:ring-[#d7b46a] lg:px-3 lg:py-2";
 
     const dot = document.createElement("span");
     dot.className =
       city.status === "live"
-        ? "block h-2.5 w-2.5 rounded-full bg-[#d7b46a] shadow-[0_0_18px_rgba(215,180,106,0.8)]"
-        : "block h-2.5 w-2.5 rounded-full border border-[#d7b46a] bg-transparent";
+        ? "block h-3 w-3 rounded-full bg-[#d7b46a] shadow-[0_0_18px_rgba(215,180,106,0.8)] lg:h-2.5 lg:w-2.5"
+        : "block h-3 w-3 rounded-full border border-[#d7b46a] bg-transparent lg:h-2.5 lg:w-2.5";
 
     const label = document.createElement("span");
     label.className = "grid leading-tight";
 
     const name = document.createElement("span");
-    name.className = "text-[11px] font-medium";
+    name.className = "text-[13px] font-medium lg:text-[11px]";
     name.textContent = city.name;
 
     const status = document.createElement("span");
-    status.className = "text-[9px] uppercase tracking-widest text-stone-300";
+    status.className =
+      "text-[10px] uppercase tracking-widest text-stone-300 lg:text-[9px]";
     status.textContent = city.status === "live" ? "Available now" : "Coming soon";
 
     label.append(name, status);
@@ -135,7 +136,7 @@ export default function GlobeComponent({ cities }: { cities: GlobeCity[] }) {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="flex h-full w-full items-center justify-center">
       <Globe
         ref={globeRef}
         width={700}

@@ -249,20 +249,48 @@ export default function HomePage({
 
   return (
     <div className="min-h-screen overflow-hidden bg-[#1a1f2e]">
-      <section className="relative min-h-screen overflow-hidden bg-[#1a1f2e] px-6 pt-28 pb-12 text-white md:px-10 lg:flex lg:items-center lg:justify-between lg:px-20 lg:pt-36">
+      <section className="relative flex min-h-screen flex-col overflow-hidden bg-[#1a1f2e] px-6 pt-24 pb-12 text-white md:px-10 lg:flex-row lg:items-center lg:justify-between lg:px-20 lg:pt-36">
         {/* ======================================================
            FULLSCREEN / RESPONSIVE GLOBE
-           Mobile + tablet return to the old Trusted Hosts feeling:
-           a large cinematic globe behind floating text.
+           Mobile gives the globe its own interaction area; desktop
+           keeps the original cinematic, layered composition.
         ====================================================== */}
-        <div className="pointer-events-auto absolute left-1/2 top-[58%] z-10 -translate-x-1/2 -translate-y-1/2 scale-[0.76] opacity-95 sm:top-[56%] sm:scale-[0.86] md:top-[54%] md:scale-100 lg:left-[28%] lg:top-[56%] lg:scale-100 xl:scale-110">
+        <div className="pointer-events-auto relative z-10 mx-auto mt-4 flex h-[505px] w-full items-center justify-center scale-[0.72] opacity-95 [&_canvas]:touch-none sm:h-[575px] sm:scale-[0.82] md:h-[630px] md:scale-[0.9] lg:absolute lg:left-[28%] lg:top-[56%] lg:mx-0 lg:mt-0 lg:block lg:h-auto lg:w-auto lg:-translate-x-1/2 lg:-translate-y-1/2 lg:scale-100 lg:[&_canvas]:touch-auto xl:scale-110">
           <GlobeComponent cities={globeCities} />
         </div>
 
         {/* ======================================================
-           HERO TEXT
+           MOBILE HERO TEXT
         ====================================================== */}
-        <div className="relative z-20 max-w-xl pt-2 text-left lg:ml-auto lg:mr-0 lg:w-1/2 lg:pt-0">
+        <div className="relative z-20 -order-1 max-w-xl text-left lg:hidden">
+          <p className="mb-3 max-w-[20rem] text-[11px] uppercase tracking-[0.22em] text-stone-400 sm:max-w-none sm:text-sm">
+            {eyebrow || t.eyebrow}
+          </p>
+
+          <h1 className="mb-3 text-4xl font-light leading-tight text-white sm:text-5xl md:text-6xl">
+            {t.title}
+          </h1>
+
+          <p className="mb-5 max-w-lg text-xl font-light leading-snug text-stone-100 sm:text-2xl">
+            {t.subtitle}
+          </p>
+
+          <Link
+            href={primaryCitySlug ? cityGuidePath(lang, primaryCitySlug) : t.primaryHref}
+            className="inline-flex rounded-full bg-white px-6 py-3 text-sm text-stone-900 transition-colors hover:bg-stone-200 focus:outline-none focus:ring-2 focus:ring-white/60"
+          >
+            {primaryCityName ? cityT.primaryCta(primaryCityName) : t.primaryCta}
+          </Link>
+        </div>
+
+        <p className="relative z-20 max-w-lg text-base leading-relaxed text-stone-300 sm:text-lg lg:hidden">
+          {t.intro}
+        </p>
+
+        {/* ======================================================
+           DESKTOP HERO TEXT — intentionally unchanged
+        ====================================================== */}
+        <div className="relative z-20 hidden max-w-xl pt-2 text-left lg:ml-auto lg:mr-0 lg:block lg:w-1/2 lg:pt-0">
           <p className="mb-4 max-w-[20rem] text-[11px] uppercase tracking-[0.22em] text-stone-400 sm:max-w-none sm:text-sm lg:tracking-[0.25em]">
             {eyebrow || t.eyebrow}
           </p>
