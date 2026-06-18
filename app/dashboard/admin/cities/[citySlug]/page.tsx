@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { updateCityStatusAction } from "@/app/dashboard/admin/cities/actions";
+import {
+  updateCityCoordinatesAction,
+  updateCityStatusAction,
+} from "@/app/dashboard/admin/cities/actions";
 import {
   BackToDashboard,
   DashboardCard,
@@ -150,6 +153,11 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
           City visibility updated.
         </p>
       ) : null}
+      {saved === "coordinates" ? (
+        <p className="mb-6 rounded-xl border border-emerald-300/30 bg-emerald-950/20 p-4 text-sm text-emerald-100">
+          City coordinates updated. The globe pin can now use this location.
+        </p>
+      ) : null}
 
       <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
         <div className="mb-5 flex flex-wrap gap-2">
@@ -179,6 +187,9 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
               City coordinates
             </p>
             <p className="mt-2 text-lg text-white">{coordinateText(city)}</p>
+            <p className="mt-2 text-sm text-stone-300">
+              Globe pins require both latitude and longitude.
+            </p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-widest text-stone-400">
@@ -198,6 +209,66 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
             </p>
           </div>
         </div>
+
+        <form
+          action={updateCityCoordinatesAction}
+          className="mt-6 border-t border-white/10 pt-6"
+        >
+          <input type="hidden" name="cityId" value={city._id} />
+          <input type="hidden" name="citySlug" value={citySlug} />
+          <h2 className="text-lg font-medium text-white">Globe pin location</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-300">
+            Enter the city-center coordinates. Saving these fields does not change
+            whether the city is hidden, coming soon, or active.
+          </p>
+          <div className="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <label>
+              <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
+                Latitude
+              </span>
+              <input
+                type="number"
+                name="latitude"
+                required
+                min="-90"
+                max="90"
+                step="any"
+                inputMode="decimal"
+                defaultValue={city.latitude}
+                placeholder="-23.5505"
+                className="w-full rounded-lg border border-white/15 bg-[#1a1f2e] px-4 py-3 text-sm text-white placeholder:text-stone-500"
+              />
+            </label>
+            <label>
+              <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
+                Longitude
+              </span>
+              <input
+                type="number"
+                name="longitude"
+                required
+                min="-180"
+                max="180"
+                step="any"
+                inputMode="decimal"
+                defaultValue={city.longitude}
+                placeholder="-46.6333"
+                className="w-full rounded-lg border border-white/15 bg-[#1a1f2e] px-4 py-3 text-sm text-white placeholder:text-stone-500"
+              />
+            </label>
+            <button
+              type="submit"
+              className="rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"
+            >
+              Save coordinates
+            </button>
+          </div>
+          {/* TODO: Add automatic city coordinate lookup when a vetted geocoding service is configured. */}
+          <p className="mt-4 text-sm text-stone-400">
+            Automatic coordinate lookup is not configured yet. Copy coordinates
+            from a trusted map source.
+          </p>
+        </form>
 
         <form
           action={updateCityStatusAction}

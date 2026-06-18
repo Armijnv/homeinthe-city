@@ -1,5 +1,12 @@
 # Project TODO
 
+## High Priority Dashboard Improvements
+
+- Add latitude and longitude fields to Admin → Create City.
+- Add latitude and longitude editing to City Dashboard.
+- Remove need to open Sanity Studio for city coordinates.
+- Verify globe, map and city discovery all use the same coordinate source.
+
 # Home in the City - Architecture Decisions
 
 ## Current model

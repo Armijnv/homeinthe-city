@@ -15,6 +15,28 @@ function formString(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
 }
 
+function cityCoordinates(formData: FormData, required = false) {
+  const latitudeValue = formString(formData, "latitude");
+  const longitudeValue = formString(formData, "longitude");
+
+  if (!latitudeValue && !longitudeValue && !required) return null;
+  if (!latitudeValue || !longitudeValue) {
+    throw new CityAdminError("Add both latitude and longitude.");
+  }
+
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90) {
+    throw new CityAdminError("Latitude must be a number between -90 and 90.");
+  }
+  if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    throw new CityAdminError("Longitude must be a number between -180 and 180.");
+  }
+
+  return { latitude, longitude };
+}
+
 function selectedStrings(formData: FormData, key: string) {
   return Array.from(
     new Set(
@@ -79,6 +101,7 @@ export async function createCityAction(formData: FormData) {
     const guideStatus = formString(formData, "guideStatus") || "hidden";
     const primaryHostId = cleanDocumentId(formString(formData, "primaryHostId"));
     const enabledLanguages = selectedStrings(formData, "enabledLanguages");
+    const coordinates = cityCoordinates(formData);
 
     if (!nameEn) throw new CityAdminError("City name is required.");
     if (!citySlug) throw new CityAdminError("City slug is required.");
@@ -134,6 +157,7 @@ export async function createCityAction(formData: FormData) {
       }),
       slug: { _type: "slug", current: citySlug },
       guideStatus,
+      ...(coordinates || {}),
       ...(primaryHostId
         ? {
             primaryHost: {
@@ -190,4 +214,40 @@ export async function updateCityStatusAction(formData: FormData) {
   }
 
   redirect(`/dashboard/admin/cities/${citySlug}?saved=status`);
+}
+
+export async function updateCityCoordinatesAction(formData: FormData) {
+  await requireAdmin("/dashboard/admin/cities");
+
+  const cityId = cleanDocumentId(formString(formData, "cityId"));
+  const citySlug = cleanSlug(formString(formData, "citySlug"));
+
+  if (!cityId || !citySlug) redirect("/dashboard/admin/cities");
+
+  try {
+    assertSanityWriteToken();
+    const coordinates = cityCoordinates(formData, true);
+    if (!coordinates) {
+      throw new CityAdminError("Add both latitude and longitude.");
+    }
+
+    const existingId = await client.fetch<string | null>(
+      `*[
+        _type == "city" &&
+        _id == $cityId &&
+        slug.current == $citySlug
+      ][0]._id`,
+      { cityId, citySlug },
+    );
+    if (!existingId) throw new CityAdminError("City not found.");
+
+    await writeClient.patch(cityId).set(coordinates).commit();
+    revalidateCityManagement(citySlug);
+  } catch (error) {
+    redirect(
+      `/dashboard/admin/cities/${citySlug}?error=${encodeURIComponent(cityErrorMessage(error))}`,
+    );
+  }
+
+  redirect(`/dashboard/admin/cities/${citySlug}?saved=coordinates`);
 }

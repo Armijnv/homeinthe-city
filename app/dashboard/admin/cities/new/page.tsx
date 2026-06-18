@@ -116,6 +116,46 @@ export default async function NewCityPage({ searchParams }: PageProps) {
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/10 p-6">
+          <h2 className="text-2xl font-light text-white">Globe coordinates</h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-stone-300">
+            Globe pins require both latitude and longitude. You can leave both fields
+            empty while the city is being prepared, but it will not appear as a pin
+            until coordinates are saved.
+          </p>
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <Field label="Latitude">
+              <input
+                type="number"
+                name="latitude"
+                min="-90"
+                max="90"
+                step="any"
+                inputMode="decimal"
+                placeholder="-23.5505"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Longitude">
+              <input
+                type="number"
+                name="longitude"
+                min="-180"
+                max="180"
+                step="any"
+                inputMode="decimal"
+                placeholder="-46.6333"
+                className={inputClass}
+              />
+            </Field>
+          </div>
+          {/* TODO: Add automatic city coordinate lookup when a vetted geocoding service is configured. */}
+          <p className="mt-4 text-sm text-stone-400">
+            Automatic coordinate lookup is not configured yet. Copy the city-center
+            coordinates from a trusted map source.
+          </p>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/10 p-6">
           <h2 className="text-2xl font-light text-white">Localized names</h2>
           <div className="mt-6 grid gap-5 md:grid-cols-2">
             <Field label="Portuguese name">
