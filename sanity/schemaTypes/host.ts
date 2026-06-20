@@ -56,6 +56,7 @@ export const host = defineType({
               type: "array",
               of: [{ type: "string" }],
               options: { list: providerRoleOptions },
+              validation: (Rule) => Rule.required().min(1),
               description:
                 "This card is shown only when the provider has at least one selected role.",
             },

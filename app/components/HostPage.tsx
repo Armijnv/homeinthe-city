@@ -1,17 +1,10 @@
 import Image from "next/image";
 import ProviderLanguageFlags from "./ProviderLanguageFlags";
+import ProviderServiceCards, {
+  type ProviderServiceCard,
+} from "./ProviderServiceCards";
 
 type Lang = "en" | "pt" | "nl";
-
-type HostService = {
-  roles?: string[];
-  title_en?: string;
-  title_pt?: string;
-  title_nl?: string;
-  description_en?: string;
-  description_pt?: string;
-  description_nl?: string;
-};
 
 export type Host = {
   name?: string;
@@ -28,7 +21,7 @@ export type Host = {
   servicesTitle_en?: string;
   servicesTitle_pt?: string;
   servicesTitle_nl?: string;
-  services?: HostService[];
+  services?: ProviderServiceCard[];
   aboutTitle_en?: string;
   aboutTitle_pt?: string;
   aboutTitle_nl?: string;
@@ -96,10 +89,6 @@ export default function HostPage({
   };
 
   const t = labels[lang];
-  const providerRoles = new Set(host?.roles || []);
-  const relevantServices = (host?.services || []).filter((service) =>
-    service.roles?.some((role) => providerRoles.has(role)),
-  );
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
@@ -141,31 +130,12 @@ export default function HostPage({
             {host?.[`intro_${lang}`] || t.intro}
           </p>
 
-          {/* Services */}
-          {relevantServices.length ? (
-            <div className="mb-10 rounded-3xl bg-white p-8 text-stone-800">
-              <h2 className="mb-4 text-2xl font-light">
-                {host?.[`servicesTitle_${lang}`] || t.servicesTitle}
-              </h2>
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {relevantServices.map((service, index) => (
-                  <div
-                    key={index}
-                    className="rounded-2xl bg-stone-50 p-4"
-                  >
-                    <h3 className="mb-2 font-medium text-stone-800">
-                      {service[`title_${lang}`]}
-                    </h3>
-
-                    <p className="text-sm leading-relaxed text-stone-600">
-                      {service[`description_${lang}`]}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
+          <ProviderServiceCards
+            lang={lang}
+            roles={host?.roles}
+            services={host?.services}
+            title={host?.[`servicesTitle_${lang}`] || t.servicesTitle}
+          />
 
           {/* About */}
           <div className="mb-10 rounded-3xl bg-white/10 p-8">

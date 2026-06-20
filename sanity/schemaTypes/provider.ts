@@ -225,6 +225,74 @@ export const provider = defineType({
     defineField({ name: "about_nl", title: "About (Dutch)", type: "text" }),
 
     defineField({
+      name: "servicesTitle_en",
+      title: "Services Title (English)",
+      type: "string",
+    }),
+    defineField({
+      name: "servicesTitle_pt",
+      title: "Services Title (Portuguese)",
+      type: "string",
+    }),
+    defineField({
+      name: "servicesTitle_nl",
+      title: "Services Title (Dutch)",
+      type: "string",
+    }),
+    defineField({
+      name: "services",
+      title: "Service / Help Cards",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "roles",
+              title: "Applicable provider roles",
+              type: "array",
+              of: [{ type: "string" }],
+              options: { list: roleOptions },
+              validation: (Rule) => Rule.required().min(1),
+              description:
+                "This card is shown only when the provider has at least one selected role.",
+            }),
+            defineField({
+              name: "title_en",
+              title: "Title (English)",
+              type: "string",
+            }),
+            defineField({
+              name: "title_pt",
+              title: "Title (Portuguese)",
+              type: "string",
+            }),
+            defineField({
+              name: "title_nl",
+              title: "Title (Dutch)",
+              type: "string",
+            }),
+            defineField({
+              name: "description_en",
+              title: "Description (English)",
+              type: "text",
+            }),
+            defineField({
+              name: "description_pt",
+              title: "Description (Portuguese)",
+              type: "text",
+            }),
+            defineField({
+              name: "description_nl",
+              title: "Description (Dutch)",
+              type: "text",
+            }),
+          ],
+        },
+      ],
+    }),
+
+    defineField({
       name: "contactOptions",
       title: "Contact Options",
       type: "object",

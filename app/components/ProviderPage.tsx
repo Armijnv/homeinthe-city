@@ -1,5 +1,8 @@
 import Image from "next/image";
 import ProviderLanguageFlags from "./ProviderLanguageFlags";
+import ProviderServiceCards, {
+  type ProviderServiceCard,
+} from "./ProviderServiceCards";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -21,6 +24,10 @@ export type ProviderProfile = {
   primaryRole?: string;
   cities?: ProviderCity[];
   languages?: ProviderLanguage[];
+  servicesTitle_en?: string;
+  servicesTitle_pt?: string;
+  servicesTitle_nl?: string;
+  services?: ProviderServiceCard[];
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -54,6 +61,7 @@ const labels = {
     profileType: "Provider profile",
     about: "About",
     languages: "Languages",
+    servicesTitle: "What I can help with",
     cities: "Works in",
     contact: "Contact",
     name: "Name",
@@ -72,6 +80,7 @@ const labels = {
     profileType: "Perfil profissional",
     about: "Sobre",
     languages: "Idiomas",
+    servicesTitle: "Como posso ajudar",
     cities: "Atende em",
     contact: "Contato",
     name: "Nome",
@@ -90,6 +99,7 @@ const labels = {
     profileType: "Professioneel profiel",
     about: "Over",
     languages: "Talen",
+    servicesTitle: "Waarmee ik kan helpen",
     cities: "Werkgebied",
     contact: "Contact",
     name: "Naam",
@@ -381,6 +391,15 @@ export default function ProviderPage({
               {intro}
             </p>
           ) : null}
+
+          <ProviderServiceCards
+            lang={lang}
+            roles={provider.roles}
+            services={provider.services}
+            title={
+              provider[`servicesTitle_${lang}`] || t.servicesTitle
+            }
+          />
 
           {profileFacts.length ? (
             <section className="mb-10 grid grid-cols-1 gap-3 md:grid-cols-2">

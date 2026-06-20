@@ -277,6 +277,21 @@ export const providerQuery = `
     about_pt,
     about_nl,
 
+    servicesTitle_en,
+    servicesTitle_pt,
+    servicesTitle_nl,
+
+    services[]{
+      _key,
+      roles,
+      title_en,
+      title_pt,
+      title_nl,
+      description_en,
+      description_pt,
+      description_nl
+    },
+
     contactOptions{
       email,
       phone,
@@ -666,6 +681,7 @@ export const hostQuery = `
     },
 
     services[]{
+      _key,
       roles,
       title_en,
       title_pt,
