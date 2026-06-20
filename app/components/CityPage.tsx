@@ -18,6 +18,11 @@ import {
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
+import {
+  cityInterpreterPath,
+  interpreterCityForSlug,
+  interpreterRoute,
+} from "@/app/lib/interpreterPages";
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
@@ -81,32 +86,6 @@ const cityGuideContent = {
       "Discover restaurants, business locations, cultural venues, walks, practical information and trusted local contacts for your stay in Porto Alegre.",
     hostLine:
       "Hosted by Armijn van Dijk, your local contact for business visits, interpretation, housing and practical support in the city.",
-    serviceCards: [
-      {
-        title: "Business interpreter in Porto Alegre",
-        text: "Language support for meetings, company visits and local business conversations.",
-        button: "Interpreter services",
-        href: "/interpreter-porto-alegre",
-      },
-      {
-        title: "Document translation",
-        text: "Written translation support for documents, business communication and local projects.",
-        button: "Translation services",
-        href: "/translation-services",
-      },
-      {
-        title: "Apartments and real estate",
-        text: "Furnished stays, rentals and buying guidance for short or longer stays in Porto Alegre.",
-        button: "Real estate",
-        href: "/real-estate/porto-alegre",
-      },
-      {
-        title: "Local business support",
-        text: "Practical help with local planning, restaurants, transport, contacts and meeting days.",
-        button: "Meet your host",
-        href: "/hosts/armijn",
-      },
-    ],
   },
   pt: {
     title: "Porto Alegre: Seu Guia Local no Sul do Brasil",
@@ -114,32 +93,6 @@ const cityGuideContent = {
       "Descubra restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis para sua estadia em Porto Alegre.",
     hostLine:
       "Com curadoria de Armijn van Dijk, seu contato local para visitas de negócios, interpretação, hospedagem e apoio prático na cidade.",
-    serviceCards: [
-      {
-        title: "Intérprete de negócios em Porto Alegre",
-        text: "Apoio no idioma para reuniões, visitas a empresas e conversas de negócios locais.",
-        button: "Serviços de intérprete",
-        href: "/pt/interprete-porto-alegre",
-      },
-      {
-        title: "Tradução de documentos",
-        text: "Apoio em tradução escrita para documentos, comunicação empresarial e projetos locais.",
-        button: "Serviços de tradução",
-        href: "/pt/servicos-de-traducao",
-      },
-      {
-        title: "Apartamentos e imóveis",
-        text: "Estadias mobiliadas, aluguel e orientação de compra para visitas curtas ou mais longas.",
-        button: "Imóveis",
-        href: "/pt/imoveis/porto-alegre",
-      },
-      {
-        title: "Apoio empresarial local",
-        text: "Ajuda prática com planejamento local, restaurantes, transporte, contatos e dias de reunião.",
-        button: "Conheça seu anfitrião",
-        href: "/pt/hosts/armijn",
-      },
-    ],
   },
   nl: {
     title: "Porto Alegre: Uw Lokale Gids in Zuid-Brazilië",
@@ -147,32 +100,6 @@ const cityGuideContent = {
       "Ontdek restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten voor uw verblijf in Porto Alegre.",
     hostLine:
       "Samengesteld door Armijn van Dijk, uw lokale contact voor zakelijke bezoeken, tolken, verblijf en praktische ondersteuning in de stad.",
-    serviceCards: [
-      {
-        title: "Business tolk in Porto Alegre",
-        text: "Taalondersteuning voor meetings, bedrijfsbezoeken en lokale zakelijke gesprekken.",
-        button: "Tolkdiensten",
-        href: "/nl/tolk-porto-alegre",
-      },
-      {
-        title: "Documentvertaling",
-        text: "Schriftelijke vertaalhulp voor documenten, zakelijke communicatie en lokale projecten.",
-        button: "Vertaaldiensten",
-        href: "/nl/vertaaldiensten",
-      },
-      {
-        title: "Appartementen en vastgoed",
-        text: "Gemeubileerde verblijven, huur en koophulp voor korte of langere verblijven in Porto Alegre.",
-        button: "Vastgoed",
-        href: "/nl/vastgoed/porto-alegre",
-      },
-      {
-        title: "Lokale zakelijke hulp",
-        text: "Praktische hulp met lokale planning, restaurants, vervoer, contacten en meetingdagen.",
-        button: "Ontmoet uw host",
-        href: "/nl/hosts/armijn",
-      },
-    ],
   },
 };
 
@@ -307,6 +234,23 @@ function fallbackServiceCards({
     lang === "pt" ? "/pt/imoveis" : lang === "nl" ? "/nl/vastgoed" : "/real-estate";
 
   const cards: ServiceCard[] = [];
+  const interpreterCity = interpreterCityForSlug(citySlug);
+  const interpreterHref = cityInterpreterPath(citySlug, lang);
+  const interpreterContent = interpreterCity?.content[lang];
+
+  if (interpreterHref && interpreterContent) {
+    cards.push({
+      title: interpreterContent.title,
+      text: interpreterContent.serviceIntro,
+      button:
+        lang === "pt"
+          ? "Serviços de intérprete"
+          : lang === "nl"
+            ? "Tolkdiensten"
+            : "Interpreter services",
+      href: interpreterHref,
+    });
+  }
 
   if (includeRealEstate) {
     cards.push({
@@ -769,8 +713,11 @@ export default function CityPage({
   const displayHost = selectedHost || (isPortoAlegre ? portoAlegreFallbackHost(lang) : null);
   const primaryHostAction = displayHost?.actions[0];
   const serviceHrefs = new Set(serviceCards.map((card) => normalizeHref(card.href)));
+  const hasCityInterpreter = Boolean(cityInterpreterPath(citySlug, lang));
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
-    (card) => !isExactDuplicateSidebarCard(card, lang, serviceHrefs)
+    (card) =>
+      !isExactDuplicateSidebarCard(card, lang, serviceHrefs) &&
+      !(hasCityInterpreter && interpreterRoute(getLocalizedHref(card, lang))),
   );
 
   return (

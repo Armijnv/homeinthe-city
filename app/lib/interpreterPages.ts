@@ -393,6 +393,30 @@ export function interpreterCity(slug: InterpreterCitySlug) {
   return interpreterCities[slug];
 }
 
+export function interpreterCityForSlug(slug?: string) {
+  if (!slug) return undefined;
+
+  return Object.values(interpreterCities).find((city) => city.slug === slug);
+}
+
+export function cityInterpreterPath(
+  citySlug: string | undefined,
+  lang: InterpreterLanguage,
+) {
+  return interpreterCityForSlug(citySlug)?.paths[lang];
+}
+
+export function interpreterPathForCity(
+  citySlug: string | undefined,
+  lang: InterpreterLanguage,
+) {
+  return (
+    cityInterpreterPath(citySlug, lang) ||
+    interpreterCities["porto-alegre"].paths[lang] ||
+    interpreterCities["porto-alegre"].paths.en!
+  );
+}
+
 export function interpreterAlternates(city: InterpreterCity) {
   return Object.fromEntries(
     city.languages.flatMap((language) => {

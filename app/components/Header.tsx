@@ -17,7 +17,10 @@ import {
   spokenLanguageCodes,
   type ProviderLanguageNavigationItem,
 } from "@/app/lib/providerLanguages";
-import { interpreterRoute } from "@/app/lib/interpreterPages";
+import {
+  interpreterPathForCity,
+  interpreterRoute,
+} from "@/app/lib/interpreterPages";
 
 type MenuLink = {
   label: string;
@@ -274,10 +277,6 @@ export default function Header({
       ? localizedRealEstatePath("/real-estate")
       : currentInterpreterRoute?.city.paths.en
       ? currentInterpreterRoute.city.paths.en
-      : pathname === "/pt/interprete-porto-alegre"
-      ? "/interpreter-porto-alegre"
-      : pathname === "/nl/tolk-porto-alegre"
-      ? "/interpreter-porto-alegre"
       : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/hosts")
       : pathname.includes("/nl/hosts/")
@@ -301,10 +300,6 @@ export default function Header({
       ? localizedRealEstatePath("/pt/imoveis")
       : currentInterpreterRoute?.city.paths.pt
       ? currentInterpreterRoute.city.paths.pt
-      : pathname === "/interpreter-porto-alegre"
-      ? "/pt/interprete-porto-alegre"
-      : pathname === "/nl/tolk-porto-alegre"
-      ? "/pt/interprete-porto-alegre"
       : pathname.includes("/nl/hosts/")
       ? pathname.replace("/nl/hosts", "/pt/hosts")
       : pathname.includes("/hosts/")
@@ -330,10 +325,6 @@ export default function Header({
       ? localizedRealEstatePath("/nl/vastgoed")
       : currentInterpreterRoute?.city.paths.nl
       ? currentInterpreterRoute.city.paths.nl
-      : pathname === "/interpreter-porto-alegre"
-      ? "/nl/tolk-porto-alegre"
-      : pathname === "/pt/interprete-porto-alegre"
-      ? "/nl/tolk-porto-alegre"
       : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/nl/hosts")
       : pathname.includes("/hosts/")
@@ -393,11 +384,7 @@ export default function Header({
 
   const interpreterPath =
     currentInterpreterRoute?.city.paths[lang] ||
-    (pathname.startsWith("/pt")
-      ? "/pt/interprete-porto-alegre"
-      : pathname.startsWith("/nl")
-      ? "/nl/tolk-porto-alegre"
-      : "/interpreter-porto-alegre");
+    interpreterPathForCity(cityGuideSlug, lang);
 
   const translatorsPath = pathname.startsWith("/pt")
     ? "/pt/servicos-de-traducao"
