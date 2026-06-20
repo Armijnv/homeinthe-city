@@ -18,6 +18,8 @@ import {
   type ProviderLanguageNavigationItem,
 } from "@/app/lib/providerLanguages";
 import {
+  interpreterHubPaths,
+  interpreterHubRoute,
   interpreterPathForCity,
   interpreterRoute,
 } from "@/app/lib/interpreterPages";
@@ -171,6 +173,7 @@ export default function Header({
     ? "nl"
     : "en";
   const currentInterpreterRoute = interpreterRoute(pathname);
+  const currentInterpreterHubLanguage = interpreterHubRoute(pathname);
 
   const labels = {
     en: {
@@ -277,6 +280,8 @@ export default function Header({
       ? localizedRealEstatePath("/real-estate")
       : currentInterpreterRoute?.city.paths.en
       ? currentInterpreterRoute.city.paths.en
+      : currentInterpreterHubLanguage
+      ? interpreterHubPaths.en
       : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/hosts")
       : pathname.includes("/nl/hosts/")
@@ -300,6 +305,8 @@ export default function Header({
       ? localizedRealEstatePath("/pt/imoveis")
       : currentInterpreterRoute?.city.paths.pt
       ? currentInterpreterRoute.city.paths.pt
+      : currentInterpreterHubLanguage
+      ? interpreterHubPaths.pt
       : pathname.includes("/nl/hosts/")
       ? pathname.replace("/nl/hosts", "/pt/hosts")
       : pathname.includes("/hosts/")
@@ -325,6 +332,8 @@ export default function Header({
       ? localizedRealEstatePath("/nl/vastgoed")
       : currentInterpreterRoute?.city.paths.nl
       ? currentInterpreterRoute.city.paths.nl
+      : currentInterpreterHubLanguage
+      ? interpreterHubPaths.nl
       : pathname.includes("/pt/hosts/")
       ? pathname.replace("/pt/hosts", "/nl/hosts")
       : pathname.includes("/hosts/")
@@ -359,6 +368,8 @@ export default function Header({
   )?.languages;
   const availableLanguages = currentInterpreterRoute
     ? currentInterpreterRoute.city.languages
+    : currentInterpreterHubLanguage
+    ? (["en", "pt", "nl"] as CityGuideLang[])
     : cityGuideSlug
     ? cityGuideIsPublic(currentCityGuide)
       ? cityGuideEnabledLanguages(currentCityGuide)

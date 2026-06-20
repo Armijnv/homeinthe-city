@@ -517,6 +517,13 @@ export function cityInterpreterPath(
   return interpreterCityForSlug(citySlug)?.paths[lang];
 }
 
+export function interpreterPathForCity(
+  citySlug: string | undefined,
+  lang: InterpreterLanguage,
+) {
+  return cityInterpreterPath(citySlug, lang) || interpreterHubPaths[lang];
+}
+
 export function interpreterAlternates(city: InterpreterCity) {
   return Object.fromEntries(
     city.languages.flatMap((language) => {
