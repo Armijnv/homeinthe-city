@@ -262,7 +262,8 @@ export default function ProviderListPage({
                 ) || [];
               const headline = localizedText(provider, "headline", lang);
               const intro = localizedText(provider, "intro", lang);
-              const photoUrl = provider.mainPhoto?.asset?.url || "/me.png";
+              const photoUrl =
+                provider.mainPhoto?.asset?.url || "/profile-placeholder.svg";
               const photoAlt =
                 provider.mainPhoto?.alt || provider.name || t.eyebrow;
 

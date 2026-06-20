@@ -653,6 +653,12 @@ export const hostQuery = `
       slug.current == $slug
     ][0].languages[]{language},
 
+    "roles": *[
+      _type == "provider" &&
+      status == "published" &&
+      slug.current == $slug
+    ][0].roles,
+
     photo{
       asset->{
         url
@@ -660,6 +666,7 @@ export const hostQuery = `
     },
 
     services[]{
+      roles,
       title_en,
       title_pt,
       title_nl,

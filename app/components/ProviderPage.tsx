@@ -318,7 +318,8 @@ export default function ProviderPage({
     provider.cities?.map((city) => localizedText(city, "name", lang)) || [];
   const primaryRole = localizedRole(lang, provider.primaryRole);
   const contact = provider.contactOptions;
-  const photoUrl = provider.mainPhoto?.asset?.url || "/me.png";
+  const photoUrl =
+    provider.mainPhoto?.asset?.url || "/profile-placeholder.svg";
   const photoAlt = provider.mainPhoto?.alt || provider.name || t.profileType;
   const roleSummary = formatList([
     primaryRole,

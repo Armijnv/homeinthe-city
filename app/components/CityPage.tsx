@@ -411,7 +411,8 @@ function providerDisplayHost({
   return {
     name: provider.name,
     role: roleLabel(lang, provider.primaryRole || provider.roles?.[0]),
-    photoUrl: provider.mainPhoto?.asset?.url || "/me.png",
+    photoUrl:
+      provider.mainPhoto?.asset?.url || "/profile-placeholder.svg",
     photoAlt: provider.mainPhoto?.alt || provider.name,
     profileHref: providerSlug ? providerProfilePath(lang, providerSlug) : undefined,
     actions: hostActions(provider),

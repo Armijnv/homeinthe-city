@@ -39,13 +39,9 @@ export async function generateMetadata({
       description: host?.intro_pt,
       url: `https://homeinthe.city/pt/hosts/${slug}`,
       siteName: "Home in the City",
-      images: [
-        {
-          url: host?.photo?.asset?.url || "/og-armijn2.jpg",
-          width: 1200,
-          height: 630,
-        },
-      ],
+      images: host?.photo?.asset?.url
+        ? [{ url: host.photo.asset.url }]
+        : undefined,
       locale: "pt_BR",
       type: "website",
     },

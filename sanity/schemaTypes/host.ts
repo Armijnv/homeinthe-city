@@ -1,5 +1,14 @@
 import { defineType, defineField } from "sanity";
 
+const providerRoleOptions = [
+  { title: "Host", value: "host" },
+  { title: "Interpreter", value: "interpreter" },
+  { title: "Translator", value: "translator" },
+  { title: "Guide", value: "guide" },
+  { title: "Specialist", value: "specialist" },
+  { title: "Real estate agent", value: "realtor" },
+];
+
 export const host = defineType({
   name: "host",
   title: "Host",
@@ -41,6 +50,15 @@ export const host = defineType({
         {
           type: "object",
           fields: [
+            {
+              name: "roles",
+              title: "Applicable provider roles",
+              type: "array",
+              of: [{ type: "string" }],
+              options: { list: providerRoleOptions },
+              description:
+                "This card is shown only when the provider has at least one selected role.",
+            },
             { name: "title_en", title: "Title (English)", type: "string" },
             { name: "title_pt", title: "Title (Portuguese)", type: "string" },
             { name: "title_nl", title: "Title (Dutch)", type: "string" },

@@ -4,6 +4,7 @@ import ProviderLanguageFlags from "./ProviderLanguageFlags";
 type Lang = "en" | "pt" | "nl";
 
 type HostService = {
+  roles?: string[];
   title_en?: string;
   title_pt?: string;
   title_nl?: string;
@@ -14,6 +15,7 @@ type HostService = {
 
 export type Host = {
   name?: string;
+  roles?: string[];
   eyebrow_en?: string;
   eyebrow_pt?: string;
   eyebrow_nl?: string;
@@ -94,6 +96,10 @@ export default function HostPage({
   };
 
   const t = labels[lang];
+  const providerRoles = new Set(host?.roles || []);
+  const relevantServices = (host?.services || []).filter((service) =>
+    service.roles?.some((role) => providerRoles.has(role)),
+  );
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
@@ -102,7 +108,7 @@ export default function HostPage({
         <div className="md:sticky md:top-28">
           <div className="overflow-hidden rounded-3xl bg-white/10 shadow-2xl">
             <Image
-              src={host?.photo?.asset?.url || "/me.png"}
+              src={host?.photo?.asset?.url || "/profile-placeholder.svg"}
               alt={host?.name || "Host"}
               width={500}
               height={650}
@@ -136,28 +142,30 @@ export default function HostPage({
           </p>
 
           {/* Services */}
-          <div className="mb-10 rounded-3xl bg-white p-8 text-stone-800">
-            <h2 className="mb-4 text-2xl font-light">
-              {host?.[`servicesTitle_${lang}`] || t.servicesTitle}
-            </h2>
+          {relevantServices.length ? (
+            <div className="mb-10 rounded-3xl bg-white p-8 text-stone-800">
+              <h2 className="mb-4 text-2xl font-light">
+                {host?.[`servicesTitle_${lang}`] || t.servicesTitle}
+              </h2>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {host?.services?.map((service, index) => (
-                <div
-                  key={index}
-                  className="rounded-2xl bg-stone-50 p-4"
-                >
-                  <h3 className="mb-2 font-medium text-stone-800">
-                    {service[`title_${lang}`]}
-                  </h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {relevantServices.map((service, index) => (
+                  <div
+                    key={index}
+                    className="rounded-2xl bg-stone-50 p-4"
+                  >
+                    <h3 className="mb-2 font-medium text-stone-800">
+                      {service[`title_${lang}`]}
+                    </h3>
 
-                  <p className="text-sm leading-relaxed text-stone-600">
-                    {service[`description_${lang}`]}
-                  </p>
-                </div>
-              ))}
+                    <p className="text-sm leading-relaxed text-stone-600">
+                      {service[`description_${lang}`]}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {/* About */}
           <div className="mb-10 rounded-3xl bg-white/10 p-8">

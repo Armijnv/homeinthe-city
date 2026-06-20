@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 650" role="img" aria-labelledby="title description">
+  <title id="title">Profile photo placeholder</title>
+  <desc id="description">A neutral silhouette on a dark background</desc>
+  <rect width="500" height="650" fill="#252b3a"/>
+  <circle cx="250" cy="225" r="95" fill="#6b7280"/>
+  <path d="M75 650c0-145 78-245 175-245s175 100 175 245H75Z" fill="#6b7280"/>
+</svg>
