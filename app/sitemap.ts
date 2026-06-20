@@ -11,6 +11,10 @@ import {
   propertyListingListQuery,
   providerListQuery,
 } from "@/sanity/lib/queries";
+import {
+  interpreterAlternates,
+  interpreterCities,
+} from "@/app/lib/interpreterPages";
 
 type SitemapProvider = {
   slug?: {
@@ -89,6 +93,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   });
 
+  const interpreterEntries = Object.values(interpreterCities).flatMap((city) =>
+    city.languages.flatMap((language) => {
+      const path = city.paths[language];
+      if (!path) return [];
+
+      return [{
+        url: `${siteUrl}${path}`,
+        lastModified: new Date(),
+        alternates: { languages: interpreterAlternates(city) },
+      }];
+    }),
+  );
+
   return [
     /* ======================================================
        HOME
@@ -113,20 +130,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        INTERPRETER PAGES
     ====================================================== */
 
-    {
-      url: "https://homeinthe.city/interpreter-porto-alegre",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/pt/interprete-porto-alegre",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/nl/tolk-porto-alegre",
-      lastModified: new Date(),
-    },
+    ...interpreterEntries,
 
     /* ======================================================
        TRANSLATION PAGES

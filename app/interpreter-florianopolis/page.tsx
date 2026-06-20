@@ -2,11 +2,7 @@ import InterpreterCityRoute, {
   getInterpreterCityMetadata,
 } from "@/app/components/InterpreterCityRoute";
 
-const route = {
-  citySlug: "porto-alegre" as const,
-  lang: "nl" as const,
-  cmsSlug: "interpreter-porto-alegre",
-};
+const route = { citySlug: "florianopolis" as const, lang: "en" as const };
 
 export function generateMetadata() {
   return getInterpreterCityMetadata(route);

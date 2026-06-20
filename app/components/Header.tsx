@@ -17,6 +17,7 @@ import {
   spokenLanguageCodes,
   type ProviderLanguageNavigationItem,
 } from "@/app/lib/providerLanguages";
+import { interpreterRoute } from "@/app/lib/interpreterPages";
 
 type MenuLink = {
   label: string;
@@ -166,6 +167,7 @@ export default function Header({
     : pathname.startsWith("/nl")
     ? "nl"
     : "en";
+  const currentInterpreterRoute = interpreterRoute(pathname);
 
   const labels = {
     en: {
@@ -270,6 +272,8 @@ export default function Header({
       ? "/translation-services"
       : realEstateMatch
       ? localizedRealEstatePath("/real-estate")
+      : currentInterpreterRoute?.city.paths.en
+      ? currentInterpreterRoute.city.paths.en
       : pathname === "/pt/interprete-porto-alegre"
       ? "/interpreter-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -295,6 +299,8 @@ export default function Header({
       ? "/pt/servicos-de-traducao"
       : realEstateMatch
       ? localizedRealEstatePath("/pt/imoveis")
+      : currentInterpreterRoute?.city.paths.pt
+      ? currentInterpreterRoute.city.paths.pt
       : pathname === "/interpreter-porto-alegre"
       ? "/pt/interprete-porto-alegre"
       : pathname === "/nl/tolk-porto-alegre"
@@ -322,6 +328,8 @@ export default function Header({
       ? "/nl/vertaaldiensten"
       : realEstateMatch
       ? localizedRealEstatePath("/nl/vastgoed")
+      : currentInterpreterRoute?.city.paths.nl
+      ? currentInterpreterRoute.city.paths.nl
       : pathname === "/interpreter-porto-alegre"
       ? "/nl/tolk-porto-alegre"
       : pathname === "/pt/interprete-porto-alegre"
@@ -358,7 +366,9 @@ export default function Header({
   const currentProviderLanguages = providerLanguages.find(
     (provider) => provider.slug === profileSlug,
   )?.languages;
-  const availableLanguages = cityGuideSlug
+  const availableLanguages = currentInterpreterRoute
+    ? currentInterpreterRoute.city.languages
+    : cityGuideSlug
     ? cityGuideIsPublic(currentCityGuide)
       ? cityGuideEnabledLanguages(currentCityGuide)
       : []
@@ -381,11 +391,13 @@ export default function Header({
     ? "/nl/hosts/armijn"
     : "/hosts/armijn";
 
-  const interpreterPath = pathname.startsWith("/pt")
-    ? "/pt/interprete-porto-alegre"
-    : pathname.startsWith("/nl")
-    ? "/nl/tolk-porto-alegre"
-    : "/interpreter-porto-alegre";
+  const interpreterPath =
+    currentInterpreterRoute?.city.paths[lang] ||
+    (pathname.startsWith("/pt")
+      ? "/pt/interprete-porto-alegre"
+      : pathname.startsWith("/nl")
+      ? "/nl/tolk-porto-alegre"
+      : "/interpreter-porto-alegre");
 
   const translatorsPath = pathname.startsWith("/pt")
     ? "/pt/servicos-de-traducao"
