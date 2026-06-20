@@ -14,6 +14,8 @@ import {
 import {
   interpreterAlternates,
   interpreterCities,
+  interpreterHubAlternates,
+  interpreterHubPaths,
 } from "@/app/lib/interpreterPages";
 
 type SitemapProvider = {
@@ -106,6 +108,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
+  const interpreterHubEntries = Object.values(interpreterHubPaths).map((path) => ({
+    url: `${siteUrl}${path}`,
+    lastModified: new Date(),
+    alternates: { languages: interpreterHubAlternates() },
+  }));
+
   return [
     /* ======================================================
        HOME
@@ -130,6 +138,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        INTERPRETER PAGES
     ====================================================== */
 
+    ...interpreterHubEntries,
     ...interpreterEntries,
 
     /* ======================================================
