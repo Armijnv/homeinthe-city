@@ -334,6 +334,17 @@ export const providerListQuery = `
   }
 `;
 
+export const providerLanguageNavigationQuery = `
+  *[
+    _type == "provider" &&
+    status == "published" &&
+    defined(slug.current)
+  ]{
+    "slug": slug.current,
+    languages[]{language}
+  }
+`;
+
 /* ======================================================
    PROPERTY LISTING QUERY
 ====================================================== */
@@ -635,6 +646,12 @@ export const hostQuery = `
 
     whatsapp,
     email,
+
+    "languages": *[
+      _type == "provider" &&
+      status == "published" &&
+      slug.current == $slug
+    ][0].languages[]{language},
 
     photo{
       asset->{

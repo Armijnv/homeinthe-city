@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import HostPage from "@/app/components/HostPage";
 import type { Host } from "@/app/components/HostPage";
 import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
+import { localizedSpokenLanguageNames } from "@/app/lib/providerLanguages";
 import { JsonLdScript, personJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { hostQuery } from "@/sanity/lib/queries";
@@ -69,8 +70,7 @@ export default async function Page({
       name: host.name || host.headline_pt,
       role: "Anfitrião local e intérprete",
       roles: ["Anfitrião local", "Intérprete", "Guia"],
-      languages:
-        slug === "armijn" ? ["Português", "Inglês", "Holandês"] : undefined,
+      languages: localizedSpokenLanguageNames(host.languages, "pt"),
       cities: ["Porto Alegre"],
       image: host.photo?.asset?.url,
       description: host.intro_pt,

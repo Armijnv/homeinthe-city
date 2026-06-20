@@ -1,4 +1,5 @@
 import Image from "next/image";
+import ProviderLanguageFlags from "./ProviderLanguageFlags";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -34,6 +35,9 @@ export type Host = {
   about_nl?: string;
   whatsapp?: string;
   email?: string;
+  languages?: Array<{
+    language?: string;
+  }>;
   photo?: {
     asset?: {
       url?: string;
@@ -110,12 +114,14 @@ export default function HostPage({
 
         {/* Main content */}
         <div className="md:col-span-2">
-          {/* Flags */}
-          <div className="mb-4 flex gap-3 text-xl">
-            <a href={`/hosts/${slug}`}>🇬🇧</a>
-            <a href={`/pt/hosts/${slug}`}>🇧🇷</a>
-            <a href={`/nl/hosts/${slug}`}>🇳🇱</a>
-          </div>
+          <ProviderLanguageFlags
+            languages={host?.languages}
+            paths={{
+              en: `/hosts/${slug}`,
+              pt: `/pt/hosts/${slug}`,
+              nl: `/nl/hosts/${slug}`,
+            }}
+          />
 
           <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
             {host?.[`eyebrow_${lang}`] || t.eyebrow}

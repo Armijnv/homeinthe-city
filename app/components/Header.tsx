@@ -13,6 +13,10 @@ import {
   type CityGuideContent,
   type CityGuideLang,
 } from "@/app/lib/cityGuides";
+import {
+  spokenLanguageCodes,
+  type ProviderLanguageNavigationItem,
+} from "@/app/lib/providerLanguages";
 
 type MenuLink = {
   label: string;
@@ -127,14 +131,21 @@ function MenuContent({
 
 export default function Header({
   cityGuides = [],
+  providerLanguages = [],
 }: {
   cityGuides?: CityGuideContent[];
+  providerLanguages?: ProviderLanguageNavigationItem[];
 }) {
   const pathname = usePathname();
   const providerSlug =
     pathname.match(/^\/providers\/([^/]+)/)?.[1] ||
     pathname.match(/^\/pt\/profissionais\/([^/]+)/)?.[1] ||
     pathname.match(/^\/nl\/professionals\/([^/]+)/)?.[1];
+  const hostSlug =
+    pathname.match(/^\/hosts\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/pt\/hosts\/([^/]+)/)?.[1] ||
+    pathname.match(/^\/nl\/hosts\/([^/]+)/)?.[1];
+  const profileSlug = providerSlug || hostSlug;
   const isProviderListPath =
     pathname === "/providers" ||
     pathname === "/pt/profissionais" ||
@@ -344,10 +355,18 @@ export default function Header({
   const currentCityGuideName = cityGuideSlug
     ? cityGuideName(currentCityGuide, lang, cityGuideSlug)
     : "";
+  const currentProviderLanguages = providerLanguages.find(
+    (provider) => provider.slug === profileSlug,
+  )?.languages;
   const availableLanguages = cityGuideSlug
     ? cityGuideIsPublic(currentCityGuide)
       ? cityGuideEnabledLanguages(currentCityGuide)
       : []
+    : profileSlug
+    ? spokenLanguageCodes(currentProviderLanguages).filter(
+        (language): language is CityGuideLang =>
+          language === "en" || language === "pt" || language === "nl",
+      )
     : (["en", "pt", "nl"] as CityGuideLang[]);
   const exploreCityPath = cityGuideSlug
     ? cityGuidePath(lang, cityGuideSlug)
