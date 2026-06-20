@@ -2,15 +2,29 @@ import Link from "next/link";
 import {
   homeInTheCityWhatsApp,
   interpreterCities,
+  interpreterHubPaths,
   type InterpreterCitySlug,
   type InterpreterCmsPage,
   type InterpreterLanguage,
 } from "@/app/lib/interpreterPages";
+import { providerProfilePath } from "@/app/lib/cityGuides";
 
 const languageNames: Record<InterpreterLanguage, Record<InterpreterLanguage, string>> = {
   en: { en: "English", pt: "Portuguese", nl: "Dutch" },
   pt: { en: "Inglês", pt: "Português", nl: "Holandês" },
   nl: { en: "Engels", pt: "Portugees", nl: "Nederlands" },
+};
+
+const hubLabels: Record<InterpreterLanguage, string> = {
+  en: "All interpreter services in Brazil",
+  pt: "Todos os serviços de intérprete no Brasil",
+  nl: "Alle tolkdiensten in Brazilië",
+};
+
+const profileLabels: Record<InterpreterLanguage, string> = {
+  en: "View local professional profile",
+  pt: "Ver perfil do profissional local",
+  nl: "Bekijk het profiel van de lokale professional",
 };
 
 function localizedCmsValue(
@@ -130,7 +144,13 @@ export default function InterpreterServicePage({
             <h2 className="mb-5 text-3xl font-light text-stone-800">{content.providerTitle}</h2>
             <p className="mb-2 text-2xl text-stone-800">{city.provider}</p>
             <p className="mb-5 text-sm uppercase tracking-wider text-stone-500">{content.providerRole}</p>
-            <p className="leading-relaxed text-stone-600">{content.providerText}</p>
+            <p className="mb-5 leading-relaxed text-stone-600">{content.providerText}</p>
+            <Link
+              href={providerProfilePath(lang, city.providerSlug)}
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 px-5 py-3 text-center text-sm text-stone-800 transition hover:bg-stone-100"
+            >
+              {profileLabels[lang]}
+            </Link>
           </article>
           <article className="rounded-3xl bg-white p-8 shadow-sm">
             <h2 className="mb-5 text-3xl font-light text-stone-800">{content.languagesTitle}</h2>
@@ -183,6 +203,12 @@ export default function InterpreterServicePage({
             {content.citiesTitle}
           </h2>
           <div className="flex flex-wrap gap-3">
+            <Link
+              href={interpreterHubPaths[lang]}
+              className="rounded-full border border-stone-300 bg-white px-5 py-3 text-sm text-stone-800 transition hover:bg-stone-200"
+            >
+              {hubLabels[lang]}
+            </Link>
             {cityLinks.map((item) => (
               <Link
                 key={item.href}

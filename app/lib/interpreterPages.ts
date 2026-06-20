@@ -37,6 +37,7 @@ type InterpreterCity = {
   city: string;
   region: string;
   provider: string;
+  providerSlug: string;
   languages: InterpreterLanguage[];
   paths: Partial<Record<InterpreterLanguage, string>>;
   seo: Record<InterpreterLanguage, { title: string; description: string; keywords: string[] }>;
@@ -348,6 +349,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     city: "Porto Alegre",
     region: "Rio Grande do Sul",
     provider: "Armijn van Dijk",
+    providerSlug: "armijn",
     languages: ["en", "pt", "nl"],
     paths: { en: "/interpreter-porto-alegre", pt: "/pt/interprete-porto-alegre", nl: "/nl/tolk-porto-alegre" },
     seo: {
@@ -362,6 +364,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     city: "Florianópolis",
     region: "Santa Catarina",
     provider: "Jon",
+    providerSlug: "jon",
     languages: ["en", "pt"],
     paths: { en: "/interpreter-florianopolis", pt: "/pt/interprete-florianopolis" },
     seo: {
@@ -376,6 +379,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     city: "São Paulo",
     region: "São Paulo",
     provider: "Claudia",
+    providerSlug: "claudia",
     languages: ["en", "pt"],
     paths: { en: "/interpreter-sao-paulo", pt: "/pt/interprete-sao-paulo" },
     seo: {
@@ -388,6 +392,113 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
 };
 
 export const homeInTheCityWhatsApp = "https://wa.me/5551997783369";
+
+export const interpreterHubPaths: Record<InterpreterLanguage, string> = {
+  en: "/interpreters-brazil",
+  pt: "/pt/interpretes-brasil",
+  nl: "/nl/tolken-brazilie",
+};
+
+export const interpreterHubSeo: Record<
+  InterpreterLanguage,
+  { title: string; description: string; keywords: string[] }
+> = {
+  en: {
+    title: "Interpreter Services in Brazil | English, Portuguese and Dutch",
+    description:
+      "Business interpreter services in Brazil for meetings, supplier visits, trade fairs, real estate visits and local coordination in Porto Alegre, Florianópolis and São Paulo.",
+    keywords: [
+      "interpreter services Brazil",
+      "business interpreter Brazil",
+      "English Portuguese interpreter Brazil",
+      "Dutch interpreter Brazil",
+    ],
+  },
+  pt: {
+    title: "Serviços de Intérprete no Brasil | Inglês, Português e Holandês",
+    description:
+      "Serviços de intérprete de negócios no Brasil para reuniões, fornecedores, feiras, visitas a imóveis e coordenação local em Porto Alegre, Florianópolis e São Paulo.",
+    keywords: [
+      "serviços de intérprete Brasil",
+      "intérprete de negócios Brasil",
+      "intérprete inglês português Brasil",
+      "intérprete holandês Brasil",
+    ],
+  },
+  nl: {
+    title: "Tolkdiensten in Brazilië | Engels, Portugees en Nederlands",
+    description:
+      "Zakelijke tolken in Brazilië voor meetings, leveranciersbezoeken, beurzen, vastgoedbezoeken en lokale coördinatie in Porto Alegre, Florianópolis en São Paulo.",
+    keywords: [
+      "tolkdiensten Brazilië",
+      "zakelijke tolk Brazilië",
+      "Engels Portugees tolk Brazilië",
+      "Nederlandse tolk Brazilië",
+    ],
+  },
+};
+
+export function interpreterHubAlternates() {
+  return Object.fromEntries(
+    Object.entries(interpreterHubPaths).map(([language, path]) => [
+      language,
+      `https://homeinthe.city${path}`,
+    ]),
+  );
+}
+
+export function interpreterHubMetadata(lang: InterpreterLanguage): Metadata {
+  const path = interpreterHubPaths[lang];
+  const seo = interpreterHubSeo[lang];
+  const url = `https://homeinthe.city${path}`;
+
+  return {
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    alternates: {
+      canonical: url,
+      languages: interpreterHubAlternates(),
+    },
+    openGraph: {
+      title: seo.title,
+      description: seo.description,
+      url,
+      siteName: "Home in the City",
+      locale: lang === "pt" ? "pt_BR" : lang === "nl" ? "nl_NL" : "en_US",
+      type: "website",
+    },
+  };
+}
+
+export function interpreterHubStructuredData(lang: InterpreterLanguage) {
+  const url = `https://homeinthe.city${interpreterHubPaths[lang]}`;
+  const seo = interpreterHubSeo[lang];
+
+  return serviceJsonLd({
+    url,
+    name: seo.title,
+    description: seo.description,
+    image: "https://homeinthe.city/og-armijn2.jpg",
+    serviceType: [
+      "Business interpreter services in Brazil",
+      "English Portuguese interpreter",
+      "Dutch Portuguese interpreter",
+      "Local business coordination",
+    ],
+    areaServed: {
+      "@type": "Country",
+      name: "Brazil",
+    },
+    availableLanguage: ["en", "pt-BR", "nl"],
+    inLanguage: lang === "pt" ? "pt-BR" : lang === "nl" ? "nl-NL" : "en",
+  });
+}
+
+export function interpreterHubRoute(pathname: string) {
+  return (Object.entries(interpreterHubPaths) as [InterpreterLanguage, string][])
+    .find(([, path]) => path === pathname)?.[0];
+}
 
 export function interpreterCity(slug: InterpreterCitySlug) {
   return interpreterCities[slug];
@@ -404,17 +515,6 @@ export function cityInterpreterPath(
   lang: InterpreterLanguage,
 ) {
   return interpreterCityForSlug(citySlug)?.paths[lang];
-}
-
-export function interpreterPathForCity(
-  citySlug: string | undefined,
-  lang: InterpreterLanguage,
-) {
-  return (
-    cityInterpreterPath(citySlug, lang) ||
-    interpreterCities["porto-alegre"].paths[lang] ||
-    interpreterCities["porto-alegre"].paths.en!
-  );
 }
 
 export function interpreterAlternates(city: InterpreterCity) {
