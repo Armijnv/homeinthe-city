@@ -21,6 +21,7 @@ import {
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
 import {
   localizedRecommendationGuideText,
+  mapPlaceAnchorId,
   recommendationCategoryLabel,
 } from "@/app/lib/recommendationGuides";
 import { JsonLdScript } from "@/app/lib/structuredData";
@@ -664,7 +665,9 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
 
     return [
       {
-        id: `place-${category.id}-${title || place.name}-${index}`,
+        id: place._key
+          ? mapPlaceAnchorId(place._key)
+          : `place-${category.id}-${title || place.name}-${index}`,
         sourceType: "place",
         categoryId: category.id,
         categoryLabel: category.label,
@@ -1039,8 +1042,13 @@ export default function CityPage({
                                   </h4>
                                   <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                                     {relatedPlaces.map((place) => (
-                                      <li key={place._key} className="text-sm text-stone-700">
-                                        {localizedMapPlaceText(place, "name", lang)}
+                                      <li key={place._key}>
+                                        <a
+                                          href={`#${mapPlaceAnchorId(place._key || "")}`}
+                                          className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+                                        >
+                                          {localizedMapPlaceText(place, "name", lang)}
+                                        </a>
                                       </li>
                                     ))}
                                   </ul>

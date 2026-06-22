@@ -126,12 +126,41 @@ export default function CityMap({
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id || "");
   const [selectedEntry, setSelectedEntry] = useState<CityMapEntry | null>(null);
   const mapSectionRef = useRef<HTMLDivElement | null>(null);
+  const handledHashRef = useRef("");
   const activeGroup =
     categories.find((category) => category.id === activeCategory) || categories[0];
   const visibleEntries = activeGroup?.entries || [];
   const mapCenter = visibleEntries[0] || entries[0];
   const centerLatitude = mapCenter?.latitude ?? cityCenter?.latitude ?? 0;
   const centerLongitude = mapCenter?.longitude ?? cityCenter?.longitude ?? 0;
+
+  useEffect(() => {
+    function selectHashEntry() {
+      const hashId = decodeURIComponent(window.location.hash.slice(1));
+      if (!hashId) return;
+      if (handledHashRef.current === hashId) return;
+
+      const entry = entries.find((candidate) => candidate.id === hashId);
+      if (!entry) {
+        handledHashRef.current = "";
+        return;
+      }
+
+      handledHashRef.current = hashId;
+      setActiveCategory(entry.categoryId);
+      setSelectedEntry(entry);
+      window.setTimeout(() => {
+        document.getElementById(entry.id)?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }, 120);
+    }
+
+    selectHashEntry();
+    window.addEventListener("hashchange", selectHashEntry);
+    return () => window.removeEventListener("hashchange", selectHashEntry);
+  }, [entries]);
 
   function selectEntry(entry: CityMapEntry, shouldScroll = true) {
     setSelectedEntry(entry);
@@ -200,8 +229,9 @@ export default function CityMap({
         {visibleEntries.map((entry) => (
           <button
             key={entry.id}
+            id={entry.sourceType === "place" ? entry.id : undefined}
             onClick={() => selectEntry(entry)}
-            className={`rounded-2xl border p-4 text-left transition ${
+            className={`scroll-mt-28 rounded-2xl border p-4 text-left transition ${
               selectedEntry?.id === entry.id
                 ? "border-[#1a1f2e] bg-stone-100 shadow-md"
                 : "border-stone-200 bg-white hover:bg-stone-50 hover:shadow-sm"

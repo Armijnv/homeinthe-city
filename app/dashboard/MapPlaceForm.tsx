@@ -14,6 +14,10 @@ import {
   type MapPlaceActionState,
 } from "@/app/dashboard/map-place-action-state";
 import { mapCategoryForPlace, mapCategoryPresets } from "@/app/lib/mapCategories";
+import {
+  dashboardFileInputClass,
+  selectedDashboardImageError,
+} from "@/app/lib/dashboardImageSelection";
 
 export type EditableMapPlace = {
   _key?: string;
@@ -91,44 +95,8 @@ function FormSection({
 const inputClass =
   "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-stone-400";
 
-const fileInputClass =
-  "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-stone-200 file:mr-4 file:rounded-md file:border-0 file:bg-[#d6a85a] file:px-3 file:py-2 file:text-sm file:font-medium file:text-[#1a1f2e]";
-const maxMapPlaceImageSize = 10 * 1024 * 1024;
-const supportedImageExtensions = new Set([
-  "jpg",
-  "jpeg",
-  "png",
-  "webp",
-  "gif",
-  "heic",
-  "heif",
-]);
-
 function textValue(...values: Array<string | undefined>) {
   return values.find((value) => value && value.trim()) || "";
-}
-
-function fileExtension(filename: string) {
-  return filename.split(".").pop()?.toLowerCase() || "";
-}
-
-function selectedImageError(file: File) {
-  const extension = fileExtension(file.name);
-  const type = file.type.toLowerCase();
-
-  if (file.size > maxMapPlaceImageSize) {
-    return "Map place photo must be smaller than 10 MB.";
-  }
-
-  if (type && !type.startsWith("image/") && !supportedImageExtensions.has(extension)) {
-    return "Please choose an image file.";
-  }
-
-  if (!type && extension && !supportedImageExtensions.has(extension)) {
-    return "Please choose a JPG, PNG, HEIC/HEIF, WebP or GIF image.";
-  }
-
-  return "";
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -239,7 +207,7 @@ function MapPlaceFormFields({
       type: file.type,
       size: String(file.size),
     });
-    setPhotoError(selectedImageError(file));
+    setPhotoError(selectedDashboardImageError(file, "Map place photo"));
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -506,7 +474,7 @@ function MapPlaceFormFields({
                 name="image"
                 type="file"
                 accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
-                className={fileInputClass}
+                className={dashboardFileInputClass}
                 onChange={handleImageChange}
               />
             </Field>

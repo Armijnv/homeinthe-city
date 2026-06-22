@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 import { requireCityHost } from "@/app/lib/dashboard";
 import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
+import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
 export type CityDashboardActionState = {
@@ -197,6 +198,44 @@ function cleanFeaturedImage(value: RecommendationGuideInput["featuredImage"]) {
     crop: value?.crop,
     hotspot: value?.hotspot,
   };
+}
+
+async function uploadedRecommendationImage(
+  formData: FormData,
+  recommendationKey: string,
+  fallbackAlt: string,
+) {
+  const entry = formData.get(`featuredImage-${recommendationKey}`);
+  const selected = stringValue(
+    formData,
+    `featuredImageSelected-${recommendationKey}`,
+  ) === "1";
+
+  if (!(entry instanceof File) || entry.size === 0) {
+    if (selected) {
+      throw new CityDashboardActionError(
+        `The featured image for “${fallbackAlt}” was not received. Please select it again.`,
+      );
+    }
+    return undefined;
+  }
+
+  try {
+    return await uploadSanityImage(
+      entry,
+      (
+        stringValue(formData, `featuredImageAlt-${recommendationKey}`) ||
+        fallbackAlt
+      ),
+    );
+  } catch (error) {
+    console.error("Recommendation guide image upload failed", error);
+    throw new CityDashboardActionError(
+      error instanceof Error
+        ? `The featured image for “${fallbackAlt}” could not be uploaded: ${error.message}`
+        : `The featured image for “${fallbackAlt}” could not be uploaded. Please try again.`,
+    );
+  }
 }
 
 function sanitizeRecommendationGuides(rawGuides: RecommendationGuideInput[]) {
@@ -402,11 +441,48 @@ export async function saveCityRecommendationsAction(
       throw new CityDashboardActionError("This city could not be found.");
     }
 
-    const recommendationGuides = sanitizeRecommendationGuides(
+    const sanitizedGuides = sanitizeRecommendationGuides(
       safeArrayFromJson<RecommendationGuideInput>(
         stringValue(formData, "recommendationGuidesJson"),
         "Recommendations could not be read. Please reload and try again.",
       ),
+    );
+    const cityName = city.name_en || city.name_pt || city.name_nl || citySlug;
+    const recommendationGuides = await Promise.all(
+      sanitizedGuides.map(async (recommendation) => {
+        const recommendationKey = recommendation._key;
+        const title =
+          recommendation.title_en ||
+          recommendation.title_pt ||
+          recommendation.title_nl ||
+          "Recommendation guide";
+        const fallbackAlt = `${title} in ${cityName}`;
+        const uploadedImage = await uploadedRecommendationImage(
+          formData,
+          recommendationKey,
+          fallbackAlt,
+        );
+        const removeImage =
+          stringValue(
+            formData,
+            `removeFeaturedImage-${recommendationKey}`,
+          ) === "on";
+        const imageAlt =
+          stringValue(
+            formData,
+            `featuredImageAlt-${recommendationKey}`,
+          ) || fallbackAlt;
+        const preservedImage = recommendation.featuredImage
+          ? { ...recommendation.featuredImage, alt: imageAlt }
+          : undefined;
+        const featuredImage = uploadedImage || (removeImage ? undefined : preservedImage);
+        const guideWithoutImage = { ...recommendation };
+        delete guideWithoutImage.featuredImage;
+
+        return featuredImage
+          ? { ...guideWithoutImage, featuredImage }
+          : guideWithoutImage;
+      }),
     );
 
     const transaction = writeClient

@@ -1,9 +1,21 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  useActionState,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
 import { useFormStatus } from "react-dom";
 import type { CityDashboardActionState } from "@/app/dashboard/cities/[citySlug]/actions";
 import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
+import {
+  dashboardFileInputClass,
+  selectedDashboardImageError,
+} from "@/app/lib/dashboardImageSelection";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -42,7 +54,7 @@ export type CityDashboardRecommendation = {
   featuredImage?: {
     _type?: string;
     alt?: string;
-    asset?: { _type?: string; _ref?: string };
+    asset?: { _type?: string; _ref?: string; url?: string };
     crop?: { top?: number; bottom?: number; left?: number; right?: number };
     hotspot?: { x?: number; y?: number; height?: number; width?: number };
   };
@@ -58,6 +70,9 @@ type CityDashboardMapPlace = {
 };
 
 export type CityDashboardEditorData = {
+  name_en?: string;
+  name_pt?: string;
+  name_nl?: string;
   enabledLanguages?: Lang[];
   hostLanguages?: Lang[];
   headline_en?: string;
@@ -108,6 +123,121 @@ function newKey(prefix: string) {
 
 function itemTitle(item: CityDashboardRecommendation) {
   return item.title_en || item.title_pt || item.title_nl || "Untitled guide";
+}
+
+function RecommendationImageField({
+  recommendation,
+  cityName,
+}: {
+  recommendation: CityDashboardRecommendation;
+  cityName: string;
+}) {
+  const recommendationKey = recommendation._key || "new-recommendation";
+  const savedImageUrl = recommendation.featuredImage?.asset?.url;
+  const defaultAlt = `${itemTitle(recommendation)} in ${cityName}`;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!file) {
+      setPreviewUrl("");
+      setImageError("");
+      setImageSelected(false);
+      event.target.setCustomValidity("");
+      return;
+    }
+
+    const error = selectedDashboardImageError(file, "Featured image");
+
+    setPreviewUrl(error ? "" : URL.createObjectURL(file));
+    setImageError(error);
+    setImageSelected(true);
+    event.target.setCustomValidity(error);
+  }
+
+  const displayUrl = previewUrl || savedImageUrl;
+
+  return (
+    <fieldset className="rounded-xl border border-white/10 p-4">
+      <legend className="px-2 text-xs uppercase tracking-widest text-stone-400">
+        Featured image
+      </legend>
+      <div className="mt-2 grid gap-4 md:grid-cols-[220px_1fr] md:items-start">
+        {displayUrl ? (
+          <div className="space-y-3">
+            <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-black/20">
+              <Image
+                src={displayUrl}
+                alt={recommendation.featuredImage?.alt || defaultAlt}
+                fill
+                unoptimized={displayUrl.startsWith("blob:")}
+                sizes="220px"
+                className="object-cover"
+              />
+            </div>
+            {savedImageUrl ? (
+              <label className="flex items-center gap-2 text-sm text-stone-300">
+                <input
+                  type="checkbox"
+                  name={`removeFeaturedImage-${recommendationKey}`}
+                  className="size-4 accent-[#d6a85a]"
+                />
+                Remove saved image
+              </label>
+            ) : null}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
+            No featured image yet.
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <Field label={savedImageUrl ? "Replace image" : "Upload image"}>
+            <input
+              name={`featuredImage-${recommendationKey}`}
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+              className={dashboardFileInputClass}
+              onChange={handleImageChange}
+            />
+          </Field>
+          <input
+            type="hidden"
+            name={`featuredImageSelected-${recommendationKey}`}
+            value={imageSelected ? "1" : ""}
+          />
+          {imageError ? (
+            <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+              {imageError}
+            </p>
+          ) : null}
+          <Field label="Image alt text">
+            <input
+              name={`featuredImageAlt-${recommendationKey}`}
+              className={inputClass}
+              defaultValue={recommendation.featuredImage?.alt || defaultAlt}
+              placeholder={defaultAlt}
+            />
+          </Field>
+          <p className="text-sm leading-6 text-stone-400">
+            JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB. A new image replaces
+            the saved image when the recommendation guides are saved.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  );
 }
 
 function Panel({
@@ -416,11 +546,13 @@ function RecommendationEditor({
   setRecommendations,
   mapPlaces,
   legacyRecommendationCount,
+  cityName,
 }: {
   recommendations: CityDashboardRecommendation[];
   setRecommendations: (recommendations: CityDashboardRecommendation[]) => void;
   mapPlaces: CityDashboardMapPlace[];
   legacyRecommendationCount: number;
+  cityName: string;
 }) {
   function updateRecommendation(
     index: number,
@@ -622,9 +754,8 @@ function RecommendationEditor({
                 </select>
               </Field>
               <div className="rounded-lg border border-white/10 px-4 py-3 text-sm leading-6 text-stone-400">
-                {recommendation.featuredImage?.asset?._ref
-                  ? "Featured image attached. Image and relation changes remain available in Sanity Studio."
-                  : "Optional featured images, providers and related city pages can be attached in Sanity Studio."}
+                Optional provider and related city references remain available in
+                Sanity Studio. Featured images and map-place links can be managed here.
               </div>
             </div>
 
@@ -647,6 +778,11 @@ function RecommendationEditor({
                 ))}
               </div>
             ) : null}
+
+            <RecommendationImageField
+              recommendation={recommendation}
+              cityName={cityName}
+            />
 
             {mapPlaces.some((place) => place._key) ? (
               <fieldset className="rounded-xl border border-white/10 p-4">
@@ -696,6 +832,7 @@ export default function CityDashboardEditors({
   saveContentAction,
   saveRecommendationsAction,
 }: EditorProps) {
+  const router = useRouter();
   const [contentState, contentFormAction] = useActionState(
     saveContentAction,
     initialActionState,
@@ -708,6 +845,12 @@ export default function CityDashboardEditors({
   const [recommendations, setRecommendations] = useState(
     city.recommendationGuides || [],
   );
+
+  useEffect(() => {
+    if (recommendationState.status === "success") {
+      router.refresh();
+    }
+  }, [recommendationState.status, recommendationState.submittedAt, router]);
 
   return (
     <div className="space-y-8">
@@ -732,13 +875,18 @@ export default function CityDashboardEditors({
       </Panel>
 
       <Panel eyebrow="Recommendations" title="Curated local guides">
-        <form action={recommendationFormAction} className="space-y-6">
+        <form
+          key={recommendationState.submittedAt || "recommendation-guides"}
+          action={recommendationFormAction}
+          className="space-y-6"
+        >
           <ActionMessage state={recommendationState} />
           <RecommendationEditor
             recommendations={recommendations}
             setRecommendations={setRecommendations}
             mapPlaces={city.mapPlaces || []}
             legacyRecommendationCount={city.recommendations?.length || 0}
+            cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
           />
           <SaveButton label="Save recommendation guides" />
         </form>

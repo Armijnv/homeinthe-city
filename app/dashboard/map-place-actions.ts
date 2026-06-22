@@ -8,30 +8,12 @@ import {
 } from "@/app/dashboard/map-place-action-state";
 import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 import { requireCityHost } from "@/app/lib/dashboard";
+import {
+  type SanityImageValue,
+  uploadSanityImage,
+} from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
-const maxMapPlaceImageSize = 10 * 1024 * 1024;
-const supportedMapPlaceImageTypes = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-const heicMapPlaceImageTypes = new Set([
-  "image/heic",
-  "image/heif",
-  "image/heic-sequence",
-  "image/heif-sequence",
-]);
-const supportedMapPlaceImageExtensions = new Map([
-  ["jpg", "image/jpeg"],
-  ["jpeg", "image/jpeg"],
-  ["png", "image/png"],
-  ["webp", "image/webp"],
-  ["gif", "image/gif"],
-  ["heic", "image/heic"],
-  ["heif", "image/heif"],
-]);
 const mapPlaceFormFields = [
   "name_en",
   "name_pt",
@@ -58,17 +40,8 @@ const mapPlaceFormFields = [
 
 class MapPlaceActionError extends Error {}
 
-type MapPlaceImageValue = {
-  _type: "image";
-  alt: string;
-  asset: {
-    _type: "reference";
-    _ref: string;
-  };
-};
-
 type UploadedMapPlaceImage = {
-  image: MapPlaceImageValue | null;
+  image: SanityImageValue | null;
   warning: boolean;
 };
 
@@ -141,69 +114,8 @@ function placeKeyFromForm(formData: FormData) {
   return /^[A-Za-z0-9_-]+$/.test(placeKey) ? placeKey : "";
 }
 
-function fileExtension(filename: string) {
-  return filename.split(".").pop()?.toLowerCase() || "";
-}
-
 function imageWasSelected(formData: FormData) {
   return stringValue(formData, "imageSelected") === "1";
-}
-
-function supportedImageContentType(file: File) {
-  const browserType = file.type.toLowerCase();
-  if (supportedMapPlaceImageTypes.has(browserType)) return browserType;
-  if (heicMapPlaceImageTypes.has(browserType)) return browserType;
-
-  const extensionType = supportedMapPlaceImageExtensions.get(fileExtension(file.name));
-  if (extensionType && (!browserType || browserType === "application/octet-stream")) {
-    return extensionType;
-  }
-
-  return null;
-}
-
-function isHeicImage(file: File, contentType: string | null) {
-  const browserType = file.type.toLowerCase();
-  const extension = fileExtension(file.name);
-
-  return (
-    heicMapPlaceImageTypes.has(browserType) ||
-    (contentType ? heicMapPlaceImageTypes.has(contentType) : false) ||
-    extension === "heic" ||
-    extension === "heif"
-  );
-}
-
-function jpegFilenameFromHeic(filename: string) {
-  const base = filename.replace(/\.[^.]+$/, "");
-  return `${base || "map-place-photo"}.jpg`;
-}
-
-async function uploadableImageBody(
-  file: File,
-  contentType: string,
-): Promise<{ body: Buffer; contentType: string; filename: string }> {
-  const body = Buffer.from(await file.arrayBuffer());
-
-  if (!isHeicImage(file, contentType)) {
-    return {
-      body,
-      contentType,
-      filename: file.name,
-    };
-  }
-
-  const { default: sharp } = await import("sharp");
-  const jpeg = await sharp(body, { limitInputPixels: 64_000_000 })
-    .rotate()
-    .jpeg({ quality: 90, mozjpeg: true })
-    .toBuffer();
-
-  return {
-    body: jpeg,
-    contentType: "image/jpeg",
-    filename: jpegFilenameFromHeic(file.name),
-  };
 }
 
 function valuesFromForm(formData: FormData) {
@@ -273,46 +185,16 @@ async function uploadedMapPlaceImage(
     return { image: null, warning: false };
   }
 
-  const contentType = supportedImageContentType(entry);
-  if (!contentType) {
-    console.error("Map place image upload skipped because the file type is unsupported", {
-      name: entry.name,
-      type: entry.type,
-    });
-    return { image: null, warning: true };
-  }
-
-  if (entry.size > maxMapPlaceImageSize) {
-    console.error("Map place image upload skipped because the file is too large", {
-      name: entry.name,
-      size: entry.size,
-    });
-    return { image: null, warning: true };
-  }
-
-  let asset;
   try {
-    const upload = await uploadableImageBody(entry, contentType);
-    asset = await writeClient.assets.upload("image", upload.body, {
-      contentType: upload.contentType,
-      filename: upload.filename,
-    });
+    const image = await uploadSanityImage(
+      entry,
+      stringValue(formData, "imageAlt") || fallbackAlt,
+    );
+    return { image, warning: false };
   } catch (error) {
     console.error("Map place image upload failed", error);
     return { image: null, warning: true };
   }
-
-  return {
-    image: {
-      _type: "image",
-      alt: stringValue(formData, "imageAlt") || fallbackAlt,
-      asset: {
-        _type: "reference",
-        _ref: asset._id,
-      },
-    },
-    warning: false,
-  };
 }
 
 function localizedPlaceText(formData: FormData) {

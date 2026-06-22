@@ -89,7 +89,11 @@ const cityDashboardQuery = `
       featuredImage{
         _type,
         alt,
-        asset,
+        asset->{
+          "_type": "reference",
+          "_ref": _id,
+          url
+        },
         crop,
         hotspot
       },
@@ -152,6 +156,12 @@ export default async function CityDashboardPage({ params }: PageProps) {
       </div>
 
       <CityDashboardEditors
+        key={(city.recommendationGuides || [])
+          .map(
+            (recommendation) =>
+              `${recommendation._key}:${recommendation.featuredImage?.asset?._ref || ""}`,
+          )
+          .join("|")}
         city={city}
         canManageLanguages={context.isAdmin}
         saveContentAction={saveCityContentAction.bind(null, citySlug)}

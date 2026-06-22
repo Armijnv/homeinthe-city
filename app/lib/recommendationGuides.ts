@@ -47,6 +47,11 @@ export type RecommendationGuideCategory =
   | (typeof recommendationGuideCategories)[number]["id"]
   | "custom";
 
+export function mapPlaceAnchorId(placeKey: string) {
+  const safeKey = placeKey.replace(/[^A-Za-z0-9_-]/g, "");
+  return `map-place-${safeKey}`;
+}
+
 type RecommendationCategorySource = {
   recommendationType?: string;
   customCategory_en?: string;
