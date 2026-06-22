@@ -1,4 +1,5 @@
 import GlobeComponent from "./Globe";
+import ActiveCities from "./ActiveCities";
 import Link from "next/link";
 import {
   cityGuideGlobeCities,
@@ -342,6 +343,8 @@ export default function HomePage({
           </div>
         </div>
       </section>
+
+      <ActiveCities lang={lang} />
 
       <section className="relative z-20 bg-[#f5f1ea] px-6 py-14 text-[#1a1f2e] md:px-10 lg:px-20">
         <div className="mx-auto max-w-6xl">
