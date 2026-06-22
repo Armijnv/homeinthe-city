@@ -21,6 +21,7 @@ const providerForAdminQuery = `
     name,
     slug,
     status,
+    verificationStatus,
     roles,
     primaryRole,
     languages[]{language, level, services},

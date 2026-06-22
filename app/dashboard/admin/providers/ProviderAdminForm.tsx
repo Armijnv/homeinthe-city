@@ -18,6 +18,7 @@ export type ProviderAdminFormData = {
   name?: string;
   slug?: { current?: string };
   status?: string;
+  verificationStatus?: string;
   roles?: string[];
   primaryRole?: string;
   languages?: ProviderAdminLanguage[];
@@ -147,6 +148,24 @@ export default function ProviderAdminForm({
               <option value="published">Published — public</option>
               <option value="disabled">Disabled — hidden</option>
             </select>
+          </label>
+          <label>
+            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
+              Verified provider
+            </span>
+            <select
+              name="verificationStatus"
+              className={inputClass}
+              defaultValue={provider?.verificationStatus || "unverified"}
+            >
+              <option value="unverified">Unverified</option>
+              <option value="pending">Pending review</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
+            <span className="mt-2 block text-sm leading-6 text-stone-300">
+              Shows a Verified badge on public provider cards and profiles.
+            </span>
           </label>
           <label>
             <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">

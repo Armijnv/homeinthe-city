@@ -52,6 +52,12 @@ const allowedLanguageServices = new Set([
   "translatesTo",
 ]);
 const allowedStatuses = new Set(["draft", "review", "published", "disabled"]);
+const allowedVerificationStatuses = new Set([
+  "unverified",
+  "pending",
+  "verified",
+  "rejected",
+]);
 
 function formString(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -188,6 +194,7 @@ async function providerInput(formData: FormData, providerId?: string) {
   const name = formString(formData, "name");
   const slug = cleanSlug(formString(formData, "slug"));
   const status = formString(formData, "status");
+  const verificationStatus = formString(formData, "verificationStatus");
   const primaryRole = formString(formData, "primaryRole");
   const roles = selectedStrings(formData, "roles").filter((role) =>
     allowedRoles.has(role),
@@ -199,6 +206,9 @@ async function providerInput(formData: FormData, providerId?: string) {
   if (!slug) throw new ProviderAdminError("Provider slug is required.");
   if (!allowedStatuses.has(status)) {
     throw new ProviderAdminError("Choose a valid provider status.");
+  }
+  if (!allowedVerificationStatuses.has(verificationStatus)) {
+    throw new ProviderAdminError("Choose a valid provider verification status.");
   }
   if (!allowedRoles.has(primaryRole)) {
     throw new ProviderAdminError("Choose a valid primary role.");
@@ -234,6 +244,7 @@ async function providerInput(formData: FormData, providerId?: string) {
     name,
     slug,
     status,
+    verificationStatus,
     primaryRole,
     roles,
     contactEmail,
@@ -328,7 +339,7 @@ export async function createProviderAction(formData: FormData) {
             ? { preferredContact: "email" }
             : {}),
       },
-      verificationStatus: "unverified",
+      verificationStatus: input.verificationStatus,
     };
     const changeLog = providerChangeLogDocument({
       context,
@@ -368,6 +379,7 @@ export async function updateProviderAction(formData: FormData) {
       name: input.name,
       slug: { _type: "slug", current: input.slug },
       status: input.status,
+      verificationStatus: input.verificationStatus,
       roles: input.roles,
       primaryRole: input.primaryRole,
       languages: input.languages,
@@ -417,7 +429,7 @@ export async function updateProviderAction(formData: FormData) {
         providerName: input.name,
         providerSlug: input.slug,
         changeType: "providerEdited",
-        description: `Updated provider ${input.name} with ${input.status} status.`,
+        description: `Updated provider ${input.name} with ${input.status} visibility and ${input.verificationStatus} verification status.`,
       }),
     );
     await transaction.commit();
