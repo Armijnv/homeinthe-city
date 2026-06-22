@@ -64,26 +64,40 @@ const cityDashboardQuery = `
       href_pt,
       href_nl
     },
-    recommendations[]{
+    mapPlaces[]{
       _key,
       name,
       name_en,
-      name_pt,
-      name_nl,
-      categoryPreset,
-      category,
-      categoryLabel_en,
-      categoryLabel_pt,
-      categoryLabel_nl,
-      neighborhood,
-      detail_en,
-      detail_pt,
-      detail_nl,
-      description_en,
-      description_pt,
-      description_nl,
-      website,
-      favorite
+      name_pt
+    },
+    recommendationGuides[]{
+      _key,
+      title_en,
+      title_pt,
+      title_nl,
+      introduction_en,
+      introduction_pt,
+      introduction_nl,
+      content_en,
+      content_pt,
+      content_nl,
+      recommendationType,
+      customCategory_en,
+      customCategory_pt,
+      customCategory_nl,
+      relatedMapPlaceKeys,
+      featuredImage{
+        _type,
+        alt,
+        asset,
+        crop,
+        hotspot
+      },
+      relatedProvider,
+      relatedCity
+    },
+    recommendations[]{
+      _key
     }
   }
 `;

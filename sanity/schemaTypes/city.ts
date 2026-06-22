@@ -1,4 +1,5 @@
 import { defineType, defineField } from "sanity";
+import { recommendationGuideCategories } from "../../app/lib/recommendationGuides";
 
 const mapCategoryPresets = [
   { title: "Restaurant / Restaurante / Restaurant", value: "restaurant" },
@@ -356,11 +357,146 @@ export const city = defineType({
     }),
 
     defineField({
-      name: "recommendations",
-      title: "Recommendations",
+      name: "recommendationGuides",
+      title: "Curated Recommendation Guides",
       type: "array",
       description:
-        "Flexible city recommendation lists for restaurants, cafés, bakeries, beaches, services, attractions, walks, coworking, repairs, markets and custom categories.",
+        "Host-written local guides, themed lists and practical itineraries. Array order controls public display order.",
+      of: [
+        {
+          type: "object",
+          name: "recommendationGuide",
+          title: "Recommendation guide",
+          fields: [
+            { name: "title_en", title: "Title (English)", type: "string" },
+            { name: "title_pt", title: "Title (Portuguese)", type: "string" },
+            { name: "title_nl", title: "Title (Dutch)", type: "string" },
+            {
+              name: "introduction_en",
+              title: "Short introduction (English)",
+              type: "text",
+              rows: 3,
+            },
+            {
+              name: "introduction_pt",
+              title: "Short introduction (Portuguese)",
+              type: "text",
+              rows: 3,
+            },
+            {
+              name: "introduction_nl",
+              title: "Short introduction (Dutch)",
+              type: "text",
+              rows: 3,
+            },
+            {
+              name: "content_en",
+              title: "Full content (English)",
+              type: "text",
+              rows: 12,
+              description:
+                "Use blank lines for paragraphs and lines beginning with a dash for practical lists.",
+            },
+            {
+              name: "content_pt",
+              title: "Full content (Portuguese)",
+              type: "text",
+              rows: 12,
+            },
+            {
+              name: "content_nl",
+              title: "Full content (Dutch)",
+              type: "text",
+              rows: 12,
+            },
+            {
+              name: "recommendationType",
+              title: "Recommendation type",
+              type: "string",
+              initialValue: "localExperience",
+              options: {
+                list: [
+                  ...recommendationGuideCategories.map((category) => ({
+                    title: category.labels.en,
+                    value: category.id,
+                  })),
+                  { title: "Custom Category", value: "custom" },
+                ],
+              },
+            },
+            {
+              name: "customCategory_en",
+              title: "Custom category (English)",
+              type: "string",
+              hidden: ({ parent }) => parent?.recommendationType !== "custom",
+            },
+            {
+              name: "customCategory_pt",
+              title: "Custom category (Portuguese)",
+              type: "string",
+              hidden: ({ parent }) => parent?.recommendationType !== "custom",
+            },
+            {
+              name: "customCategory_nl",
+              title: "Custom category (Dutch)",
+              type: "string",
+              hidden: ({ parent }) => parent?.recommendationType !== "custom",
+            },
+            {
+              name: "featuredImage",
+              title: "Featured image",
+              type: "image",
+              options: { hotspot: true },
+              fields: [
+                {
+                  name: "alt",
+                  title: "Alt text",
+                  type: "string",
+                  description: "Describe the image for accessibility and search engines.",
+                },
+              ],
+            },
+            {
+              name: "relatedMapPlaceKeys",
+              title: "Related map places",
+              type: "array",
+              description:
+                "Map place item keys. City hosts can select these by name in the dashboard.",
+              of: [{ type: "string" }],
+              validation: (Rule) => Rule.unique(),
+            },
+            {
+              name: "relatedProvider",
+              title: "Related provider",
+              type: "reference",
+              to: [{ type: "provider" }],
+              options: { disableNew: true, filter: "status == 'published'" },
+            },
+            {
+              name: "relatedCity",
+              title: "Related city page",
+              type: "reference",
+              to: [{ type: "city" }],
+              options: { disableNew: true },
+            },
+          ],
+          preview: {
+            select: {
+              title: "title_en",
+              subtitle: "recommendationType",
+              media: "featuredImage",
+            },
+          },
+        },
+      ],
+    }),
+
+    defineField({
+      name: "recommendations",
+      title: "Legacy Recommendations — Review Before Migration",
+      type: "array",
+      description:
+        "Preserved place-style recommendation records. Do not delete these until their information has been reviewed and moved into Curated Recommendation Guides or Map Places.",
       of: [
         {
           type: "object",

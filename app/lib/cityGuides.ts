@@ -11,6 +11,7 @@ export type CityGuideImage = {
 };
 
 export type CityGuideMapPlace = {
+  _key?: string;
   name: string;
   name_en?: string;
   name_pt?: string;
@@ -55,6 +56,32 @@ export type CityGuideRecommendation = {
   detail_nl?: string;
   website?: string;
   favorite?: boolean;
+};
+
+export type CityGuideRecommendationGuide = {
+  _key?: string;
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+  introduction_en?: string;
+  introduction_pt?: string;
+  introduction_nl?: string;
+  content_en?: string;
+  content_pt?: string;
+  content_nl?: string;
+  recommendationType?: string;
+  customCategory_en?: string;
+  customCategory_pt?: string;
+  customCategory_nl?: string;
+  featuredImage?: CityGuideImage;
+  relatedMapPlaceKeys?: string[];
+  relatedProvider?: CityGuideProvider | null;
+  relatedCity?: {
+    name_en?: string;
+    name_pt?: string;
+    name_nl?: string;
+    slug?: { current?: string };
+  } | null;
 };
 
 export type CityGuideSidebarCard = {
@@ -117,6 +144,7 @@ export type CityGuideContent = {
   introBlocks_pt?: string[];
   introBlocks_nl?: string[];
   mapPlaces?: CityGuideMapPlace[];
+  recommendationGuides?: CityGuideRecommendationGuide[];
   recommendations?: CityGuideRecommendation[];
   sidebarCards?: CityGuideSidebarCard[];
   cta_en?: string;
@@ -196,6 +224,7 @@ export function cityGuideIsPublic(city: CityGuideContent | null | undefined) {
   return Boolean(
     localizedContent ||
       city.mapPlaces?.length ||
+      city.recommendationGuides?.length ||
       city.recommendations?.length ||
       city.sidebarCards?.length,
   );

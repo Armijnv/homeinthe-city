@@ -51,6 +51,7 @@ const cityGuideProjection = `
     introBlocks_nl,
 
     mapPlaces[]{
+      _key,
       name,
       name_en,
       name_pt,
@@ -82,6 +83,46 @@ const cityGuideProjection = `
         asset->{
           url
         }
+      }
+    },
+
+    recommendationGuides[]{
+      _key,
+      title_en,
+      title_pt,
+      title_nl,
+      introduction_en,
+      introduction_pt,
+      introduction_nl,
+      content_en,
+      content_pt,
+      content_nl,
+      recommendationType,
+      customCategory_en,
+      customCategory_pt,
+      customCategory_nl,
+      relatedMapPlaceKeys,
+      featuredImage{
+        alt,
+        asset->{url}
+      },
+      relatedProvider->{
+        name,
+        slug,
+        status,
+        roles,
+        primaryRole,
+        languages[]{language},
+        mainPhoto{
+          alt,
+          asset->{url}
+        }
+      },
+      relatedCity->{
+        name_en,
+        name_pt,
+        name_nl,
+        slug
       }
     },
 
@@ -167,6 +208,7 @@ export const cityNavigationQuery = `
     introBlocks_pt,
     introBlocks_nl,
     mapPlaces[]{_key},
+    recommendationGuides[]{_key},
     recommendations[]{_key},
     sidebarCards[]{_key},
     primaryHost->{

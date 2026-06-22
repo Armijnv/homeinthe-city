@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useMemo, useState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { useFormStatus } from "react-dom";
-import { mapCategoryForPlace, mapCategoryPresets } from "@/app/lib/mapCategories";
 import type { CityDashboardActionState } from "@/app/dashboard/cities/[citySlug]/actions";
+import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -25,24 +25,36 @@ export type CityDashboardSidebarCard = {
 
 export type CityDashboardRecommendation = {
   _key?: string;
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+  introduction_en?: string;
+  introduction_pt?: string;
+  introduction_nl?: string;
+  content_en?: string;
+  content_pt?: string;
+  content_nl?: string;
+  recommendationType?: string;
+  customCategory_en?: string;
+  customCategory_pt?: string;
+  customCategory_nl?: string;
+  relatedMapPlaceKeys?: string[];
+  featuredImage?: {
+    _type?: string;
+    alt?: string;
+    asset?: { _type?: string; _ref?: string };
+    crop?: { top?: number; bottom?: number; left?: number; right?: number };
+    hotspot?: { x?: number; y?: number; height?: number; width?: number };
+  };
+  relatedProvider?: { _type?: string; _ref?: string };
+  relatedCity?: { _type?: string; _ref?: string };
+};
+
+type CityDashboardMapPlace = {
+  _key?: string;
   name?: string;
   name_en?: string;
   name_pt?: string;
-  name_nl?: string;
-  categoryPreset?: string;
-  category?: string;
-  categoryLabel_en?: string;
-  categoryLabel_pt?: string;
-  categoryLabel_nl?: string;
-  neighborhood?: string;
-  detail_en?: string;
-  detail_pt?: string;
-  detail_nl?: string;
-  description_en?: string;
-  description_pt?: string;
-  description_nl?: string;
-  website?: string;
-  favorite?: boolean;
 };
 
 export type CityDashboardEditorData = {
@@ -58,7 +70,9 @@ export type CityDashboardEditorData = {
   introBlocks_pt?: string[];
   introBlocks_nl?: string[];
   sidebarCards?: CityDashboardSidebarCard[];
-  recommendations?: CityDashboardRecommendation[];
+  recommendationGuides?: CityDashboardRecommendation[];
+  recommendations?: Array<{ _key?: string }>;
+  mapPlaces?: CityDashboardMapPlace[];
 };
 
 type EditorProps = {
@@ -93,7 +107,7 @@ function newKey(prefix: string) {
 }
 
 function itemTitle(item: CityDashboardRecommendation) {
-  return item.name_en || item.name || item.name_pt || item.name_nl || "Untitled";
+  return item.title_en || item.title_pt || item.title_nl || "Untitled guide";
 }
 
 function Panel({
@@ -400,14 +414,18 @@ function SidebarCardEditor({
 function RecommendationEditor({
   recommendations,
   setRecommendations,
+  mapPlaces,
+  legacyRecommendationCount,
 }: {
   recommendations: CityDashboardRecommendation[];
   setRecommendations: (recommendations: CityDashboardRecommendation[]) => void;
+  mapPlaces: CityDashboardMapPlace[];
+  legacyRecommendationCount: number;
 }) {
   function updateRecommendation(
     index: number,
     field: keyof CityDashboardRecommendation,
-    value: string | boolean,
+    value: string | string[],
   ) {
     setRecommendations(
       recommendations.map((recommendation, recommendationIndex) =>
@@ -423,7 +441,7 @@ function RecommendationEditor({
       ...recommendations,
       {
         _key: newKey("recommendation"),
-        categoryPreset: "restaurant",
+        recommendationType: "localExperience",
       },
     ]);
   }
@@ -434,109 +452,166 @@ function RecommendationEditor({
     );
   }
 
-  const populatedRecommendations = recommendations.filter((recommendation) =>
-    itemTitle(recommendation) !== "Untitled",
-  );
-  const groupedCategories = useMemo(() => {
-    return populatedRecommendations.reduce<Array<{ id: string; label: string; count: number }>>(
-      (groups, recommendation) => {
-        const category = mapCategoryForPlace(recommendation, "en");
-        const existing = groups.find((group) => group.id === category.id);
+  function moveRecommendation(index: number, direction: -1 | 1) {
+    const destination = index + direction;
+    if (destination < 0 || destination >= recommendations.length) return;
 
-        if (existing) {
-          existing.count += 1;
-        } else {
-          groups.push({ ...category, count: 1 });
-        }
+    const reordered = [...recommendations];
+    [reordered[index], reordered[destination]] = [
+      reordered[destination],
+      reordered[index],
+    ];
+    setRecommendations(reordered);
+  }
 
-        return groups;
-      },
-      [],
+  function toggleRelatedPlace(index: number, placeKey: string) {
+    const selected = recommendations[index].relatedMapPlaceKeys || [];
+    updateRecommendation(
+      index,
+      "relatedMapPlaceKeys",
+      selected.includes(placeKey)
+        ? selected.filter((key) => key !== placeKey)
+        : [...selected, placeKey],
     );
-  }, [populatedRecommendations]);
+  }
 
   return (
     <div className="space-y-5">
       <input
         type="hidden"
-        name="recommendationsJson"
+        name="recommendationGuidesJson"
         value={JSON.stringify(recommendations)}
       />
 
-      {groupedCategories.length ? (
-        <div className="flex flex-wrap gap-2">
-          {groupedCategories.map((category) => (
-            <span
-              key={category.id}
-              className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-stone-300"
-            >
-              {category.label} · {category.count}
-            </span>
-          ))}
-        </div>
-      ) : (
+      <div className="rounded-xl border border-white/10 bg-black/10 p-4 text-sm leading-6 text-stone-300">
+        Write recommendations as useful local articles: name the city and topic,
+        explain the local context, and include practical advice a visitor can act on.
+        {legacyRecommendationCount ? (
+          <p className="mt-3 border-t border-white/10 pt-3 text-amber-100">
+            {legacyRecommendationCount} legacy place-style recommendation
+            {legacyRecommendationCount === 1 ? " is" : "s are"} preserved separately.
+            Review and migrate them before deleting anything in Sanity Studio.
+          </p>
+        ) : null}
+      </div>
+
+      {!recommendations.length ? (
         <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
-          No recommendations yet.
+          No curated recommendation guides yet.
         </div>
-      )}
+      ) : null}
 
       {recommendations.map((recommendation, index) => {
-        const isCustom = recommendation.categoryPreset === "custom";
+        const isCustom = recommendation.recommendationType === "custom";
 
         return (
           <div
             key={recommendation._key || index}
-            className="space-y-4 rounded-xl border border-white/10 bg-black/10 p-4"
+            className="space-y-5 rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-sm font-medium uppercase tracking-widest text-white">
-                  {itemTitle(recommendation)}
+                  {index + 1}. {itemTitle(recommendation)}
                 </h3>
                 <p className="mt-1 text-sm text-stone-400">
-                  {mapCategoryForPlace(recommendation, "en").label}
+                  Curated guide article
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => deleteRecommendation(index)}
-                className="rounded-lg border border-red-300/40 px-3 py-2 text-sm text-red-100 transition hover:border-red-200 hover:text-white"
-              >
-                Delete recommendation
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={index === 0}
+                  onClick={() => moveRecommendation(index, -1)}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-200 transition hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  Move up
+                </button>
+                <button
+                  type="button"
+                  disabled={index === recommendations.length - 1}
+                  onClick={() => moveRecommendation(index, 1)}
+                  className="rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-200 transition hover:border-white/30 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  Move down
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteRecommendation(index)}
+                  className="rounded-lg border border-red-300/40 px-3 py-2 text-sm text-red-100 transition hover:border-red-200 hover:text-white"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
 
-            <div className="grid gap-3 md:grid-cols-3">
+            <div className="grid gap-4 lg:grid-cols-3">
               {languages.map((language) => (
-                <Field key={language.id} label={`Name (${language.hint})`}>
+                <section
+                  key={language.id}
+                  className="space-y-4 rounded-xl border border-white/10 p-4"
+                >
+                  <h4 className="text-sm font-medium text-[#d6a85a]">
+                    {language.label}
+                  </h4>
+                  <Field label={`Title (${language.hint})`}>
                   <input
                     className={inputClass}
-                    value={
-                      recommendation[`name_${language.id}`] ||
-                      (language.id === "en" ? recommendation.name || "" : "")
-                    }
+                    value={recommendation[`title_${language.id}`] || ""}
                     onChange={(event) =>
                       updateRecommendation(
                         index,
-                        `name_${language.id}`,
+                        `title_${language.id}`,
                         event.target.value,
                       )
                     }
+                    placeholder="A Perfect Sunday in Porto Alegre"
                   />
-                </Field>
+                  </Field>
+                  <Field label={`Short introduction (${language.hint})`}>
+                    <textarea
+                      className={textareaClass}
+                      rows={3}
+                      value={recommendation[`introduction_${language.id}`] || ""}
+                      onChange={(event) =>
+                        updateRecommendation(
+                          index,
+                          `introduction_${language.id}`,
+                          event.target.value,
+                        )
+                      }
+                      placeholder="Summarize who this guide is for and what local insight it offers."
+                    />
+                  </Field>
+                  <Field label={`Full content (${language.hint})`}>
+                    <textarea
+                      className={`${textareaClass} min-h-64`}
+                      rows={10}
+                      value={recommendation[`content_${language.id}`] || ""}
+                      onChange={(event) =>
+                        updateRecommendation(
+                          index,
+                          `content_${language.id}`,
+                          event.target.value,
+                        )
+                      }
+                      placeholder={"Write practical local advice in paragraphs.\n\n- Use dashed lines for lists\n- Include timing, areas and local context"}
+                    />
+                  </Field>
+                </section>
               ))}
             </div>
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <Field label="Category">
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Recommendation type">
                 <select
                   className={inputClass}
-                  value={recommendation.categoryPreset || "restaurant"}
+                  value={recommendation.recommendationType || "localExperience"}
                   onChange={(event) =>
-                    updateRecommendation(index, "categoryPreset", event.target.value)
+                    updateRecommendation(index, "recommendationType", event.target.value)
                   }
                 >
-                  {mapCategoryPresets.map((category) => (
+                  {recommendationGuideCategories.map((category) => (
                     <option key={category.id} value={category.id} className="text-stone-900">
                       {category.labels.en}
                     </option>
@@ -546,37 +621,24 @@ function RecommendationEditor({
                   </option>
                 </select>
               </Field>
-              <Field label="Area">
-                <input
-                  className={inputClass}
-                  value={recommendation.neighborhood || ""}
-                  onChange={(event) =>
-                    updateRecommendation(index, "neighborhood", event.target.value)
-                  }
-                />
-              </Field>
+              <div className="rounded-lg border border-white/10 px-4 py-3 text-sm leading-6 text-stone-400">
+                {recommendation.featuredImage?.asset?._ref
+                  ? "Featured image attached. Image and relation changes remain available in Sanity Studio."
+                  : "Optional featured images, providers and related city pages can be attached in Sanity Studio."}
+              </div>
             </div>
 
             {isCustom ? (
-              <div className="grid gap-3 md:grid-cols-2">
-                <Field label="Custom key">
-                  <input
-                    className={inputClass}
-                    value={recommendation.category || ""}
-                    onChange={(event) =>
-                      updateRecommendation(index, "category", event.target.value)
-                    }
-                  />
-                </Field>
+              <div className="grid gap-3 md:grid-cols-3">
                 {languages.map((language) => (
                   <Field key={language.id} label={`Category label (${language.hint})`}>
                     <input
                       className={inputClass}
-                      value={recommendation[`categoryLabel_${language.id}`] || ""}
+                      value={recommendation[`customCategory_${language.id}`] || ""}
                       onChange={(event) =>
                         updateRecommendation(
                           index,
-                          `categoryLabel_${language.id}`,
+                          `customCategory_${language.id}`,
                           event.target.value,
                         )
                       }
@@ -586,66 +648,33 @@ function RecommendationEditor({
               </div>
             ) : null}
 
-            <div className="grid gap-3 md:grid-cols-3">
-              {languages.map((language) => (
-                <Field key={language.id} label={`Short note (${language.hint})`}>
-                  <textarea
-                    className={textareaClass}
-                    rows={3}
-                    value={recommendation[`detail_${language.id}`] || ""}
-                    onChange={(event) =>
-                      updateRecommendation(
-                        index,
-                        `detail_${language.id}`,
-                        event.target.value,
-                      )
-                    }
-                  />
-                </Field>
-              ))}
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-3">
-              {languages.map((language) => (
-                <Field key={language.id} label={`Description (${language.hint})`}>
-                  <textarea
-                    className={textareaClass}
-                    rows={4}
-                    value={recommendation[`description_${language.id}`] || ""}
-                    onChange={(event) =>
-                      updateRecommendation(
-                        index,
-                        `description_${language.id}`,
-                        event.target.value,
-                      )
-                    }
-                  />
-                </Field>
-              ))}
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-              <Field label="Website / Instagram">
-                <input
-                  className={inputClass}
-                  value={recommendation.website || ""}
-                  onChange={(event) =>
-                    updateRecommendation(index, "website", event.target.value)
-                  }
-                />
-              </Field>
-              <label className="flex items-center gap-2 rounded-lg border border-white/15 px-4 py-3 text-sm text-stone-200">
-                <input
-                  type="checkbox"
-                  checked={Boolean(recommendation.favorite)}
-                  onChange={(event) =>
-                    updateRecommendation(index, "favorite", event.target.checked)
-                  }
-                  className="size-4 accent-[#d6a85a]"
-                />
-                My pick
-              </label>
-            </div>
+            {mapPlaces.some((place) => place._key) ? (
+              <fieldset className="rounded-xl border border-white/10 p-4">
+                <legend className="px-2 text-xs uppercase tracking-widest text-stone-400">
+                  Related map places
+                </legend>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {mapPlaces.flatMap((place) => {
+                    if (!place._key) return [];
+                    const label = place.name_en || place.name || place.name_pt || place._key;
+                    return [
+                      <label
+                        key={place._key}
+                        className="flex items-center gap-3 rounded-lg border border-white/10 px-3 py-3 text-sm text-stone-200"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={(recommendation.relatedMapPlaceKeys || []).includes(place._key)}
+                          onChange={() => toggleRelatedPlace(index, place._key as string)}
+                          className="size-4 accent-[#d6a85a]"
+                        />
+                        {label}
+                      </label>,
+                    ];
+                  })}
+                </div>
+              </fieldset>
+            ) : null}
           </div>
         );
       })}
@@ -655,7 +684,7 @@ function RecommendationEditor({
         onClick={addRecommendation}
         className="w-full rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a] sm:w-auto"
       >
-        Add recommendation
+        Create recommendation guide
       </button>
     </div>
   );
@@ -676,7 +705,9 @@ export default function CityDashboardEditors({
     initialActionState,
   );
   const [sidebarCards, setSidebarCards] = useState(city.sidebarCards || []);
-  const [recommendations, setRecommendations] = useState(city.recommendations || []);
+  const [recommendations, setRecommendations] = useState(
+    city.recommendationGuides || [],
+  );
 
   return (
     <div className="space-y-8">
@@ -700,14 +731,16 @@ export default function CityDashboardEditors({
         </form>
       </Panel>
 
-      <Panel eyebrow="Recommendations" title="Local recommendation lists">
+      <Panel eyebrow="Recommendations" title="Curated local guides">
         <form action={recommendationFormAction} className="space-y-6">
           <ActionMessage state={recommendationState} />
           <RecommendationEditor
             recommendations={recommendations}
             setRecommendations={setRecommendations}
+            mapPlaces={city.mapPlaces || []}
+            legacyRecommendationCount={city.recommendations?.length || 0}
           />
-          <SaveButton label="Save recommendations" />
+          <SaveButton label="Save recommendation guides" />
         </form>
       </Panel>
     </div>

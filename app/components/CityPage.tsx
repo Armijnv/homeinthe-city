@@ -15,9 +15,15 @@ import {
   type CityGuideMapPlace as MapPlace,
   type CityGuideProvider,
   type CityGuideRecommendation,
+  type CityGuideRecommendationGuide,
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
+import {
+  localizedRecommendationGuideText,
+  recommendationCategoryLabel,
+} from "@/app/lib/recommendationGuides";
+import { JsonLdScript } from "@/app/lib/structuredData";
 import {
   cityInterpreterPath,
   interpreterCityForSlug,
@@ -113,6 +119,14 @@ const fallbackGuideCopy = {
     placesText:
       "Restaurants, cafés, cultural places and practical city tips will be added from the Sanity City document.",
     recommendationsTitle: "Local recommendations",
+    recommendationGuidesTitle: "Guides from local hosts",
+    recommendationGuidesIntro: (cityName: string) =>
+      `Curated ${cityName} guides with local context and practical advice from people who know the city.`,
+    readRecommendation: "Read Recommendation",
+    relatedPlaces: "Places mentioned in this guide",
+    relatedHost: "Local contributor",
+    relatedCity: "Related city guide",
+    legacyRecommendationsTitle: "Earlier local picks",
     recommendationLink: "Open link",
     recommendationPick: "Home in the City pick",
     realEstateTitle: (cityName: string) => `${cityName} real estate`,
@@ -133,6 +147,14 @@ const fallbackGuideCopy = {
     placesText:
       "Restaurantes, cafés, espaços culturais e dicas práticas serão adicionados pelo documento de Cidade no Sanity.",
     recommendationsTitle: "Recomendações locais",
+    recommendationGuidesTitle: "Guias dos anfitriões locais",
+    recommendationGuidesIntro: (cityName: string) =>
+      `Guias selecionados de ${cityName}, com contexto local e conselhos práticos de quem conhece a cidade.`,
+    readRecommendation: "Ler Recomendação",
+    relatedPlaces: "Lugares mencionados neste guia",
+    relatedHost: "Colaborador local",
+    relatedCity: "Guia de cidade relacionado",
+    legacyRecommendationsTitle: "Indicações locais anteriores",
     recommendationLink: "Abrir link",
     recommendationPick: "Indicação Home in the City",
     realEstateTitle: (cityName: string) => `Imóveis em ${cityName}`,
@@ -153,6 +175,14 @@ const fallbackGuideCopy = {
     placesText:
       "Restaurants, cafés, culturele plekken en praktische stadstips worden toegevoegd vanuit het Sanity City-document.",
     recommendationsTitle: "Lokale aanbevelingen",
+    recommendationGuidesTitle: "Gidsen van lokale hosts",
+    recommendationGuidesIntro: (cityName: string) =>
+      `Samengestelde gidsen voor ${cityName}, met lokale context en praktisch advies van mensen die de stad kennen.`,
+    readRecommendation: "Lees Aanbeveling",
+    relatedPlaces: "Plaatsen genoemd in deze gids",
+    relatedHost: "Lokale bijdrager",
+    relatedCity: "Gerelateerde stadsgids",
+    legacyRecommendationsTitle: "Eerdere lokale tips",
     recommendationLink: "Open link",
     recommendationPick: "Home in the City tip",
     realEstateTitle: (cityName: string) => `Vastgoed in ${cityName}`,
@@ -540,6 +570,86 @@ function groupedRecommendations(
   }, []);
 }
 
+function RecommendationGuideBody({ content }: { content: string }) {
+  const blocks = content
+    .split(/\n\s*\n/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return blocks.map((block, index) => {
+    const lines = block.split(/\r?\n/).map((line) => line.trim());
+    const isList = lines.length > 0 && lines.every((line) => line.startsWith("- "));
+
+    if (isList) {
+      return (
+        <ul key={index} className="list-disc space-y-2 pl-5 text-stone-700">
+          {lines.map((line) => (
+            <li key={line}>{line.slice(2).trim()}</li>
+          ))}
+        </ul>
+      );
+    }
+
+    return (
+      <p key={index} className="whitespace-pre-line leading-7 text-stone-700">
+        {block}
+      </p>
+    );
+  });
+}
+
+function recommendationGuideJsonLd({
+  recommendations,
+  lang,
+  cityName,
+  citySlug,
+}: {
+  recommendations: CityGuideRecommendationGuide[];
+  lang: Lang;
+  cityName: string;
+  citySlug: string;
+}) {
+  const url = `https://homeinthe.city${cityGuidePath(lang, citySlug)}`;
+  const items = recommendations.flatMap((recommendation, index) => {
+    const values = recommendation as Record<string, unknown>;
+    const title = localizedRecommendationGuideText(values, "title", lang);
+    if (!title) return [];
+
+    return [
+      {
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "Article",
+          headline: title,
+          description: localizedRecommendationGuideText(
+            values,
+            "introduction",
+            lang,
+          ),
+          articleBody: localizedRecommendationGuideText(values, "content", lang),
+          about: [
+            { "@type": "City", name: cityName },
+            recommendationCategoryLabel(recommendation, lang),
+          ],
+          author: recommendation.relatedProvider?.name
+            ? { "@type": "Person", name: recommendation.relatedProvider.name }
+            : { "@type": "Organization", name: "Home in the City" },
+          image: recommendation.featuredImage?.asset?.url,
+          isPartOf: url,
+        },
+      },
+    ];
+  });
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${cityName} local recommendation guides`,
+    itemListElement: items,
+  };
+}
+
 function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[] {
   return places.flatMap((place, index) => {
     const coordinates = normalizedCoordinates(place.latitude, place.longitude);
@@ -692,6 +802,7 @@ export default function CityPage({
   const intro = localizedCityGuideText(city, "intro", lang);
   const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
   const places: MapPlace[] = city?.mapPlaces || [];
+  const recommendationGuides = city?.recommendationGuides || [];
   const recommendationGroups = groupedRecommendations(city?.recommendations || [], lang);
   const mapEntries = [
     ...cityMapEntriesFromPlaces(places, lang),
@@ -722,6 +833,16 @@ export default function CityPage({
 
   return (
     <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
+      {recommendationGuides.length ? (
+        <JsonLdScript
+          data={recommendationGuideJsonLd({
+            recommendations: recommendationGuides,
+            lang,
+            cityName,
+            citySlug,
+          })}
+        />
+      ) : null}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
@@ -834,10 +955,133 @@ export default function CityPage({
             </div>
           )}
 
+          {recommendationGuides.length ? (
+            <section
+              aria-labelledby="recommendation-guides-title"
+              className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm"
+            >
+              <h2
+                id="recommendation-guides-title"
+                className="text-2xl text-stone-800"
+              >
+                {fallbackCopy.recommendationGuidesTitle}
+              </h2>
+              <p className="mt-3 max-w-2xl leading-7 text-stone-600">
+                {fallbackCopy.recommendationGuidesIntro(cityName)}
+              </p>
+
+              <div className="mt-6 space-y-5">
+                {recommendationGuides.map((recommendation, index) => {
+                  const values = recommendation as Record<string, unknown>;
+                  const title = localizedRecommendationGuideText(values, "title", lang);
+                  if (!title) return null;
+
+                  const introduction = localizedRecommendationGuideText(
+                    values,
+                    "introduction",
+                    lang,
+                  );
+                  const content = localizedRecommendationGuideText(values, "content", lang);
+                  const relatedPlaces = places.filter(
+                    (place) =>
+                      place._key &&
+                      recommendation.relatedMapPlaceKeys?.includes(place._key),
+                  );
+                  const relatedProviderSlug =
+                    recommendation.relatedProvider?.slug?.current;
+                  const relatedCitySlug = recommendation.relatedCity?.slug?.current;
+                  const relatedCityName = relatedCitySlug
+                    ? cityGuideName(recommendation.relatedCity, lang, relatedCitySlug)
+                    : "";
+
+                  return (
+                    <article
+                      key={recommendation._key || `${title}-${index}`}
+                      className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
+                    >
+                      {recommendation.featuredImage?.asset?.url ? (
+                        <div className="relative aspect-[16/8] w-full bg-stone-200">
+                          <Image
+                            src={recommendation.featuredImage.asset.url}
+                            alt={recommendation.featuredImage.alt || `${title}, ${cityName}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 720px"
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : null}
+
+                      <div className="p-5 sm:p-6">
+                        <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9b6b22]">
+                          {recommendationCategoryLabel(recommendation, lang)}
+                        </p>
+                        <h3 className="mt-2 text-xl font-medium text-stone-950 sm:text-2xl">
+                          {title}
+                        </h3>
+                        {introduction ? (
+                          <p className="mt-3 max-w-3xl leading-7 text-stone-700">
+                            {introduction}
+                          </p>
+                        ) : null}
+
+                        {content ? (
+                          <details className="group mt-5 border-t border-stone-200 pt-4">
+                            <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 [&::-webkit-details-marker]:hidden">
+                              {fallbackCopy.readRecommendation}
+                            </summary>
+                            <div className="mt-6 space-y-5">
+                              <RecommendationGuideBody content={content} />
+
+                              {relatedPlaces.length ? (
+                                <aside className="rounded-xl border border-stone-200 bg-white p-4">
+                                  <h4 className="font-medium text-stone-900">
+                                    {fallbackCopy.relatedPlaces}
+                                  </h4>
+                                  <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                                    {relatedPlaces.map((place) => (
+                                      <li key={place._key} className="text-sm text-stone-700">
+                                        {localizedMapPlaceText(place, "name", lang)}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </aside>
+                              ) : null}
+
+                              {(relatedProviderSlug || relatedCitySlug) ? (
+                                <div className="flex flex-wrap gap-3 border-t border-stone-200 pt-5 text-sm">
+                                  {relatedProviderSlug ? (
+                                    <Link
+                                      href={providerProfilePath(lang, relatedProviderSlug)}
+                                      className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
+                                    >
+                                      {fallbackCopy.relatedHost}: {recommendation.relatedProvider?.name}
+                                    </Link>
+                                  ) : null}
+                                  {relatedCitySlug ? (
+                                    <Link
+                                      href={cityGuidePath(lang, relatedCitySlug)}
+                                      className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
+                                    >
+                                      {fallbackCopy.relatedCity}: {relatedCityName}
+                                    </Link>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </div>
+                          </details>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ) : null}
+
           {recommendationGroups.length ? (
             <section className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
               <h2 className="mb-5 text-2xl text-stone-800">
-                {fallbackCopy.recommendationsTitle}
+                {fallbackCopy.legacyRecommendationsTitle}
               </h2>
 
               <div className="space-y-7">

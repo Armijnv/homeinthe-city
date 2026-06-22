@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { mapCategoryPresets } from "@/app/lib/mapCategories";
 import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 import { requireCityHost } from "@/app/lib/dashboard";
+import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
 export type CityDashboardActionState = {
@@ -30,30 +30,36 @@ type SidebarCardInput = {
   href_nl?: string;
 };
 
-type RecommendationInput = {
+type RecommendationGuideInput = {
   _key?: string;
-  name_en?: string;
-  name_pt?: string;
-  name_nl?: string;
-  categoryPreset?: string;
-  category?: string;
-  categoryLabel_en?: string;
-  categoryLabel_pt?: string;
-  categoryLabel_nl?: string;
-  neighborhood?: string;
-  detail_en?: string;
-  detail_pt?: string;
-  detail_nl?: string;
-  description_en?: string;
-  description_pt?: string;
-  description_nl?: string;
-  website?: string;
-  favorite?: boolean;
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+  introduction_en?: string;
+  introduction_pt?: string;
+  introduction_nl?: string;
+  content_en?: string;
+  content_pt?: string;
+  content_nl?: string;
+  recommendationType?: string;
+  customCategory_en?: string;
+  customCategory_pt?: string;
+  customCategory_nl?: string;
+  relatedMapPlaceKeys?: string[];
+  featuredImage?: {
+    _type?: string;
+    asset?: { _type?: string; _ref?: string };
+    alt?: string;
+    crop?: { top?: number; bottom?: number; left?: number; right?: number };
+    hotspot?: { x?: number; y?: number; height?: number; width?: number };
+  };
+  relatedProvider?: { _type?: string; _ref?: string };
+  relatedCity?: { _type?: string; _ref?: string };
 };
 
 const languages = ["en", "pt", "nl"] as const;
-const supportedCategoryPresetIds = new Set<string>(
-  mapCategoryPresets.map((category) => category.id),
+const supportedRecommendationTypes = new Set<string>(
+  recommendationGuideCategories.map((category) => category.id),
 );
 
 function stringValue(formData: FormData, key: string) {
@@ -62,10 +68,6 @@ function stringValue(formData: FormData, key: string) {
 
 function cleanText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function cleanBoolean(value: unknown) {
-  return value === true || value === "true" || value === "on";
 }
 
 function slugish(value: string) {
@@ -179,56 +181,71 @@ function sanitizeSidebarCards(rawCards: SidebarCardInput[]) {
   });
 }
 
-function sanitizeRecommendations(rawRecommendations: RecommendationInput[]) {
-  return rawRecommendations.flatMap((recommendation, index) => {
-    const nameEn = cleanText(recommendation.name_en);
-    const namePt = cleanText(recommendation.name_pt);
-    const nameNl = cleanText(recommendation.name_nl);
-    const categoryPreset = cleanText(recommendation.categoryPreset);
-    const isCustom = categoryPreset === "custom";
-    const customCategory = cleanText(recommendation.category);
-    const categoryLabelEn = cleanText(recommendation.categoryLabel_en);
-    const categoryLabelPt = cleanText(recommendation.categoryLabel_pt);
-    const categoryLabelNl = cleanText(recommendation.categoryLabel_nl);
-    const neighborhood = cleanText(recommendation.neighborhood);
-    const detailEn = cleanText(recommendation.detail_en);
-    const detailPt = cleanText(recommendation.detail_pt);
-    const detailNl = cleanText(recommendation.detail_nl);
-    const descriptionEn = cleanText(recommendation.description_en);
-    const descriptionPt = cleanText(recommendation.description_pt);
-    const descriptionNl = cleanText(recommendation.description_nl);
-    const website = cleanUrl(cleanText(recommendation.website));
-    const fallbackName = nameEn || namePt || nameNl;
+function cleanReference(value: RecommendationGuideInput["relatedProvider"]) {
+  const ref = cleanText(value?._ref);
+  return ref ? { _type: "reference", _ref: ref } : undefined;
+}
 
-    if (
-      !fallbackName &&
-      !neighborhood &&
-      !detailEn &&
-      !detailPt &&
-      !detailNl &&
-      !descriptionEn &&
-      !descriptionPt &&
-      !descriptionNl &&
-      !website
-    ) {
+function cleanFeaturedImage(value: RecommendationGuideInput["featuredImage"]) {
+  const ref = cleanText(value?.asset?._ref);
+  if (!ref) return undefined;
+
+  return {
+    _type: "image",
+    asset: { _type: "reference", _ref: ref },
+    alt: cleanText(value?.alt) || undefined,
+    crop: value?.crop,
+    hotspot: value?.hotspot,
+  };
+}
+
+function sanitizeRecommendationGuides(rawGuides: RecommendationGuideInput[]) {
+  return rawGuides.flatMap((recommendation, index) => {
+    const titleEn = cleanText(recommendation.title_en);
+    const titlePt = cleanText(recommendation.title_pt);
+    const titleNl = cleanText(recommendation.title_nl);
+    const introductionEn = cleanText(recommendation.introduction_en);
+    const introductionPt = cleanText(recommendation.introduction_pt);
+    const introductionNl = cleanText(recommendation.introduction_nl);
+    const contentEn = cleanText(recommendation.content_en);
+    const contentPt = cleanText(recommendation.content_pt);
+    const contentNl = cleanText(recommendation.content_nl);
+    const recommendationType = cleanText(recommendation.recommendationType) || "localExperience";
+    const customCategoryEn = cleanText(recommendation.customCategory_en);
+    const customCategoryPt = cleanText(recommendation.customCategory_pt);
+    const customCategoryNl = cleanText(recommendation.customCategory_nl);
+    const fallbackTitle = titleEn || titlePt || titleNl;
+
+    if (!fallbackTitle && !introductionEn && !introductionPt && !introductionNl && !contentEn && !contentPt && !contentNl) {
       return [];
     }
 
-    if (!fallbackName) {
+    if (!fallbackTitle) {
       throw new CityDashboardActionError(
-        "Each recommendation needs at least one name.",
+        "Each recommendation guide needs at least one title.",
       );
     }
 
     if (
-      categoryPreset &&
-      categoryPreset !== "custom" &&
-      !supportedCategoryPresetIds.has(categoryPreset)
+      recommendationType !== "custom" &&
+      !supportedRecommendationTypes.has(recommendationType)
     ) {
       throw new CityDashboardActionError(
-        `Unsupported recommendation category: ${categoryPreset}.`,
+        `Unsupported recommendation category: ${recommendationType}.`,
       );
     }
+
+    if (recommendationType === "custom" && !customCategoryEn && !customCategoryPt && !customCategoryNl) {
+      throw new CityDashboardActionError("Custom recommendation categories need a label.");
+    }
+
+    const relatedMapPlaceKeys = Array.from(
+      new Set(
+        (recommendation.relatedMapPlaceKeys || [])
+          .map(cleanText)
+          .filter((key) => /^[A-Za-z0-9_-]+$/.test(key)),
+      ),
+    );
 
     return [
       {
@@ -236,31 +253,26 @@ function sanitizeRecommendations(rawRecommendations: RecommendationInput[]) {
         _key: preserveOrCreateKey(
           recommendation._key,
           "recommendation",
-          fallbackName,
+          fallbackTitle,
           index,
         ),
-        name: nameEn || fallbackName,
-        name_en: nameEn || undefined,
-        name_pt: namePt || undefined,
-        name_nl: nameNl || undefined,
-        categoryPreset: isCustom ? "custom" : categoryPreset || "restaurant",
-        category: isCustom
-          ? customCategory || slugish(categoryLabelEn || fallbackName)
-          : undefined,
-        categoryLabel_en: isCustom
-          ? categoryLabelEn || customCategory || undefined
-          : undefined,
-        categoryLabel_pt: isCustom ? categoryLabelPt || undefined : undefined,
-        categoryLabel_nl: isCustom ? categoryLabelNl || undefined : undefined,
-        neighborhood: neighborhood || undefined,
-        detail_en: detailEn || undefined,
-        detail_pt: detailPt || undefined,
-        detail_nl: detailNl || undefined,
-        description_en: descriptionEn || undefined,
-        description_pt: descriptionPt || undefined,
-        description_nl: descriptionNl || undefined,
-        website: website || undefined,
-        favorite: cleanBoolean(recommendation.favorite) || undefined,
+        title_en: titleEn || undefined,
+        title_pt: titlePt || undefined,
+        title_nl: titleNl || undefined,
+        introduction_en: introductionEn || undefined,
+        introduction_pt: introductionPt || undefined,
+        introduction_nl: introductionNl || undefined,
+        content_en: contentEn || undefined,
+        content_pt: contentPt || undefined,
+        content_nl: contentNl || undefined,
+        recommendationType,
+        customCategory_en: recommendationType === "custom" ? customCategoryEn || undefined : undefined,
+        customCategory_pt: recommendationType === "custom" ? customCategoryPt || undefined : undefined,
+        customCategory_nl: recommendationType === "custom" ? customCategoryNl || undefined : undefined,
+        relatedMapPlaceKeys: relatedMapPlaceKeys.length ? relatedMapPlaceKeys : undefined,
+        featuredImage: cleanFeaturedImage(recommendation.featuredImage),
+        relatedProvider: cleanReference(recommendation.relatedProvider),
+        relatedCity: cleanReference(recommendation.relatedCity),
       },
     ];
   });
@@ -390,21 +402,21 @@ export async function saveCityRecommendationsAction(
       throw new CityDashboardActionError("This city could not be found.");
     }
 
-    const recommendations = sanitizeRecommendations(
-      safeArrayFromJson<RecommendationInput>(
-        stringValue(formData, "recommendationsJson"),
+    const recommendationGuides = sanitizeRecommendationGuides(
+      safeArrayFromJson<RecommendationGuideInput>(
+        stringValue(formData, "recommendationGuidesJson"),
         "Recommendations could not be read. Please reload and try again.",
       ),
     );
 
     const transaction = writeClient
       .transaction()
-      .patch(city._id, { set: { recommendations } });
+      .patch(city._id, { set: { recommendationGuides } });
     const changeLog = cityChangeLogDocument({
       context,
       city,
       changeType: "recommendations",
-      description: `Updated ${recommendations.length} city recommendation${recommendations.length === 1 ? "" : "s"}.`,
+      description: `Updated ${recommendationGuides.length} curated recommendation guide${recommendationGuides.length === 1 ? "" : "s"}. Legacy recommendations were preserved.`,
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();

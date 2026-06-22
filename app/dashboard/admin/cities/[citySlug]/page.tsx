@@ -33,6 +33,7 @@ type AdminCityDetail = DashboardCity & {
   sidebarCardCount?: number;
   propertyListingCount?: number;
   recommendationCount?: number;
+  legacyRecommendationCount?: number;
   primaryHost?: {
     name?: string;
     slug?: {
@@ -58,7 +59,8 @@ const adminCityDetailQuery = `
     longitude,
     "mapPlaceCount": count(mapPlaces),
     "sidebarCardCount": count(sidebarCards),
-    "recommendationCount": count(recommendations),
+    "recommendationCount": count(recommendationGuides),
+    "legacyRecommendationCount": count(recommendations),
     "propertyListingCount": count(*[
       _type == "propertyListing" &&
       status in $publicStatuses &&
@@ -202,7 +204,10 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
               {city.sidebarCardCount || 0} sidebar cards
             </p>
             <p className="text-sm text-stone-300">
-              {city.recommendationCount || 0} recommendations
+              {city.recommendationCount || 0} curated recommendation guides
+            </p>
+            <p className="text-sm text-amber-100">
+              {city.legacyRecommendationCount || 0} legacy recommendations to review
             </p>
             <p className="text-sm text-stone-300">
               {city.propertyListingCount || 0} property listings
