@@ -100,16 +100,26 @@ type InfoItemData = {
   value: string;
   icon: string;
   mobile?: boolean;
+  desktop?: boolean;
 };
 
-function InfoItem({ label, value, icon, mobile = false }: InfoItemData) {
+function InfoItem({
+  label,
+  value,
+  icon,
+  mobile = false,
+  desktop = true,
+}: InfoItemData) {
+  const visibilityClass =
+    mobile && desktop
+      ? "flex md:block"
+      : mobile
+        ? "flex md:hidden"
+        : "hidden md:block";
+
   return (
     <div
-      className={
-        mobile
-          ? "flex min-w-0 items-center gap-1.5 rounded-full bg-stone-950/35 px-2.5 py-1.5 text-white shadow-lg shadow-black/15 ring-1 ring-white/25 backdrop-blur-md md:block md:rounded-none md:bg-transparent md:p-0 md:text-stone-950 md:shadow-none md:ring-0 md:backdrop-blur-none"
-          : "hidden min-w-0 md:block"
-      }
+      className={`${visibilityClass} min-w-0 items-center gap-1.5 rounded-full bg-stone-950/35 px-2.5 py-1.5 text-white shadow-lg shadow-black/15 ring-1 ring-white/25 backdrop-blur-md md:rounded-none md:bg-transparent md:p-0 md:text-stone-950 md:shadow-none md:ring-0 md:backdrop-blur-none`}
     >
       <dt className="shrink-0 text-[0.72rem] leading-none text-white/85 md:text-[0.58rem] md:font-medium md:uppercase md:tracking-[0.1em] md:text-stone-500">
         <span aria-hidden="true" className="md:hidden">
@@ -136,6 +146,7 @@ export default function CityLiveInfoWidget({
   const t = labels[lang];
   const sunrise = formatTime(info.sunrise, lang);
   const sunset = formatTime(info.sunset, lang);
+  const sunWindow = [sunrise, sunset].filter(Boolean).join(" / ");
   const rawItems: Array<InfoItemData | null> = [
     typeof info.temperatureC === "number"
       ? {
@@ -153,8 +164,17 @@ export default function CityLiveInfoWidget({
           mobile: true,
         }
       : null,
-    sunrise ? { label: t.sunrise, value: sunrise, icon: "☀↑", mobile: true } : null,
-    sunset ? { label: t.sunset, value: sunset, icon: "☀↓", mobile: true } : null,
+    sunWindow
+      ? {
+          label: `${t.sunrise} / ${t.sunset}`,
+          value: sunWindow,
+          icon: "☀",
+          mobile: true,
+          desktop: false,
+        }
+      : null,
+    sunrise ? { label: t.sunrise, value: sunrise, icon: "☀↑" } : null,
+    sunset ? { label: t.sunset, value: sunset, icon: "☀↓" } : null,
     typeof info.rainChancePercent === "number"
       ? { label: t.rain, value: `${Math.round(info.rainChancePercent)}%`, icon: "%" }
       : null,
@@ -177,7 +197,7 @@ export default function CityLiveInfoWidget({
       <h2 className="sr-only md:not-sr-only md:mb-2 md:block md:text-[0.68rem] md:font-medium md:uppercase md:tracking-[0.14em] md:text-stone-600">
         {t.title}
       </h2>
-      <dl className="flex max-w-full flex-wrap items-center justify-end gap-1.5 overflow-hidden md:grid md:grid-cols-2 md:justify-start md:gap-x-3 md:gap-y-2 lg:grid-cols-3">
+      <dl className="flex max-w-full flex-wrap items-center justify-start gap-1.5 overflow-hidden md:grid md:grid-cols-2 md:gap-x-3 md:gap-y-2 lg:grid-cols-3">
         {items.map((item) => (
           <InfoItem key={`${item.label}-${item.value}`} {...item} />
         ))}

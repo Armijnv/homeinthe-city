@@ -808,7 +808,7 @@ export default function CityPage({
   );
 
   return (
-    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-5 pt-24 pb-14 md:bg-transparent md:px-6 md:pt-28">
+    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
       {recommendationGuides.length ? (
         <JsonLdScript
           data={recommendationGuideJsonLd({
@@ -823,16 +823,16 @@ export default function CityPage({
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
         {displayHost ? (
-          <div className="fixed right-4 top-24 z-[70] hidden group md:block md:right-8 lg:top-24">
+          <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
             <div
-              className="relative h-24 w-24 cursor-pointer lg:h-28 lg:w-28"
+              className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
               onClick={() => setOpen(!open)}
             >
               <Image
                 src={displayHost.photoUrl}
                 alt={displayHost.photoAlt}
                 fill
-                sizes="(max-width: 1024px) 96px, 112px"
+                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
                 className="rounded-full border-4 border-white object-cover shadow-xl"
               />
             </div>
@@ -869,27 +869,11 @@ export default function CityPage({
         ) : null}
 
         <div className="space-y-4 md:col-span-2 md:space-y-8">
-          <div className="relative min-h-20 md:hidden">
-            {displayHost ? (
-              <div
-                className="absolute left-1 top-1 h-16 w-16 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl shadow-black/20"
-              >
-                <Image
-                  src={displayHost.photoUrl}
-                  alt={displayHost.photoAlt}
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                />
-              </div>
-            ) : null}
-
-            <div className="ml-auto max-w-[calc(100%-4.75rem)] pt-1">
-              <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
-            </div>
+          <div className="max-w-[calc(100%-5.75rem)] md:hidden">
+            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
           </div>
 
-          <div className="flex gap-2 text-base md:gap-3 md:text-xl" aria-label="City guide languages">
+          <div className="flex gap-3 text-xl" aria-label="City guide languages">
             {cityGuideEnabledLanguages(city).map((language) => (
               <a
                 key={language}
