@@ -40,7 +40,7 @@ export async function generateMetadata({
 
 export default async function Page({ params }: PageProps) {
   const { citySlug } = await params;
-  const { city, propertyListings } = await getCityPageData(citySlug);
+  const { city, propertyListings, liveInfo } = await getCityPageData(citySlug);
 
   if (!city || !cityGuideIsPublic(city)) notFound();
   if (!cityGuideLanguageEnabled(city, citySlug, "nl")) notFound();
@@ -63,6 +63,7 @@ export default async function Page({ params }: PageProps) {
         citySlug={citySlug}
         initialCity={city}
         initialPropertyListings={propertyListings}
+        initialLiveInfo={liveInfo}
       />
     </div>
   );

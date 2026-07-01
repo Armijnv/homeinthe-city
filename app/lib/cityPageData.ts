@@ -1,5 +1,6 @@
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import type { CityGuideContent } from "@/app/lib/cityGuides";
+import { getCityLiveInfo } from "@/app/lib/cityLiveInfo";
 import { client } from "@/sanity/lib/client";
 import { cityMapPropertyListingsQuery, cityQuery } from "@/sanity/lib/queries";
 
@@ -25,12 +26,18 @@ export async function getCityPageData(citySlug: string) {
     slug: citySlug,
   });
 
-  const propertyListings = city
-    ? await client.fetch<PropertyListing[]>(cityMapPropertyListingsQuery, {
-        citySlug,
-        cityNames: cityMapCityNames(city, citySlug),
-      })
-    : [];
+  if (!city) return { city, propertyListings: [], liveInfo: null };
 
-  return { city, propertyListings };
+  const [propertyListings, liveInfo] = await Promise.all([
+    client.fetch<PropertyListing[]>(cityMapPropertyListingsQuery, {
+      citySlug,
+      cityNames: cityMapCityNames(city, citySlug),
+    }),
+    getCityLiveInfo({
+      latitude: city.latitude,
+      longitude: city.longitude,
+    }),
+  ]);
+
+  return { city, propertyListings, liveInfo };
 }

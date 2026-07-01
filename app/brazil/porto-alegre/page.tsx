@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  const { city, propertyListings } = await getCityPageData("porto-alegre");
+  const { city, propertyListings, liveInfo } = await getCityPageData("porto-alegre");
   if (!city || !cityGuideIsPublic(city) || !cityGuideLanguageEnabled(city, "porto-alegre", "en")) {
     notFound();
   }
@@ -50,6 +50,7 @@ export default async function Page() {
         citySlug="porto-alegre"
         initialCity={cityGuideDisplayContent(city, "porto-alegre")}
         initialPropertyListings={propertyListings}
+        initialLiveInfo={liveInfo}
       />
     </div>
   );

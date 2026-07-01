@@ -25,11 +25,13 @@ import {
   recommendationCategoryLabel,
 } from "@/app/lib/recommendationGuides";
 import { JsonLdScript } from "@/app/lib/structuredData";
+import type { CityLiveInfo } from "@/app/lib/cityLiveInfo";
 import {
   cityInterpreterPath,
   interpreterCityForSlug,
   interpreterRoute,
 } from "@/app/lib/interpreterPages";
+import CityLiveInfoWidget from "@/app/components/CityLiveInfoWidget";
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,10 +51,6 @@ const CityMap = dynamic(
 );
 
 type CityMapEntry = import("@/app/components/CityMap").CityMapEntry;
-
-type WeatherData = {
-  temperature_2m: number;
-};
 
 type ServiceCard = {
   title: string;
@@ -212,30 +210,6 @@ function isExactDuplicateSidebarCard(
 ) {
   const href = getLocalizedHref(card, lang);
   return Boolean(href && serviceHrefs.has(href));
-}
-
-function Weather({ citySlug }: { citySlug: string }) {
-  const [data, setData] = useState<WeatherData | null>(null);
-
-  useEffect(() => {
-    if (!isPortoAlegreGuide(citySlug)) return;
-
-    fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=-30.03&longitude=-51.23&current=temperature_2m,weather_code"
-    )
-      .then((res) => res.json())
-      .then((json) => setData(json.current));
-  }, [citySlug]);
-
-  if (!isPortoAlegreGuide(citySlug)) return null;
-
-  if (!data) return <p className="text-stone-500">Loading weather...</p>;
-
-  return (
-    <p className="font-medium text-stone-700">
-      {Math.round(data.temperature_2m)}°C
-    </p>
-  );
 }
 
 function localizedField<T extends "title" | "text" | "button" | "href">(
@@ -747,11 +721,13 @@ export default function CityPage({
   citySlug,
   initialCity = null,
   initialPropertyListings = [],
+  initialLiveInfo = null,
 }: {
   lang: Lang;
   citySlug: string;
   initialCity?: CityGuideContent | null;
   initialPropertyListings?: PropertyListing[];
+  initialLiveInfo?: CityLiveInfo | null;
 }) {
   const [city, setCity] = useState<CityGuideContent | null>(initialCity);
   const [propertyListings, setPropertyListings] = useState<PropertyListing[]>(
@@ -773,7 +749,6 @@ export default function CityPage({
   const labels = {
     en: {
       helpTitle: "Need help in the city?",
-      weatherTitle: "Weather today",
       cta: "Talk to me",
       profile: "Profile",
       hostCardTitle: "Local host",
@@ -781,7 +756,6 @@ export default function CityPage({
     },
     pt: {
       helpTitle: "Precisa de ajuda na cidade?",
-      weatherTitle: "Clima hoje",
       cta: "Fale comigo",
       profile: "Perfil",
       hostCardTitle: "Anfitriao local",
@@ -789,7 +763,6 @@ export default function CityPage({
     },
     nl: {
       helpTitle: "Hulp nodig in de stad?",
-      weatherTitle: "Weer vandaag",
       cta: "Stuur me een bericht",
       profile: "Profiel",
       hostCardTitle: "Lokale host",
@@ -896,6 +869,10 @@ export default function CityPage({
         ) : null}
 
         <div className="space-y-8 md:col-span-2">
+          <div className="md:hidden">
+            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+          </div>
+
           <div className="flex gap-3 text-xl" aria-label="City guide languages">
             {cityGuideEnabledLanguages(city).map((language) => (
               <a
@@ -1196,6 +1173,10 @@ export default function CityPage({
         </div>
 
         <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
+          <div className="hidden md:block">
+            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+          </div>
+
           {displayHost ? (
             <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
               <h3 className="mb-4 text-lg font-medium text-black">
@@ -1307,12 +1288,6 @@ export default function CityPage({
             ) : null
           ))}
 
-          {isPortoAlegre ? (
-            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-              <h3 className="mb-2 text-lg font-medium text-black">{t.weatherTitle}</h3>
-              <Weather citySlug={citySlug} />
-            </div>
-          ) : null}
         </div>
       </div>
     </div>
