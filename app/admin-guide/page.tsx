@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { noindexRobots } from "@/app/lib/noindexMetadata";
 
 type GuideSection = {
   title: string;
@@ -76,6 +77,7 @@ const untestedItems = [
 
 export const metadata: Metadata = {
   title: "Admin guide",
+  robots: noindexRobots,
 };
 
 export default function AdminGuidePage() {

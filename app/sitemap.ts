@@ -56,6 +56,13 @@ function staticEntry(path = "") {
   };
 }
 
+function languageAlternates(languages: Record<string, string>) {
+  return {
+    ...languages,
+    "x-default": languages.en || Object.values(languages)[0],
+  };
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [providers, propertyListings, cityGuides] = await Promise.all([
     client.fetch<SitemapProvider[]>(providerListQuery),
@@ -90,8 +97,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const citySlug = city.slug?.current;
     if (!citySlug || !cityGuideIsPublic(city)) return [];
 
+    const alternates = languageAlternates(
+      Object.fromEntries(
+        cityGuideEnabledLanguages(city).map((language) => [
+          language,
+          `${siteUrl}${cityGuidePath(language, citySlug)}`,
+        ]),
+      ),
+    );
+
     return cityGuideEnabledLanguages(city).map((language) =>
-      staticEntry(cityGuidePath(language, citySlug)),
+      ({
+        ...staticEntry(cityGuidePath(language, citySlug)),
+        alternates: { languages: alternates },
+      }),
     );
   });
 

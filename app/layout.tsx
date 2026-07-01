@@ -17,6 +17,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 const siteUrl = "https://homeinthe.city";
 const siteName = "Home in the City";
+const defaultOgImage = `${siteUrl}/og-armijn2.jpg`;
 
 const siteJsonLd = {
   "@context": "https://schema.org",
@@ -31,6 +32,7 @@ const siteJsonLd = {
       publisher: {
         "@id": organizationId,
       },
+      image: defaultOgImage,
     },
     {
       "@type": "Organization",
@@ -45,6 +47,7 @@ const siteJsonLd = {
       },
       description:
         "Home in the City connects business travelers, newcomers and international visitors with trusted local hosts, interpreters, translators and city experts.",
+      image: defaultOgImage,
     },
   ],
 };
@@ -59,16 +62,6 @@ export const metadata: Metadata = {
   creator: siteName,
   publisher: siteName,
   manifest: "/manifest.webmanifest",
-
-  icons: {
-    icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.png", type: "image/png", sizes: "512x512" },
-      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
-    ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
-  },
 
   title: {
     default: "Home in the City | Global Connections, Local Expertise",
@@ -86,6 +79,14 @@ export const metadata: Metadata = {
     siteName,
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: defaultOgImage,
+        width: 1200,
+        height: 630,
+        alt: "Home in the City",
+      },
+    ],
   },
 
   twitter: {
@@ -93,6 +94,7 @@ export const metadata: Metadata = {
     title: `${siteName} | Global Connections, Local Expertise`,
     description:
       "Trusted local hosts, interpreters, translators and city experts for business travel, relocation, meetings and everyday life in unfamiliar places.",
+    images: [defaultOgImage],
   },
 };
 

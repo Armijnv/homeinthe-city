@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import SignInContent from "./SignInContent";
+import { noindexRobots } from "@/app/lib/noindexMetadata";
 
 export const metadata: Metadata = {
   title: "Sign in",
+  robots: noindexRobots,
 };
 
 export default function Page() {

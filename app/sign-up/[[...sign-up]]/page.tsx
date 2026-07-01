@@ -2,9 +2,11 @@ import { SignOutButton, SignUp } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { noindexRobots } from "@/app/lib/noindexMetadata";
 
 export const metadata: Metadata = {
   title: "Sign up",
+  robots: noindexRobots,
 };
 
 export default async function Page() {
