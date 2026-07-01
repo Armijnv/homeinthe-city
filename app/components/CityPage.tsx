@@ -808,7 +808,7 @@ export default function CityPage({
   );
 
   return (
-    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
+    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-5 pt-20 pb-14 md:bg-transparent md:px-6 md:pt-28">
       {recommendationGuides.length ? (
         <JsonLdScript
           data={recommendationGuideJsonLd({
@@ -821,18 +821,18 @@ export default function CityPage({
       ) : null}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
-      <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
         {displayHost ? (
-          <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
+          <div className="fixed right-4 top-16 z-[70] group md:right-8 md:top-24 lg:top-24">
             <div
-              className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
+              className="relative h-14 w-14 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
               onClick={() => setOpen(!open)}
             >
               <Image
                 src={displayHost.photoUrl}
                 alt={displayHost.photoAlt}
                 fill
-                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
+                sizes="(max-width: 768px) 56px, (max-width: 1024px) 96px, 112px"
                 className="rounded-full border-4 border-white object-cover shadow-xl"
               />
             </div>
@@ -868,8 +868,8 @@ export default function CityPage({
           </div>
         ) : null}
 
-        <div className="space-y-8 md:col-span-2">
-          <div className="md:hidden">
+        <div className="space-y-4 md:col-span-2 md:space-y-8">
+          <div className="max-w-[calc(100%-4.5rem)] md:hidden">
             <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
           </div>
 
