@@ -869,25 +869,27 @@ export default function CityPage({
         ) : null}
 
         <div className="space-y-4 md:col-span-2 md:space-y-8">
-          <div className="flex flex-wrap items-start gap-3 md:hidden">
-            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
-
+          <div className="relative min-h-20 md:hidden">
             {displayHost ? (
               <div
-                className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl"
+                className="absolute left-1 top-1 h-16 w-16 overflow-hidden rounded-full border-4 border-white bg-stone-200 shadow-xl shadow-black/20"
               >
                 <Image
                   src={displayHost.photoUrl}
                   alt={displayHost.photoAlt}
                   fill
-                  sizes="56px"
+                  sizes="64px"
                   className="object-cover"
                 />
               </div>
             ) : null}
+
+            <div className="ml-auto max-w-[calc(100%-4.75rem)] pt-1">
+              <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+            </div>
           </div>
 
-          <div className="flex gap-3 text-xl" aria-label="City guide languages">
+          <div className="flex gap-2 text-base md:gap-3 md:text-xl" aria-label="City guide languages">
             {cityGuideEnabledLanguages(city).map((language) => (
               <a
                 key={language}

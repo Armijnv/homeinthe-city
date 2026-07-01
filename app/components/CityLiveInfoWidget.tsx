@@ -107,17 +107,17 @@ function InfoItem({ label, value, icon, mobile = false }: InfoItemData) {
     <div
       className={
         mobile
-          ? "flex min-w-0 items-center gap-1.5 md:block"
+          ? "flex min-w-0 items-center gap-1.5 rounded-full bg-stone-950/35 px-2.5 py-1.5 text-white shadow-lg shadow-black/15 ring-1 ring-white/25 backdrop-blur-md md:block md:rounded-none md:bg-transparent md:p-0 md:text-stone-950 md:shadow-none md:ring-0 md:backdrop-blur-none"
           : "hidden min-w-0 md:block"
       }
     >
-      <dt className="shrink-0 text-[0.68rem] leading-none text-stone-500 md:text-[0.58rem] md:font-medium md:uppercase md:tracking-[0.1em]">
+      <dt className="shrink-0 text-[0.72rem] leading-none text-white/85 md:text-[0.58rem] md:font-medium md:uppercase md:tracking-[0.1em] md:text-stone-500">
         <span aria-hidden="true" className="md:hidden">
           {icon}
         </span>
         <span className="sr-only md:not-sr-only">{label}</span>
       </dt>
-      <dd className="truncate text-[0.72rem] font-medium leading-none text-stone-950 md:mt-0.5 md:text-[0.82rem] md:leading-tight">
+      <dd className="truncate text-[0.78rem] font-medium leading-none text-white md:mt-0.5 md:text-[0.82rem] md:leading-tight md:text-stone-950">
         {value}
       </dd>
     </div>
@@ -141,7 +141,7 @@ export default function CityLiveInfoWidget({
       ? {
           label: t.temperature,
           value: `${Math.round(info.temperatureC)}°C`,
-          icon: "°",
+          icon: "♨",
           mobile: true,
         }
       : null,
@@ -149,12 +149,12 @@ export default function CityLiveInfoWidget({
       ? {
           label: t.moon,
           value: t.moonPhases[info.moonPhase],
-          icon: "◐",
+          icon: "☾",
           mobile: true,
         }
       : null,
-    sunrise ? { label: t.sunrise, value: sunrise, icon: "↑", mobile: true } : null,
-    sunset ? { label: t.sunset, value: sunset, icon: "↓", mobile: true } : null,
+    sunrise ? { label: t.sunrise, value: sunrise, icon: "☀↑", mobile: true } : null,
+    sunset ? { label: t.sunset, value: sunset, icon: "☀↓", mobile: true } : null,
     typeof info.rainChancePercent === "number"
       ? { label: t.rain, value: `${Math.round(info.rainChancePercent)}%`, icon: "%" }
       : null,
@@ -172,12 +172,12 @@ export default function CityLiveInfoWidget({
   return (
     <aside
       aria-label={t.title}
-      className="inline-block max-w-full rounded-xl bg-white/92 px-2.5 py-2 shadow-lg shadow-black/10 ring-1 ring-white/70 backdrop-blur-md md:block md:rounded-2xl md:p-3"
+      className="max-w-full md:block md:rounded-2xl md:bg-white/92 md:p-3 md:shadow-lg md:shadow-black/10 md:ring-1 md:ring-white/70 md:backdrop-blur-md"
     >
       <h2 className="sr-only md:not-sr-only md:mb-2 md:block md:text-[0.68rem] md:font-medium md:uppercase md:tracking-[0.14em] md:text-stone-600">
         {t.title}
       </h2>
-      <dl className="flex max-w-full items-center gap-2.5 overflow-hidden md:grid md:grid-cols-2 md:gap-x-3 md:gap-y-2 lg:grid-cols-3">
+      <dl className="flex max-w-full flex-wrap items-center justify-end gap-1.5 overflow-hidden md:grid md:grid-cols-2 md:justify-start md:gap-x-3 md:gap-y-2 lg:grid-cols-3">
         {items.map((item) => (
           <InfoItem key={`${item.label}-${item.value}`} {...item} />
         ))}
