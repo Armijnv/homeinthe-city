@@ -19,14 +19,7 @@ export default clerkMiddleware(
       }
     }
 
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-homeinthecity-pathname", request.nextUrl.pathname);
-
-    return NextResponse.next({
-      request: {
-        headers: requestHeaders,
-      },
-    });
+    return NextResponse.next();
   },
   {
     clockSkewInMs:

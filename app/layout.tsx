@@ -11,7 +11,6 @@ import {
 } from "@/sanity/lib/queries";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
-import { headers } from "next/headers";
 import "./globals.css";
 
 const geist = Geist({ subsets: ["latin"] });
@@ -102,19 +101,11 @@ export const metadata: Metadata = {
    ROOT LAYOUT
 ====================================================== */
 
-function getDocumentLang(pathname: string) {
-  if (pathname.startsWith("/pt")) return "pt-BR";
-  if (pathname.startsWith("/nl")) return "nl-NL";
-  return "en";
-}
-
 export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const requestHeaders = await headers();
-  const pathname = requestHeaders.get("x-homeinthecity-pathname") || "/";
   const [cityGuides, providerLanguages] = await Promise.all([
     client.fetch<CityGuideContent[]>(cityNavigationQuery).catch(() => []),
     client
@@ -123,7 +114,7 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang={getDocumentLang(pathname)}>
+    <html lang="en">
       <head>
         <JsonLdScript data={siteJsonLd} />
 
