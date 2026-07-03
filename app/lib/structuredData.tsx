@@ -228,6 +228,9 @@ export function personJsonLd({
         about: {
           "@id": personId,
         },
+        mainEntity: {
+          "@id": personId,
+        },
         publisher: {
           "@id": organizationId,
         },
