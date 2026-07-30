@@ -162,15 +162,6 @@ export default async function DashboardPage() {
               <Pill>{providerRoleLabel(provider.primaryRole)}</Pill>
             ) : null}
           </div>
-
-          <SignOutButton redirectUrl="/sign-in">
-            <button
-              type="button"
-              className="mt-5 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
-            >
-              Sign out
-            </button>
-          </SignOutButton>
         </section>
       }
     >
@@ -186,6 +177,37 @@ export default async function DashboardPage() {
           </p>
         </section>
       ) : null}
+
+      <section className="mb-10">
+        <h2 className="mb-5 text-2xl font-light text-white">Account</h2>
+        <div className="grid gap-5 md:grid-cols-2">
+          <DashboardCard
+            title="Change password"
+            text="Manage your password and other sign-in security settings through Clerk."
+            href="/dashboard/account/security"
+            action="Open security settings"
+            status="Account security"
+          />
+
+          <section className="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-xl shadow-black/10">
+            <p className="mb-3 text-xs uppercase tracking-widest text-[#d6a85a]">
+              Current session
+            </p>
+            <h2 className="text-xl font-medium text-white">Sign out</h2>
+            <p className="mt-3 text-sm leading-6 text-stone-300">
+              End this dashboard session and return to the sign-in page.
+            </p>
+            <SignOutButton redirectUrl="/sign-in">
+              <button
+                type="button"
+                className="mt-5 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+              >
+                Sign out
+              </button>
+            </SignOutButton>
+          </section>
+        </div>
+      </section>
 
       <section className="mb-10">
         <h2 className="mb-5 text-2xl font-light text-white">Provider tools</h2>
