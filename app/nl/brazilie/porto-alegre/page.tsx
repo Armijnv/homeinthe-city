@@ -17,8 +17,11 @@ const pageDescription =
 const structuredData = cityGuideJsonLd({
   url: pageUrl,
   name: "Porto Alegre Lokale Gids",
+  cityName: "Porto Alegre",
   description: pageDescription,
   inLanguage: "nl-NL",
+  administrativeRegion: "Rio Grande do Sul",
+  country: "Brazil",
 });
 
 /* ======================================================

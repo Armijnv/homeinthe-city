@@ -8,6 +8,7 @@ import {
 } from "@/app/lib/cityGuides";
 import {
   cityGuideListQuery,
+  hostListQuery,
   propertyListingListQuery,
   providerListQuery,
 } from "@/sanity/lib/queries";
@@ -19,12 +20,14 @@ import {
 } from "@/app/lib/interpreterPages";
 
 type SitemapProvider = {
+  _updatedAt?: string;
   slug?: {
     current?: string;
   };
 };
 
 type SitemapPropertyListing = {
+  _updatedAt?: string;
   slug?: {
     current?: string;
   };
@@ -34,6 +37,13 @@ type SitemapPropertyListing = {
     };
   };
   cityName?: string;
+};
+
+type SitemapHost = {
+  _updatedAt?: string;
+  slug?: {
+    current?: string;
+  };
 };
 
 type SitemapCityGuide = CityGuideContent;
@@ -52,7 +62,15 @@ function citySlugFromName(cityName?: string) {
 function staticEntry(path = "") {
   return {
     url: `${siteUrl}${path}`,
-    lastModified: new Date(),
+  };
+}
+
+function contentEntry(path: string, updatedAt?: string) {
+  const hasValidUpdatedAt = updatedAt && !Number.isNaN(Date.parse(updatedAt));
+
+  return {
+    ...staticEntry(path),
+    ...(hasValidUpdatedAt ? { lastModified: updatedAt } : {}),
   };
 }
 
@@ -64,8 +82,9 @@ function languageAlternates(languages: Record<string, string>) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [providers, propertyListings, cityGuides] = await Promise.all([
+  const [providers, hosts, propertyListings, cityGuides] = await Promise.all([
     client.fetch<SitemapProvider[]>(providerListQuery),
+    client.fetch<SitemapHost[]>(hostListQuery),
     client.fetch<SitemapPropertyListing[]>(propertyListingListQuery),
     client.fetch<SitemapCityGuide[]>(cityGuideListQuery),
   ]);
@@ -75,9 +94,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!slug) return [];
 
     return [
-      staticEntry(`/providers/${slug}`),
-      staticEntry(`/pt/profissionais/${slug}`),
-      staticEntry(`/nl/professionals/${slug}`),
+      contentEntry(`/providers/${slug}`, provider._updatedAt),
+      contentEntry(`/pt/profissionais/${slug}`, provider._updatedAt),
+      contentEntry(`/nl/professionals/${slug}`, provider._updatedAt),
+    ];
+  });
+
+  const hostEntries = hosts.flatMap((host) => {
+    const slug = host.slug?.current;
+    if (!slug || slug === "armijn") return [];
+
+    return [
+      contentEntry(`/hosts/${slug}`, host._updatedAt),
+      contentEntry(`/pt/hosts/${slug}`, host._updatedAt),
+      contentEntry(`/nl/hosts/${slug}`, host._updatedAt),
     ];
   });
 
@@ -87,9 +117,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (!listingSlug || !citySlug) return [];
 
     return [
-      staticEntry(`/real-estate/${citySlug}/${listingSlug}`),
-      staticEntry(`/pt/imoveis/${citySlug}/${listingSlug}`),
-      staticEntry(`/nl/vastgoed/${citySlug}/${listingSlug}`),
+      contentEntry(
+        `/real-estate/${citySlug}/${listingSlug}`,
+        listing._updatedAt,
+      ),
+      contentEntry(`/pt/imoveis/${citySlug}/${listingSlug}`, listing._updatedAt),
+      contentEntry(`/nl/vastgoed/${citySlug}/${listingSlug}`, listing._updatedAt),
     ];
   });
 
@@ -108,7 +141,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return cityGuideEnabledLanguages(city).map((language) =>
       ({
-        ...staticEntry(cityGuidePath(language, citySlug)),
+        ...contentEntry(cityGuidePath(language, citySlug), city._updatedAt),
         alternates: { languages: alternates },
       }),
     );
@@ -121,7 +154,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
       return [{
         url: `${siteUrl}${path}`,
-        lastModified: new Date(),
         alternates: { languages: interpreterAlternates(city) },
       }];
     }),
@@ -129,7 +161,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const interpreterHubEntries = Object.values(interpreterHubPaths).map((path) => ({
     url: `${siteUrl}${path}`,
-    lastModified: new Date(),
     alternates: { languages: interpreterHubAlternates() },
   }));
 
@@ -140,17 +171,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     {
       url: "https://homeinthe.city",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/pt",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/nl",
-      lastModified: new Date(),
     },
 
     /* ======================================================
@@ -166,17 +194,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     {
       url: "https://homeinthe.city/translation-services",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/pt/servicos-de-traducao",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/nl/vertaaldiensten",
-      lastModified: new Date(),
     },
 
     /* ======================================================
@@ -185,68 +210,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     {
       url: "https://homeinthe.city/real-estate",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/real-estate/porto-alegre",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/real-estate/florianopolis",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/pt/imoveis",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/pt/imoveis/porto-alegre",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/pt/imoveis/florianopolis",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/nl/vastgoed",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/nl/vastgoed/porto-alegre",
-      lastModified: new Date(),
     },
 
     {
       url: "https://homeinthe.city/nl/vastgoed/florianopolis",
-      lastModified: new Date(),
     },
 
-    /* ======================================================
-       HOST PAGE
-    ====================================================== */
-
-    {
-      url: "https://homeinthe.city/hosts/armijn",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/pt/hosts/armijn",
-      lastModified: new Date(),
-    },
-
-    {
-      url: "https://homeinthe.city/nl/hosts/armijn",
-      lastModified: new Date(),
-    },
-
+    ...hostEntries,
     ...providerEntries,
     ...cityGuideEntries,
     ...propertyEntries,

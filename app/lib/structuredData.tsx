@@ -43,15 +43,21 @@ export function compactJsonLd<T>(value: T): T {
 type CityGuideJsonLdInput = {
   url: string;
   name: string;
+  cityName: string;
   description: string;
   inLanguage: string;
+  administrativeRegion?: string;
+  country?: string | null;
 };
 
 export function cityGuideJsonLd({
   url,
   name,
+  cityName,
   description,
   inLanguage,
+  administrativeRegion,
+  country,
 }: CityGuideJsonLdInput) {
   const destinationId = `${url}#destination`;
 
@@ -61,25 +67,29 @@ export function cityGuideJsonLd({
       {
         "@type": "TouristDestination",
         "@id": destinationId,
-        name: "Porto Alegre",
+        name: cityName,
         description,
         url,
         inLanguage,
-        containedInPlace: {
-          "@type": "Country",
-          name: "Brazil",
-        },
+        containedInPlace: country
+          ? {
+              "@type": "Country",
+              name: country,
+            }
+          : undefined,
         provider: organizationRef,
       },
       {
         "@type": "City",
         "@id": `${url}#city`,
-        name: "Porto Alegre",
-        addressCountry: "BR",
-        containedInPlace: {
-          "@type": "AdministrativeArea",
-          name: "Rio Grande do Sul",
-        },
+        name: cityName,
+        addressCountry: country,
+        containedInPlace: administrativeRegion
+          ? {
+              "@type": "AdministrativeArea",
+              name: administrativeRegion,
+            }
+          : undefined,
       },
       {
         "@type": "WebPage",

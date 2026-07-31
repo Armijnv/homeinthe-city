@@ -123,6 +123,7 @@ export type CityGuideProvider = {
 };
 
 export type CityGuideContent = {
+  _updatedAt?: string;
   name_en?: string;
   name_pt?: string;
   name_nl?: string;
@@ -133,6 +134,7 @@ export type CityGuideContent = {
   enabledLanguages?: CityGuideLang[];
   latitude?: number;
   longitude?: number;
+  country?: string | null;
   primaryHost?: CityGuideProvider | null;
   headline_en?: string;
   headline_pt?: string;

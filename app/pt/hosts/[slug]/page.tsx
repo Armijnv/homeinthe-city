@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 import HostPage from "@/app/components/HostPage";
 import type { Host } from "@/app/components/HostPage";
 import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
@@ -17,7 +18,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+
+  if (slug === "armijn") permanentRedirect("/pt/profissionais/armijn");
+
   const host = await client.fetch(hostQuery, { slug });
+
+  if (!host) notFound();
 
   return {
     title: `${cleanMetadataTitle(host?.headline_pt || host?.name) || "Host"} | Intérprete em Porto Alegre`,
@@ -58,24 +64,30 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  if (slug === "armijn") permanentRedirect("/pt/profissionais/armijn");
+
   const host = await client.fetch<Host | null>(hostQuery, { slug });
-  const structuredData =
-    host &&
-    personJsonLd({
-      url: `https://homeinthe.city/pt/hosts/${slug}`,
-      name: host.name || host.headline_pt,
-      role: "Anfitrião local e intérprete",
-      roles: ["Anfitrião local", "Intérprete", "Guia"],
-      languages: localizedSpokenLanguageNames(host.languages, "pt"),
-      cities: ["Porto Alegre"],
-      image: host.photo?.asset?.url,
-      description: host.intro_pt,
-      inLanguage: "pt-BR",
-    });
+
+  if (!host) notFound();
+
+  const structuredData = personJsonLd({
+    url: `https://homeinthe.city/pt/hosts/${slug}`,
+    name: host.name || host.headline_pt,
+    role: "Anfitrião local e intérprete",
+    roles: ["Anfitrião local", "Intérprete", "Guia"],
+    languages: localizedSpokenLanguageNames(host.languages, "pt"),
+    cities: host.cities
+      ?.map((city) => city.name_pt || city.name_en || city.name_nl || "")
+      .filter(Boolean),
+    image: host.photo?.asset?.url,
+    description: host.intro_pt,
+    inLanguage: "pt-BR",
+  });
 
   return (
     <>
-      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <JsonLdScript data={structuredData} />
       <HostPage lang="pt" slug={slug} host={host} />
     </>
   );

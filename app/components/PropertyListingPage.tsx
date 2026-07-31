@@ -40,6 +40,7 @@ export type PropertyListing = {
     slug?: {
       current?: string;
     };
+    country?: string | null;
   };
   cityName?: string;
   neighborhood?: string;
@@ -691,8 +692,7 @@ export function buildPropertyStructuredData({
         address: {
           "@type": "PostalAddress",
           addressLocality: cityName,
-          addressRegion: "RS",
-          addressCountry: "BR",
+          addressCountry: listing.city?.country || undefined,
           streetAddress:
             listing.addressVisibility === "full" ? listing.address : undefined,
         },

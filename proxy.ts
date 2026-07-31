@@ -8,9 +8,7 @@ const clerkProxyPath = "/__clerk";
 export default clerkMiddleware(
   async (auth, request: NextRequest) => {
     if (isAccountRoute(request)) {
-      const { isAuthenticated, redirectToSignIn } = await auth({
-        treatPendingAsSignedOut: false,
-      });
+      const { isAuthenticated, redirectToSignIn } = await auth();
 
       if (!isAuthenticated) {
         return redirectToSignIn({

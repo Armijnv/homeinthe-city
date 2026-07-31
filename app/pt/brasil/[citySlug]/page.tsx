@@ -7,6 +7,7 @@ import {
   cityGuideIsPublic,
   cityGuideLanguageEnabled,
   cityGuideMetadata,
+  cityGuideName,
   cityGuidePath,
   cityGuideSiteUrl,
   cityGuideTitle,
@@ -54,8 +55,10 @@ export default async function Page({ params }: PageProps) {
         data={cityGuideJsonLd({
           url,
           name: cityGuideTitle({ city, lang: "pt", citySlug }),
+          cityName: cityGuideName(city, "pt", citySlug),
           description,
           inLanguage: cityGuideInLanguage.pt,
+          country: city.country,
         })}
       />
       <CityPage

@@ -3,6 +3,7 @@
 ====================================================== */
 
 const cityGuideProjection = `
+    _updatedAt,
     name_en,
     name_pt,
     name_nl,
@@ -11,6 +12,7 @@ const cityGuideProjection = `
     enabledLanguages,
     latitude,
     longitude,
+    country,
 
     primaryHost->{
       name,
@@ -355,6 +357,7 @@ export const providerQuery = `
 
 export const providerListQuery = `
   *[_type == "provider" && status == "published"] | order(name asc){
+    _updatedAt,
     name,
     slug,
     roles,
@@ -426,7 +429,8 @@ export const propertyListingQuery = `
       name_en,
       name_pt,
       name_nl,
-      slug
+      slug,
+      country
     },
     cityName,
     neighborhood,
@@ -525,6 +529,7 @@ export const propertyListingListQuery = `
     _type == "propertyListing" &&
     status in ["available", "reserved", "sold", "rented"]
   ] | order(_createdAt desc){
+    _updatedAt,
     title_en,
     title_pt,
     title_nl,
@@ -716,6 +721,16 @@ export const hostQuery = `
       slug.current == $slug
     ][0].roles,
 
+    "cities": *[
+      _type == "provider" &&
+      status == "published" &&
+      slug.current == $slug
+    ][0].cities[]->{
+      name_en,
+      name_pt,
+      name_nl
+    },
+
     photo{
       asset->{
         url
@@ -733,5 +748,12 @@ export const hostQuery = `
       description_pt,
       description_nl
     }
+  }
+`;
+
+export const hostListQuery = `
+  *[_type == "host" && defined(slug.current)] | order(name asc){
+    _updatedAt,
+    slug
   }
 `;

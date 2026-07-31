@@ -1,5 +1,11 @@
 import { currentUser, type User } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
+import {
+  providerOwnershipMatchFilter,
+  selectProviderForUser,
+  verifiedEmailAddresses,
+  verifiedPrimaryEmailAddress,
+} from "@/app/lib/clerkIdentity";
 import { client } from "@/sanity/lib/client";
 
 export type DashboardCity = {
@@ -48,10 +54,9 @@ export const matchedProviderForDashboardQuery = `
   *[
     _type == "provider" &&
     (
-      ownership.ownerUserId == $userId ||
-      lower(ownership.contactEmail) in $emails
+      ${providerOwnershipMatchFilter}
     )
-  ][0]{
+  ]{
     _id,
     name,
     slug,
@@ -114,8 +119,6 @@ function metadataValues(metadata: User["publicMetadata"]) {
   };
 }
 
-const bootstrapAdminEmails = ["armijn@homeinthe.city"];
-
 export function configuredAdminEmails() {
   const raw = [
     process.env.DASHBOARD_ADMIN_EMAILS,
@@ -134,13 +137,7 @@ export function configuredAdminEmails() {
   );
 }
 
-export function recognizedAdminEmails() {
-  return Array.from(
-    new Set([...bootstrapAdminEmails, ...configuredAdminEmails()]),
-  );
-}
-
-export function adminStatusForUser(user: User, emails: string[]) {
+export function adminStatusForUser(user: User) {
   const { role, roles, permissions } = metadataValues(user.publicMetadata);
 
   if (role === "admin") return { isAdmin: true, reason: "Clerk publicMetadata.role" };
@@ -151,8 +148,9 @@ export function adminStatusForUser(user: User, emails: string[]) {
     return { isAdmin: true, reason: "Clerk publicMetadata.permissions" };
   }
 
-  const matchedEmail = emails.find((email) =>
-    recognizedAdminEmails().includes(email.toLowerCase()),
+  const configuredEmails = configuredAdminEmails();
+  const matchedEmail = verifiedEmailAddresses(user).find((email) =>
+    configuredEmails.includes(email),
   );
 
   if (matchedEmail) {
@@ -162,8 +160,8 @@ export function adminStatusForUser(user: User, emails: string[]) {
   return { isAdmin: false, reason: "none" };
 }
 
-export function isAdminUser(user: User, emails: string[] = []) {
-  return adminStatusForUser(user, emails).isAdmin;
+export function isAdminUser(user: User) {
+  return adminStatusForUser(user).isAdmin;
 }
 
 export function cityName(city: DashboardCity | null | undefined) {
@@ -208,24 +206,23 @@ export function accessLevel(provider: DashboardProvider | null, isAdmin: boolean
 }
 
 export async function getDashboardContext(returnTo = "/dashboard") {
-  const user = await currentUser({ treatPendingAsSignedOut: false });
+  const user = await currentUser();
 
   if (!user?.id) {
     redirect(`/sign-in?redirect_url=${encodeURIComponent(returnTo)}`);
   }
 
-  const emails = user.emailAddresses
-    .map((email) => email.emailAddress.toLowerCase())
-    .filter(Boolean);
-  const signedInEmail = user.primaryEmailAddress?.emailAddress || emails[0] || "";
-  const provider = await client.fetch<DashboardProvider | null>(
+  const emails = verifiedEmailAddresses(user);
+  const signedInEmail = verifiedPrimaryEmailAddress(user);
+  const providerMatches = await client.fetch<DashboardProvider[]>(
     matchedProviderForDashboardQuery,
     {
       userId: user.id,
       emails,
     },
   );
-  const adminStatus = adminStatusForUser(user, emails);
+  const provider = selectProviderForUser(providerMatches, user.id);
+  const adminStatus = adminStatusForUser(user);
 
   return {
     user,

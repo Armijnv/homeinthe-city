@@ -388,10 +388,10 @@ export default function Header({
     : t.explore;
 
   const hostPath = pathname.startsWith("/pt")
-    ? "/pt/hosts/armijn"
+    ? "/pt/profissionais/armijn"
     : pathname.startsWith("/nl")
-    ? "/nl/hosts/armijn"
-    : "/hosts/armijn";
+    ? "/nl/professionals/armijn"
+    : "/providers/armijn";
 
   const interpreterPath =
     currentInterpreterRoute?.city.paths[lang] ||

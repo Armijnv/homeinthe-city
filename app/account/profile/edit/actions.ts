@@ -2,6 +2,12 @@
 
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect, unstable_rethrow } from "next/navigation";
+import {
+  effectiveOwnerUserId,
+  providerOwnershipMatchFilter,
+  selectProviderForUser,
+  verifiedEmailAddresses,
+} from "@/app/lib/clerkIdentity";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
@@ -46,10 +52,9 @@ const matchedProviderForAccountQuery = `
   *[
     _type == "provider" &&
     (
-      ownership.ownerUserId == $userId ||
-      lower(ownership.contactEmail) in $emails
+      ${providerOwnershipMatchFilter}
     )
-  ][0]{
+  ]{
     _id,
     slug,
     roles,
@@ -210,23 +215,15 @@ async function getSignedInProvider() {
     redirect("/sign-in");
   }
 
-  const emails = user.emailAddresses
-    .map((email) => email.emailAddress.toLowerCase())
-    .filter(Boolean);
-
-  if (emails.length === 0) {
-    throw new ProfileWorkflowError(
-      "Your signed-in account does not have an email address.",
-    );
-  }
-
-  const provider = await client.fetch<ProviderMatch | null>(
+  const emails = verifiedEmailAddresses(user);
+  const providerMatches = await client.fetch<ProviderMatch[]>(
     matchedProviderForAccountQuery,
     {
       userId: user.id,
       emails,
     },
   );
+  const provider = selectProviderForUser(providerMatches, user.id);
 
   if (!provider?._id) {
     throw new ProfileWorkflowError(
@@ -235,7 +232,17 @@ async function getSignedInProvider() {
   }
 
   const ownerEmail = provider.ownership?.contactEmail || emails[0];
-  const ownerUserId = provider.ownership?.ownerUserId || user.id;
+
+  if (!ownerEmail) {
+    throw new ProfileWorkflowError(
+      "Your provider profile does not have an email address.",
+    );
+  }
+
+  const ownerUserId = effectiveOwnerUserId(
+    provider.ownership?.ownerUserId,
+    user.id,
+  );
 
   return {
     provider,
@@ -309,7 +316,7 @@ async function saveProviderProfileDraftForCurrentUser(formData: FormData) {
           _type: "reference",
           _ref: provider._id,
         },
-        ownerUserId: existingSubmission?.ownerUserId || ownerUserId,
+        ownerUserId,
         ownerEmail,
         status: "draft",
         profileSnapshot,

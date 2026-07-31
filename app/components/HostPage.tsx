@@ -33,6 +33,11 @@ export type Host = {
   languages?: Array<{
     language?: string;
   }>;
+  cities?: Array<{
+    name_en?: string;
+    name_pt?: string;
+    name_nl?: string;
+  }>;
   photo?: {
     asset?: {
       url?: string;

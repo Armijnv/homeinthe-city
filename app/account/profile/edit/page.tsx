@@ -3,6 +3,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  effectiveOwnerUserId,
+  providerOwnershipMatchFilter,
+  selectProviderForUser,
+  verifiedEmailAddresses,
+  verifiedPrimaryEmailAddress,
+} from "@/app/lib/clerkIdentity";
+import {
   saveProviderProfileDraft,
   submitProviderProfileForReview,
 } from "./actions";
@@ -106,10 +113,9 @@ const matchedProviderForAccountQuery = `
   *[
     _type == "provider" &&
     (
-      ownership.ownerUserId == $userId ||
-      lower(ownership.contactEmail) in $emails
+      ${providerOwnershipMatchFilter}
     )
-  ][0]{
+  ]{
     _id,
     name,
     slug,
@@ -326,24 +332,27 @@ export default async function Page({ searchParams }: PageProps) {
     redirect("/sign-in");
   }
 
-  const emails = user.emailAddresses
-    .map((email) => email.emailAddress.toLowerCase())
-    .filter(Boolean);
-  const signedInEmail = user.primaryEmailAddress?.emailAddress || emails[0] || "";
-
-  const provider = emails.length
-    ? await client.fetch<ProviderProfile | null>(matchedProviderForAccountQuery, {
-        userId: user.id,
-        emails,
-      })
-    : null;
+  const emails = verifiedEmailAddresses(user);
+  const signedInEmail = verifiedPrimaryEmailAddress(user);
+  const providerMatches = await client.fetch<ProviderProfile[]>(
+    matchedProviderForAccountQuery,
+    {
+      userId: user.id,
+      emails,
+    },
+  );
+  const provider = selectProviderForUser(providerMatches, user.id);
+  const ownerUserId = effectiveOwnerUserId(
+    provider?.ownership?.ownerUserId,
+    user.id,
+  );
 
   const [submission, cities, params] = await Promise.all([
     provider
       ? client.fetch<ProviderSubmission | null>(draftSubmissionQuery, {
           providerId: provider._id,
           emails,
-          ownerUserId: provider.ownership?.ownerUserId || user.id,
+          ownerUserId,
         })
       : Promise.resolve(null),
     client.fetch<CityOption[]>(cityOptionsQuery),

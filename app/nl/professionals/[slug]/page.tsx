@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ProviderPage, {
   type ProviderProfile,
 } from "@/app/components/ProviderPage";
@@ -39,6 +40,8 @@ export async function generateMetadata({
     slug,
   });
 
+  if (!provider) notFound();
+
   return {
     title:
       cleanMetadataTitle(provider?.headline_nl || provider?.name) ||
@@ -78,32 +81,32 @@ export default async function Page({
     slug,
   });
 
+  if (!provider) notFound();
+
   const profileUrl = `https://homeinthe.city/nl/professionals/${slug}`;
-  const structuredData =
-    provider &&
-    personJsonLd({
-      url: profileUrl,
-      name: provider.name,
-      role: label(provider.primaryRole),
-      roles: provider.roles?.map(label),
-      languages: provider.languages
-        ?.map((language) =>
-          language.language
-            ? languageNames[language.language] || language.language
-            : "",
-        )
-        .filter(Boolean),
-      cities: provider.cities
-        ?.map((city) => city.name_nl || city.name_en || city.name_pt || "")
-        .filter(Boolean),
-      image: provider.mainPhoto?.asset?.url,
-      description: provider.intro_nl || provider.intro_en,
-      inLanguage: "nl-NL",
-    });
+  const structuredData = personJsonLd({
+    url: profileUrl,
+    name: provider.name,
+    role: label(provider.primaryRole),
+    roles: provider.roles?.map(label),
+    languages: provider.languages
+      ?.map((language) =>
+        language.language
+          ? languageNames[language.language] || language.language
+          : "",
+      )
+      .filter(Boolean),
+    cities: provider.cities
+      ?.map((city) => city.name_nl || city.name_en || city.name_pt || "")
+      .filter(Boolean),
+    image: provider.mainPhoto?.asset?.url,
+    description: provider.intro_nl || provider.intro_en,
+    inLanguage: "nl-NL",
+  });
 
   return (
     <>
-      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <JsonLdScript data={structuredData} />
       <ProviderPage lang="nl" slug={slug} provider={provider} />
     </>
   );

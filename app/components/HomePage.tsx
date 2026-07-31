@@ -30,7 +30,7 @@ const content = {
     interpreterCta: "Interpreter services in Porto Alegre",
     interpreterHref: "/interpreter-porto-alegre",
     cityCta: "Meet your Porto Alegre host",
-    cityHref: "/hosts/armijn",
+    cityHref: "/providers/armijn",
     liveCity: "First active city: Porto Alegre",
     nextCity: "Aracaju and João Pessoa coming soon",
     servicesTitle: "Start with Porto Alegre",
@@ -43,7 +43,7 @@ const content = {
       {
         title: "Meet your Porto Alegre host",
         text: "A trusted local connection for practical help before, during and after your visit.",
-        href: "/hosts/armijn",
+        href: "/providers/armijn",
       },
       {
         title: "Interpreter services in Porto Alegre",
@@ -74,7 +74,7 @@ const content = {
     interpreterCta: "Intérprete em Porto Alegre",
     interpreterHref: "/pt/interprete-porto-alegre",
     cityCta: "Conheça seu anfitrião local",
-    cityHref: "/pt/hosts/armijn",
+    cityHref: "/pt/profissionais/armijn",
     liveCity: "Primeira cidade ativa: Porto Alegre",
     nextCity: "Aracaju e João Pessoa em breve",
     servicesTitle: "Comece por Porto Alegre",
@@ -87,7 +87,7 @@ const content = {
       {
         title: "Conheça seu anfitrião local",
         text: "Uma conexão local confiável para ajuda prática antes, durante e depois da visita.",
-        href: "/pt/hosts/armijn",
+        href: "/pt/profissionais/armijn",
       },
       {
         title: "Intérprete em Porto Alegre",
@@ -118,7 +118,7 @@ const content = {
     interpreterCta: "Tolkdiensten in Porto Alegre",
     interpreterHref: "/nl/tolk-porto-alegre",
     cityCta: "Ontmoet je Porto Alegre host",
-    cityHref: "/nl/hosts/armijn",
+    cityHref: "/nl/professionals/armijn",
     liveCity: "Eerste actieve stad: Porto Alegre",
     nextCity: "Aracaju en João Pessoa binnenkort",
     servicesTitle: "Begin met Porto Alegre",
@@ -131,7 +131,7 @@ const content = {
       {
         title: "Ontmoet je Porto Alegre host",
         text: "Een vertrouwde lokale verbinding voor praktische hulp voor, tijdens en na je bezoek.",
-        href: "/nl/hosts/armijn",
+        href: "/nl/professionals/armijn",
       },
       {
         title: "Tolkdiensten in Porto Alegre",

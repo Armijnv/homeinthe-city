@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound, permanentRedirect } from "next/navigation";
 import HostPage from "@/app/components/HostPage";
 import type { Host } from "@/app/components/HostPage";
 import { cleanMetadataTitle } from "@/app/lib/metadataTitle";
@@ -17,7 +18,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+
+  if (slug === "armijn") permanentRedirect("/providers/armijn");
+
   const host = await client.fetch(hostQuery, { slug });
+
+  if (!host) notFound();
 
   return {
     title: `${cleanMetadataTitle(host?.headline_en || host?.name) || "Host"} | Interpreter in Porto Alegre`,
@@ -58,24 +64,30 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  if (slug === "armijn") permanentRedirect("/providers/armijn");
+
   const host = await client.fetch<Host | null>(hostQuery, { slug });
-  const structuredData =
-    host &&
-    personJsonLd({
-      url: `https://homeinthe.city/hosts/${slug}`,
-      name: host.name || host.headline_en,
-      role: "Local host and interpreter",
-      roles: ["Local host", "Interpreter", "Guide"],
-      languages: localizedSpokenLanguageNames(host.languages, "en"),
-      cities: ["Porto Alegre"],
-      image: host.photo?.asset?.url,
-      description: host.intro_en,
-      inLanguage: "en",
-    });
+
+  if (!host) notFound();
+
+  const structuredData = personJsonLd({
+    url: `https://homeinthe.city/hosts/${slug}`,
+    name: host.name || host.headline_en,
+    role: "Local host and interpreter",
+    roles: ["Local host", "Interpreter", "Guide"],
+    languages: localizedSpokenLanguageNames(host.languages, "en"),
+    cities: host.cities
+      ?.map((city) => city.name_en || city.name_pt || city.name_nl || "")
+      .filter(Boolean),
+    image: host.photo?.asset?.url,
+    description: host.intro_en,
+    inLanguage: "en",
+  });
 
   return (
     <>
-      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <JsonLdScript data={structuredData} />
       <HostPage lang="en" slug={slug} host={host} />
     </>
   );

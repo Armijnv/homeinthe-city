@@ -8,7 +8,7 @@ The provider profile keeps `status: "published"` and adds future ownership metad
 
 - `ownership.contactEmail` for later account verification
 - `ownership.selfEditEnabled: false` until authenticated self-editing exists
-- `legacyHost.slug: "armijn"` with `keepLegacyRoutes: true` so existing `/hosts/[slug]` routes stay compatible
+- `legacyHost.slug: "armijn"` with `keepLegacyRoutes: false` because Armijn's legacy host URLs permanently redirect to the localized provider routes
 
 Import after Sanity write credentials are available:
 
@@ -16,7 +16,7 @@ Import after Sanity write credentials are available:
 sanity dataset import sanity/migrations/provider-armijn.ndjson production --replace
 ```
 
-This does not remove or modify the legacy `host` document. Keep existing host routes unchanged until provider routes are built and migration is planned.
+This does not remove or modify the legacy `host` document. The application keeps the document for historical compatibility but no longer renders Armijn as a separate host profile.
 
 ## City recommendation guides
 

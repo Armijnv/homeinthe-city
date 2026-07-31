@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import ProviderPage, {
   type ProviderProfile,
 } from "@/app/components/ProviderPage";
@@ -34,6 +35,8 @@ export async function generateMetadata({
   const provider = await client.fetch<ProviderProfile | null>(providerQuery, {
     slug,
   });
+
+  if (!provider) notFound();
 
   return {
     title: cleanMetadataTitle(provider?.headline_en || provider?.name) || "Provider",
@@ -72,32 +75,32 @@ export default async function Page({
     slug,
   });
 
+  if (!provider) notFound();
+
   const profileUrl = `https://homeinthe.city/providers/${slug}`;
-  const structuredData =
-    provider &&
-    personJsonLd({
-      url: profileUrl,
-      name: provider.name,
-      role: label(provider.primaryRole),
-      roles: provider.roles?.map(label),
-      languages: provider.languages
-        ?.map((language) =>
-          language.language
-            ? languageNames[language.language] || label(language.language)
-            : "",
-        )
-        .filter(Boolean),
-      cities: provider.cities
-        ?.map((city) => city.name_en || city.name_pt || city.name_nl || "")
-        .filter(Boolean),
-      image: provider.mainPhoto?.asset?.url,
-      description: provider.intro_en,
-      inLanguage: "en",
-    });
+  const structuredData = personJsonLd({
+    url: profileUrl,
+    name: provider.name,
+    role: label(provider.primaryRole),
+    roles: provider.roles?.map(label),
+    languages: provider.languages
+      ?.map((language) =>
+        language.language
+          ? languageNames[language.language] || label(language.language)
+          : "",
+      )
+      .filter(Boolean),
+    cities: provider.cities
+      ?.map((city) => city.name_en || city.name_pt || city.name_nl || "")
+      .filter(Boolean),
+    image: provider.mainPhoto?.asset?.url,
+    description: provider.intro_en,
+    inLanguage: "en",
+  });
 
   return (
     <>
-      {structuredData ? <JsonLdScript data={structuredData} /> : null}
+      <JsonLdScript data={structuredData} />
       <ProviderPage lang="en" slug={slug} provider={provider} />
     </>
   );
