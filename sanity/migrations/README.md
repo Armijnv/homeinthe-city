@@ -44,3 +44,26 @@ The editorial recommendation redesign is intentionally additive:
 - Public city pages render curated guides first and legacy picks in a clearly separated section.
 
 Review each legacy record with the city host. Move a single-place record to `mapPlaces`, or rewrite its local knowledge as a themed entry in `recommendationGuides`. Remove the legacy record only after the replacement has been published and checked in every supported language. No automatic destructive migration is required.
+
+## Property dashboard ownership
+
+The dashboard treats the existing `propertyListing.linkedRealtor` reference as
+the authoritative listing owner. It never accepts an agent-supplied Provider ID:
+the linked Provider is derived from the authenticated Clerk account when an
+agent creates a listing. Administrators retain explicit ownership controls.
+
+The Production audit on 2026-07-31 found all three existing listings already
+linked to Kornelis van Dijk (`92be1386-c481-462b-88d9-0200a1403e66`):
+
+- `8eee4945-b56e-4a44-b529-8420407ba59d` (`parklife`)
+- `52c426b4-eb25-41db-b0bf-4742a3cc2248` (`parkview`)
+- `880976df-cf7b-4566-93a6-b4e4883cc5aa` (`pantano-do-sul-three-sea-view-units`)
+
+Kornelis has the `realtor` role and a bound `ownership.ownerUserId`, so no
+ownership migration is required. Do not invent ownership for future unlinked
+listings; an administrator must review and link those records manually.
+
+Dashboard-created listings are normal Sanity documents with `status: "hidden"`,
+not Sanity drafts. They remain absent from public pages and the sitemap until an
+administrator changes the status. Every dashboard create or edit also creates a
+`propertyChangeLog` document for oversight.

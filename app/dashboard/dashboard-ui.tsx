@@ -23,17 +23,17 @@ export function DashboardShell({
   side?: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
+    <div className="min-h-screen bg-[#1a1f2e] px-4 pt-24 pb-12 text-white sm:px-6 sm:pt-28 sm:pb-16">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-10 grid gap-6 lg:grid-cols-[1.4fr_0.8fr] lg:items-end">
+        <div className="mb-6 grid gap-4 sm:mb-8 lg:grid-cols-[1.4fr_0.8fr] lg:items-end">
           <div>
             <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
               {eyebrow}
             </p>
-            <h1 className="text-4xl font-light leading-tight md:text-6xl">
+            <h1 className="text-3xl font-light leading-tight sm:text-4xl md:text-5xl">
               {title}
             </h1>
-            <p className="mt-5 max-w-3xl leading-relaxed text-stone-300">
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-stone-300 sm:text-base">
               {intro}
             </p>
           </div>
@@ -47,7 +47,7 @@ export function DashboardShell({
 
 export function DashboardCard({ title, text, href, action, status }: DashboardCardProps) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-xl shadow-black/10">
+    <section className="rounded-xl border border-white/10 bg-white/10 p-4 shadow-xl shadow-black/10 sm:p-5">
       {status ? (
         <p className="mb-3 text-xs uppercase tracking-widest text-[#d6a85a]">
           {status}

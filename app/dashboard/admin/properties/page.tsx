@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
@@ -29,6 +30,14 @@ type AdminProperty = {
   };
 };
 
+type PropertyChange = {
+  _id: string;
+  changedAt?: string;
+  propertyTitle?: string;
+  actorName?: string;
+  changedFields?: string[];
+};
+
 const adminPropertiesQuery = `
   *[_type == "propertyListing"]|order(_createdAt desc){
     _id,
@@ -46,6 +55,16 @@ const adminPropertiesQuery = `
       slug
     },
     mapCoordinates
+  }
+`;
+
+const recentPropertyChangesQuery = `
+  *[_type == "propertyChangeLog"]|order(changedAt desc)[0...10]{
+    _id,
+    changedAt,
+    "propertyTitle": coalesce(propertyTitle, property->title_en),
+    actorName,
+    changedFields
   }
 `;
 
@@ -78,15 +97,24 @@ export const metadata: Metadata = {
 
 export default async function AdminPropertiesPage() {
   await requireAdmin("/dashboard/admin/properties");
-  const properties = await client.fetch<AdminProperty[]>(adminPropertiesQuery);
+  const [properties, recentChanges] = await Promise.all([
+    client.fetch<AdminProperty[]>(adminPropertiesQuery),
+    client.fetch<PropertyChange[]>(recentPropertyChangesQuery),
+  ]);
 
   return (
     <DashboardShell
       eyebrow="Admin"
       title="Properties"
-      intro="A read-only listing index for status, city assignment, listing type, coordinates, and public listing links."
+      intro="Create and edit every listing, review publication status, and monitor recent real-estate agent changes."
     >
       <BackToDashboard />
+      <Link
+        href="/dashboard/properties/new"
+        className="mb-5 inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2.5 text-sm font-semibold text-[#1a1f2e]"
+      >
+        Add property
+      </Link>
       <DataTable
         headers={["Title", "City", "Type", "Status", "Coordinates", "Links"]}
       >
@@ -111,16 +139,46 @@ export default async function AdminPropertiesPage() {
                 {hasCoordinates ? "Coordinates set" : "Missing coordinates"}
               </td>
               <td className="px-5 py-4">
+                <TableLink href={`/dashboard/properties/${property._id}/edit`}>
+                  Edit
+                </TableLink>
                 {citySlug && listingSlug ? (
-                  <TableLink href={`/real-estate/${citySlug}/${listingSlug}`}>
-                    Public listing
-                  </TableLink>
+                  <span className="ml-3">
+                    <TableLink href={`/real-estate/${citySlug}/${listingSlug}`}>
+                      Public listing
+                    </TableLink>
+                  </span>
                 ) : null}
               </td>
             </tr>
           );
         })}
       </DataTable>
+
+      <section className="mt-8">
+        <h2 className="mb-3 text-xl font-medium text-white">Recent property changes</h2>
+        {recentChanges.length ? (
+          <div className="space-y-2">
+            {recentChanges.map((change) => (
+              <article key={change._id} className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+                <p className="text-white">
+                  {change.actorName || "Administrator"} changed {change.propertyTitle || "a property"}
+                </p>
+                <p className="mt-1 text-stone-400">
+                  {change.changedAt
+                    ? new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(change.changedAt))
+                    : "Time unavailable"}
+                  {change.changedFields?.length ? ` · ${change.changedFields.join(", ")}` : ""}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-stone-400">
+            No dashboard property changes have been logged yet.
+          </p>
+        )}
+      </section>
     </DashboardShell>
   );
 }

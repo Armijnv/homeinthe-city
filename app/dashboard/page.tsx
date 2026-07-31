@@ -1,259 +1,196 @@
 import { SignOutButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DashboardShell, Pill } from "@/app/dashboard/dashboard-ui";
+import { dashboardWorkspaceVisibility } from "@/app/lib/dashboardWorkspace";
 import {
-  DashboardCard,
-  DashboardShell,
-  Pill,
-  type DashboardCardProps,
-} from "@/app/dashboard/dashboard-ui";
-import {
-  accessLevel,
   cityName,
   getDashboardContext,
   managedCities,
-  type DashboardCity,
   providerRoleLabel,
 } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 
-const allCitiesForAdminDashboardQuery = `
-  *[_type == "city"]|order(name_en asc){
-    _id,
-    name_en,
-    name_pt,
-    name_nl,
-    slug,
-    guideStatus,
-    country
-  }
-`;
-
-export const metadata: Metadata = {
-  title: "Provider Dashboard",
+type DashboardCounts = {
+  providerChanges?: number;
+  listings?: number;
+  publicListings?: number;
 };
 
+const dashboardCountsQuery = `{
+  "providerChanges": count(*[_type == "providerChangeLog" && changedAt > dateTime(now()) - 60*60*24*7]),
+  "listings": count(*[_type == "propertyListing" && ($isAdmin || linkedRealtor._ref == $providerId)]),
+  "publicListings": count(*[_type == "propertyListing" && ($isAdmin || linkedRealtor._ref == $providerId) && status in ["available","reserved","sold","rented"]])
+}`;
+
+export const metadata: Metadata = { title: "Provider Dashboard" };
+
+function Panel({
+  title,
+  eyebrow,
+  children,
+}: {
+  title: string;
+  eyebrow?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
+      {eyebrow ? <p className="text-xs uppercase tracking-widest text-[#d6a85a]">{eyebrow}</p> : null}
+      <h2 className={eyebrow ? "mt-1 text-lg font-medium text-white" : "text-lg font-medium text-white"}>{title}</h2>
+      <div className="mt-3 divide-y divide-white/10">{children}</div>
+    </section>
+  );
+}
+function ActionRow({
+  title,
+  detail,
+  href,
+  count,
+}: {
+  title: string;
+  detail?: string;
+  href?: string;
+  count?: number | string;
+}) {
+  const content = (
+    <>
+      <div className="min-w-0">
+        <p className="font-medium text-white">{title}</p>
+        {detail ? <p className="mt-0.5 text-sm text-stone-400">{detail}</p> : null}
+      </div>
+      <div className="flex shrink-0 items-center gap-2">
+        {count !== undefined ? <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-stone-200">{count}</span> : null}
+        {href ? <span aria-hidden className="text-[#d6a85a]">→</span> : null}
+      </div>
+    </>
+  );
+
+  return href ? (
+    <Link href={href} className="flex min-h-11 items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">{content}</Link>
+  ) : (
+    <div className="flex min-h-11 items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">{content}</div>
+  );
+}
+
+function publicProfilePath(slug?: string) {
+  return slug ? `/providers/${slug}` : undefined;
+}
+
 export default async function DashboardPage() {
-  const { user, provider, signedInEmail, isAdmin, isCityHost, providerEdit } =
-    await getDashboardContext();
+  const context = await getDashboardContext();
+  const { user, provider, signedInEmail, isAdmin, providerEdit } = context;
+  const workspace = dashboardWorkspaceVisibility(provider, isAdmin);
+  const cities = managedCities(provider);
   const providerSlug = provider?.slug?.current;
-  const managedProviderCities = managedCities(provider);
-  const editableCities = isAdmin
-    ? await client.fetch<DashboardCity[]>(allCitiesForAdminDashboardQuery)
-    : managedProviderCities;
-  const providerCards: DashboardCardProps[] = [
-    {
-      title: "Provider profile",
-      text: provider
-        ? providerEdit.canEdit
-          ? "Publish allowlisted profile changes directly. Every update is recorded for administrator oversight."
-          : "Your provider profile is connected, but self-editing is not enabled for this account. An administrator can manage the profile."
-        : "No provider profile is connected to this signed-in email yet. An admin can connect your account from the provider document.",
-      href: providerEdit.canEdit ? "/account/profile/edit" : undefined,
-      action: providerEdit.canEdit ? "Edit and publish profile" : undefined,
-      status: providerEdit.canEdit
-        ? "Available now"
-        : provider
-          ? "Self-editing disabled"
-          : "Needs admin setup",
-    },
-    {
-      title: "Public profile",
-      text: providerSlug
-        ? "Open the current public version of your provider profile."
-        : "A public profile link appears here after your account is matched to a provider document.",
-      href: providerSlug ? `/providers/${providerSlug}` : undefined,
-      action: providerSlug ? "View public profile" : undefined,
-      status: providerSlug ? "Published view" : "Pending",
-    },
-  ];
-  const cityHostCards: DashboardCardProps[] =
-    isAdmin || isCityHost
-      ? [
-          {
-            title: isAdmin ? "All cities" : "Managed cities",
-            text: isAdmin
-              ? "Open city tools for every city in Sanity."
-              : `Open city-host tools for ${editableCities.map(cityName).join(", ")}.`,
-            href: "/dashboard/cities",
-            action: "Manage city tools",
-            status: isAdmin ? "Admin" : "City host",
-          },
-          ...editableCities
-            .filter((city) => city.slug?.current)
-            .map((city) => ({
-              title: cityName(city),
-              text: isAdmin
-                ? "Admin access to city content, recommendations, map places, and coordinate tools."
-                : "Prepare city content, recommendations, map places, and coordinate tools for this city.",
-              href: `/dashboard/cities/${city.slug?.current}`,
-              action: "Open city dashboard",
-              status: isAdmin ? city.guideStatus || "live" : "Managed city",
-            })),
-        ]
-      : [];
-  const adminCards: DashboardCardProps[] = isAdmin
-    ? [
-        {
-          title: "Admin Dashboard",
-          text: "Global management entry point for cities, providers, properties, and map health.",
-          href: "/dashboard/admin",
-          action: "Open admin",
-          status: "Admin",
-        },
-        {
-          title: "City Management",
-          text: "Review city documents, publication status, and future city dashboard links.",
-          href: "/dashboard/admin/cities",
-          action: "Manage cities",
-          status: "Admin",
-        },
-        {
-          title: "Provider Management",
-          text: "Review provider ownership, roles, status, and public profile links.",
-          href: "/dashboard/admin/providers",
-          action: "Manage providers",
-          status: "Admin",
-        },
-        {
-          title: "Property Management",
-          text: "Review property listing status, city assignment, and coordinate readiness.",
-          href: "/dashboard/admin/properties",
-          action: "Manage properties",
-          status: "Admin",
-        },
-        {
-          title: "Approval Center",
-          text: "Review historical or legacy provider submissions that still use the approval workflow.",
-          href: "/dashboard/admin/approvals",
-          action: "Open approvals",
-          status: "Admin",
-        },
-        {
-          title: "Map health",
-          text: "Find cities with missing coordinates and map data that needs attention.",
-          href: "/dashboard/admin/map",
-          action: "Check map health",
-          status: "Admin",
-        },
-        {
-          title: "Sanity Studio",
-          text: "Open the underlying content studio while dashboard editing tools are still being built.",
-          href: "/studio",
-          action: "Open Studio",
-          status: "Admin",
-        },
-      ]
-    : [];
+  const counts = await client.fetch<DashboardCounts>(dashboardCountsQuery, {
+    isAdmin,
+    providerId: provider?._id || "",
+  });
+  const roles = Array.from(
+    new Set([provider?.primaryRole, ...(provider?.roles || [])].filter(Boolean)),
+  ) as string[];
+  const publicListings = counts.publicListings || 0;
+  const unavailableListings = Math.max(0, (counts.listings || 0) - publicListings);
 
   return (
     <DashboardShell
       eyebrow="Provider dashboard"
-      title="Private workspace"
-      intro="A single entry point for providers, city hosts, and admins. The cards below are generated from the signed-in account and its connected Sanity provider profile."
+      title={`Welcome${user.firstName ? `, ${user.firstName}` : ""}`}
+      intro="Your workspaces and actions are based on the roles and permissions connected to this account."
       side={
-        <section className="rounded-2xl border border-white/10 bg-white/10 p-5">
-          <p className="text-xs uppercase tracking-widest text-stone-400">Signed in</p>
-          <p className="mt-2 text-lg text-white">{signedInEmail || user.id}</p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {isAdmin ? (
-              <span className="rounded-full border border-[#d6a85a] bg-[#d6a85a] px-3 py-1 text-xs font-semibold uppercase tracking-widest text-[#1a1f2e]">
-                ADMIN
-              </span>
+        <section className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-medium text-white">{provider?.name || user.fullName || "Signed-in account"}</p>
+              <p className="mt-1 text-sm text-stone-400">{signedInEmail || user.id}</p>
+            </div>
+            {providerSlug ? (
+              <Link href={publicProfilePath(providerSlug) || "#"} className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-[#d6a85a]">
+                Public profile
+              </Link>
             ) : null}
-            <Pill>{accessLevel(provider, isAdmin)}</Pill>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {isAdmin ? <Pill>Administrator</Pill> : null}
+            {roles.map((role) => <Pill key={role}>{providerRoleLabel(role)}</Pill>)}
             {provider?.status ? <Pill>{provider.status}</Pill> : null}
-            {provider?.primaryRole ? <Pill>{providerRoleLabel(provider.primaryRole)}</Pill> : null}
+            {cities.map((city) => <Pill key={city._id || city.slug?.current}>{cityName(city)}</Pill>)}
           </div>
         </section>
       }
     >
-      {provider?.name ? (
-        <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
-          <p className="text-xs uppercase tracking-widest text-stone-400">Matched provider</p>
-          <h2 className="mt-3 text-2xl font-light text-white">{provider.name}</h2>
-          <p className="mt-3 leading-relaxed text-stone-300">
-            This match uses the provider document ownership fields: owner user id first, then
-            contact email.
-          </p>
-        </section>
-      ) : null}
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        {workspace.provider ? (
+          <Panel title="My Provider profile" eyebrow="Profile">
+            <ActionRow
+              title="Edit my profile"
+              detail={providerEdit.canEdit ? "Publish allowed profile fields" : "Self-editing is not enabled"}
+              href={providerEdit.canEdit ? "/account/profile/edit" : undefined}
+            />
+            <ActionRow title="View public profile" detail={provider?.status || "Not published"} href={publicProfilePath(providerSlug)} />
+            <ActionRow title="Languages" detail={`${provider?.ownership?.selfEditableFields?.includes("languages") ? "Editable" : "Shown on your public profile"}`} />
+            <ActionRow title="Cities served" detail={provider?.cities?.length ? provider.cities.map(cityName).join(", ") : "No cities listed"} />
+            <ActionRow title="Publication status" detail={provider?.status || "Not set"} />
+          </Panel>
+        ) : null}
 
-      <section className="mb-10">
-        <h2 className="mb-5 text-2xl font-light text-white">Account</h2>
-        <div className="grid gap-5 md:grid-cols-2">
-          <DashboardCard
-            title="Change password"
-            text="Manage your password and other sign-in security settings through Clerk."
-            href="/dashboard/account/security"
-            action="Open security settings"
-            status="Account security"
-          />
+        {workspace.cityHost ? (
+          <Panel title="City host workspace" eyebrow="Assigned cities">
+            {cities.map((city) => {
+              const slug = city.slug?.current;
+              return (
+                <ActionRow
+                  key={city._id || slug}
+                  title={cityName(city)}
+                  detail="Content, places, map tools and recent changes"
+                  href={slug ? `/dashboard/cities/${slug}` : undefined}
+                />
+              );
+            })}
+            <ActionRow title="Recent city changes" detail="Review your recent city updates" href="/dashboard/cities" />
+          </Panel>
+        ) : null}
 
-          <section className="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-xl shadow-black/10">
-            <p className="mb-3 text-xs uppercase tracking-widest text-[#d6a85a]">Current session</p>
-            <h2 className="text-xl font-medium text-white">Sign out</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-300">
-              End this dashboard session and return to the sign-in page.
-            </p>
-            <SignOutButton redirectUrl="/sign-in">
-              <button
-                type="button"
-                className="mt-5 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
-              >
-                Sign out
-              </button>
-            </SignOutButton>
-          </section>
-        </div>
+        {workspace.realEstate ? (
+          <Panel title="Real-estate workspace" eyebrow="Property listings">
+            <ActionRow title="Add property" detail="Create a listing linked to your Provider account" href="/dashboard/properties/new" />
+            <ActionRow title="My listings" detail={`${publicListings} public · ${unavailableListings} unavailable`} href="/dashboard/properties" count={counts.listings || 0} />
+            {workspace.provider ? <ActionRow title="Edit Provider profile" href={providerEdit.canEdit ? "/account/profile/edit" : undefined} detail={providerEdit.canEdit ? "Update your realtor profile" : "Self-editing is not enabled"} /> : null}
+          </Panel>
+        ) : null}
+
+        {workspace.admin ? (
+          <Panel title="Admin workspace" eyebrow="Administration">
+            <ActionRow title="Providers" href="/dashboard/admin/providers" />
+            <ActionRow title="Cities" href="/dashboard/admin/cities" />
+            <ActionRow title="Properties" href="/dashboard/admin/properties" count={counts.listings || 0} />
+            <ActionRow title="Provider changes" detail="Changes in the last 7 days" href="/dashboard/admin/provider-changes" count={counts.providerChanges || 0} />
+            <ActionRow title="City change log" href="/dashboard/admin/city-changes" />
+            <ActionRow title="Provider approvals" detail="Historical approval records" href="/dashboard/admin/approvals" />
+            <ActionRow title="Admin guide" href="/admin-guide" />
+            <ActionRow title="Sanity Studio" href="/studio" />
+          </Panel>
+        ) : null}
+
+        {!provider && !isAdmin ? (
+          <Panel title="Account not connected" eyebrow="Setup needed">
+            <ActionRow title="Ask an administrator for access" detail="Your signed-in account is not connected to a Provider profile yet." />
+            <ActionRow title="Return to the website" href="/" />
+          </Panel>
+        ) : null}
+      </div>
+
+      <section data-dashboard-secondary-account-actions className="mt-5 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
+        <Link href="/dashboard/account/security" className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-300 hover:text-white">
+          Account settings
+        </Link>
+        <SignOutButton redirectUrl="/sign-in">
+          <button type="button" className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-300 hover:text-white">
+            Sign out
+          </button>
+        </SignOutButton>
       </section>
-
-      <section className="mb-10">
-        <h2 className="mb-5 text-2xl font-light text-white">Provider tools</h2>
-        <div className="grid gap-5 md:grid-cols-2">
-          {providerCards.map((card) => (
-            <DashboardCard key={card.title} {...card} />
-          ))}
-        </div>
-      </section>
-
-      {cityHostCards.length > 0 ? (
-        <section className="mb-10">
-          <h2 className="mb-5 text-2xl font-light text-white">Managed city tools</h2>
-          <div className="grid gap-5 md:grid-cols-2">
-            {cityHostCards.map((card) => (
-              <DashboardCard key={card.title} {...card} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {adminCards.length > 0 ? (
-        <section>
-          <h2 className="mb-5 text-2xl font-light text-white">Admin tools</h2>
-          <div className="grid gap-5 md:grid-cols-2">
-            {adminCards.map((card) => (
-              <DashboardCard key={card.title} {...card} />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {!provider && !isAdmin ? (
-        <section className="mt-10 rounded-2xl border border-white/10 bg-white/10 p-6">
-          <h2 className="text-xl font-medium text-white">Need access?</h2>
-          <p className="mt-3 text-sm leading-6 text-stone-300">
-            Ask an admin to connect this Clerk account to a Sanity provider using the owner user id
-            or contact email fields.
-          </p>
-          <Link
-            href="/"
-            className="mt-5 inline-flex rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
-          >
-            Return home
-          </Link>
-        </section>
-      ) : null}
     </DashboardShell>
   );
 }

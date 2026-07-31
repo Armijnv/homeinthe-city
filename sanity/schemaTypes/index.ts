@@ -5,6 +5,7 @@ import { provider } from "./provider";
 import { providerChangeLog } from "./providerChangeLog";
 import { providerSubmission } from "./providerSubmission";
 import { propertyListing } from "./propertyListing";
+import { propertyChangeLog } from "./propertyChangeLog";
 import { servicePage } from "./servicePage";
 
 export const schemaTypes = [
@@ -14,6 +15,7 @@ export const schemaTypes = [
   provider,
   providerChangeLog,
   providerSubmission,
+  propertyChangeLog,
   propertyListing,
   servicePage,
 ];

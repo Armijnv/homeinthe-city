@@ -280,6 +280,8 @@ export const propertyListing = defineType({
       title: "Linked Realtor / Provider",
       type: "reference",
       to: [{ type: "provider" }],
+      description:
+        "Authoritative dashboard owner. Real-estate Providers may edit only listings linked to their own Provider document.",
     }),
     defineField({
       name: "contact",
