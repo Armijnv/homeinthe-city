@@ -101,6 +101,14 @@ export const city = defineType({
     }),
 
     defineField({
+      name: "country",
+      title: "Country",
+      type: "string",
+      description:
+        "Country name used for public city and property geographic metadata.",
+    }),
+
+    defineField({
       name: "latitude",
       title: "City Latitude",
       type: "number",

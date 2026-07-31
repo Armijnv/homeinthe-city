@@ -1,5 +1,29 @@
 export type ProviderSubmissionPatch = Record<string, unknown>;
 
+export type ProviderApprovalRevisionStatus =
+  | "ready"
+  | "legacy-baseline-missing"
+  | "provider-changed";
+
+export function providerApprovalRevisionStatus(
+  baselineProviderRevision?: string,
+  currentProviderRevision?: string,
+): ProviderApprovalRevisionStatus {
+  if (!baselineProviderRevision) return "legacy-baseline-missing";
+  if (baselineProviderRevision !== currentProviderRevision) return "provider-changed";
+  return "ready";
+}
+
+export function providerApprovalRevisionMessage(
+  status: Exclude<ProviderApprovalRevisionStatus, "ready">,
+) {
+  if (status === "legacy-baseline-missing") {
+    return "This legacy submission has no Provider baseline revision, so it cannot be approved safely. Preserve or reject it and ask the provider to save and submit a new draft.";
+  }
+
+  return "The Provider profile changed after this submission was created. Approval was refused so the current profile and pending submission are both preserved. Review the newer Provider changes before asking for a new submission.";
+}
+
 export const allowedProfileSnapshotFields = [
   "name",
   "slug",

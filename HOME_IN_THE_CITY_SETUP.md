@@ -82,6 +82,10 @@ Configured schemas:
 - `providerSubmission`
 - `servicePage`
 
+City documents store `country` alongside latitude and longitude for public
+geographic metadata. Use `npm run report:cities` to report missing values
+without modifying Sanity.
+
 Sanity integrations:
 
 - `next-sanity` client for public reads.
@@ -147,6 +151,7 @@ Draft edit model:
 Submission fields:
 
 - `provider`
+- `baselineProviderRevision`
 - `ownerUserId`
 - `ownerEmail`
 - `status`
@@ -155,6 +160,13 @@ Submission fields:
 - `reviewedAt`
 - `reviewedBy`
 - `reviewNote`
+
+`baselineProviderRevision` captures the Provider document revision when a
+draft is first saved. Approval is refused if the Provider has changed since
+that revision. Older review submissions without a baseline are preserved but
+must not be approved; reject and request a new submission instead. Do not
+backfill older drafts or review submissions with the current revision, because
+that would conceal whether the Provider changed after the original draft.
 
 Last added: 2026-05-21
 

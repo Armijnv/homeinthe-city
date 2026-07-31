@@ -35,8 +35,19 @@ Run these checks locally before pushing:
 ```bash
 npm run lint
 npx tsc --noEmit
+npm test
 npm run build
 ```
+
+Run the read-only City geography report with configured Sanity environment
+values:
+
+```bash
+npm run report:cities
+```
+
+The report lists each published City document and whether `country`,
+`latitude`, and `longitude` are present. It does not write to Sanity.
 
 SEO routes are handled by `app/sitemap.ts` and `app/robots.ts`.
 

@@ -4,6 +4,8 @@ import type { DocumentActionComponent } from "sanity";
 import { useClient, useCurrentUser } from "sanity";
 import { apiVersion } from "../env";
 import {
+  providerApprovalRevisionMessage,
+  providerApprovalRevisionStatus,
   providerPatchFromSnapshot,
   publishedId,
 } from "../lib/providerSubmissionApproval";
@@ -17,6 +19,7 @@ type ProviderSubmissionDocument = {
   _type?: string;
   status?: string;
   provider?: ReferenceValue;
+  baselineProviderRevision?: string;
   profileSnapshot?: Record<string, unknown>;
 };
 
@@ -59,19 +62,48 @@ export const ApproveProviderSubmissionAction: DocumentActionComponent = (props) 
         return;
       }
 
-      await client
-        .transaction()
-        .patch(providerId, {
-          set: providerPatch,
-        })
-        .patch(submissionId, {
-          set: {
-            status: "approved",
-            reviewedAt: new Date().toISOString(),
-            reviewedBy: reviewerName(currentUser),
-          },
-        })
-        .commit();
+      const provider = await client.getDocument<{ _rev?: string }>(providerId);
+      const revisionStatus = providerApprovalRevisionStatus(
+        document?.baselineProviderRevision,
+        provider?._rev,
+      );
+
+      if (revisionStatus !== "ready") {
+        window.alert(providerApprovalRevisionMessage(revisionStatus));
+        return;
+      }
+      const baselineProviderRevision = document?.baselineProviderRevision;
+
+      if (!baselineProviderRevision) return;
+
+      try {
+        await client
+          .transaction()
+          .patch(providerId, (patch) =>
+            patch
+              .ifRevisionId(baselineProviderRevision)
+              .set(providerPatch),
+          )
+          .patch(submissionId, {
+            set: {
+              status: "approved",
+              reviewedAt: new Date().toISOString(),
+              reviewedBy: reviewerName(currentUser),
+            },
+          })
+          .commit();
+      } catch (error) {
+        const candidate = error as { message?: string; statusCode?: number };
+        if (
+          candidate.statusCode === 409 ||
+          candidate.message?.toLowerCase().includes("revision")
+        ) {
+          window.alert(providerApprovalRevisionMessage("provider-changed"));
+          return;
+        }
+
+        throw error;
+      }
 
       props.onComplete();
     },

@@ -27,6 +27,10 @@ type ProviderSubmission = {
   profileSnapshot?: Record<string, unknown>;
 };
 
+type PageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
+
 const pendingProviderSubmissionsQuery = `
   *[_type == "providerSubmission" && status == "review"]|order(submittedAt desc){
     _id,
@@ -59,11 +63,12 @@ function changeSummary(snapshot?: Record<string, unknown>) {
   return fields.join(", ");
 }
 
-export default async function ApprovalCenterPage() {
+export default async function ApprovalCenterPage({ searchParams }: PageProps) {
   await requireAdmin("/dashboard/admin/approvals");
-  const submissions = await client.fetch<ProviderSubmission[]>(
-    pendingProviderSubmissionsQuery,
-  );
+  const [{ error }, submissions] = await Promise.all([
+    searchParams,
+    client.fetch<ProviderSubmission[]>(pendingProviderSubmissionsQuery),
+  ]);
 
   return (
     <DashboardShell
@@ -72,6 +77,11 @@ export default async function ApprovalCenterPage() {
       intro="Review pending provider profile edits and approve or reject them without opening Sanity Studio."
     >
       <BackToDashboard />
+      {error ? (
+        <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
+          {error}
+        </p>
+      ) : null}
       <DataTable
         headers={[
           "Provider",
@@ -102,6 +112,11 @@ export default async function ApprovalCenterPage() {
             <td className="px-5 py-4">
               <form action={approveProviderSubmissionAction}>
                 <input type="hidden" name="submissionId" value={submission._id} />
+                <input
+                  type="hidden"
+                  name="returnTo"
+                  value="/dashboard/admin/approvals"
+                />
                 <button
                   type="submit"
                   className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"

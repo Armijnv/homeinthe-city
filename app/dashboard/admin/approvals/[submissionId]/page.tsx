@@ -21,6 +21,7 @@ type PageProps = {
   params: Promise<{
     submissionId: string;
   }>;
+  searchParams: Promise<{ error?: string }>;
 };
 
 type ProviderSubmissionDetail = {
@@ -58,8 +59,11 @@ function displayValue(value: unknown) {
   return JSON.stringify(value, null, 2);
 }
 
-export default async function ProviderSubmissionDraftPage({ params }: PageProps) {
-  const { submissionId } = await params;
+export default async function ProviderSubmissionDraftPage({
+  params,
+  searchParams,
+}: PageProps) {
+  const [{ submissionId }, { error }] = await Promise.all([params, searchParams]);
   await requireAdmin(`/dashboard/admin/approvals/${submissionId}`);
   const id = publishedId(decodeURIComponent(submissionId));
 
@@ -85,10 +89,21 @@ export default async function ProviderSubmissionDraftPage({ params }: PageProps)
         <TableLink href="/dashboard/admin/approvals">Back to approvals</TableLink>
       </div>
 
+      {error ? (
+        <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
+          {error}
+        </p>
+      ) : null}
+
       {submission.status === "review" ? (
         <section className="mb-8 flex flex-wrap gap-3 rounded-2xl border border-white/10 bg-white/10 p-6">
           <form action={approveProviderSubmissionAction}>
             <input type="hidden" name="submissionId" value={submission._id} />
+            <input
+              type="hidden"
+              name="returnTo"
+              value={`/dashboard/admin/approvals/${encodeURIComponent(submission._id)}`}
+            />
             <button
               type="submit"
               className="rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"

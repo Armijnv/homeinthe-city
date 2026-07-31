@@ -13,6 +13,7 @@ import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
 type ProviderMatch = {
   _id: string;
+  _rev: string;
   slug?: {
     _type?: "slug";
     current?: string;
@@ -56,6 +57,7 @@ const matchedProviderForAccountQuery = `
     )
   ]{
     _id,
+    _rev,
     slug,
     roles,
     primaryRole,
@@ -308,6 +310,7 @@ async function saveProviderProfileDraftForCurrentUser(formData: FormData) {
       },
       ownerUserId,
       ownerEmail,
+      baselineProviderRevision: provider._rev,
       status: "draft",
     })
     .patch(submissionId, {

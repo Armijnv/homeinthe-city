@@ -339,6 +339,14 @@ export const providerSubmission = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "baselineProviderRevision",
+      title: "Baseline Provider Revision",
+      type: "string",
+      readOnly: true,
+      description:
+        "Provider document revision captured when this draft was first saved. Approval is refused if the Provider has changed.",
+    }),
+    defineField({
       name: "ownerUserId",
       title: "Owner User ID",
       type: "string",

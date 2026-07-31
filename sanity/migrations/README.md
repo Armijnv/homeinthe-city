@@ -18,6 +18,17 @@ sanity dataset import sanity/migrations/provider-armijn.ndjson production --repl
 
 This does not remove or modify the legacy `host` document. The application keeps the document for historical compatibility but no longer renders Armijn as a separate host profile.
 
+## Provider submission baseline revisions
+
+New Provider drafts store `baselineProviderRevision`, copied from the linked
+Provider when the draft is first saved. No bulk data migration is required.
+
+- Existing drafts and review submissions without a baseline are preserved and
+  cannot be approved safely. Reject them and request a new submission.
+- Do not backfill an existing submission with the current Provider revision;
+  that would hide whether the Provider changed after the original draft was
+  made.
+
 ## City recommendation guides
 
 The editorial recommendation redesign is intentionally additive:
