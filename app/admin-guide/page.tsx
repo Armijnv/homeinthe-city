@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { requireAdmin } from "@/app/lib/dashboard";
 import { noindexRobots } from "@/app/lib/noindexMetadata";
 
 type GuideSection = {
@@ -80,7 +81,9 @@ export const metadata: Metadata = {
   robots: noindexRobots,
 };
 
-export default function AdminGuidePage() {
+export default async function AdminGuidePage() {
+  await requireAdmin("/admin-guide");
+
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
       <div className="mx-auto max-w-3xl">
