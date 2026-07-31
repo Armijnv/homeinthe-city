@@ -27,6 +27,7 @@ export type DashboardProvider = {
     ownerUserId?: string;
     ownershipStatus?: string;
     selfEditEnabled?: boolean;
+    selfEditableFields?: string[];
   };
 };
 
@@ -55,13 +56,8 @@ export function managedCities(provider: DashboardProvider | null | undefined) {
   return provider?.managedCities?.filter((city) => city.slug?.current) || [];
 }
 
-export function isManagedCity(
-  provider: DashboardProvider | null | undefined,
-  citySlug: string,
-) {
-  return Boolean(
-    managedCities(provider).some((city) => city.slug?.current === citySlug),
-  );
+export function isManagedCity(provider: DashboardProvider | null | undefined, citySlug: string) {
+  return Boolean(managedCities(provider).some((city) => city.slug?.current === citySlug));
 }
 
 export function accessLevel(provider: DashboardProvider | null, isAdmin: boolean) {

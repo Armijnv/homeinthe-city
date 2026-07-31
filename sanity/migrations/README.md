@@ -18,10 +18,15 @@ sanity dataset import sanity/migrations/provider-armijn.ndjson production --repl
 
 This does not remove or modify the legacy `host` document. The application keeps the document for historical compatibility but no longer renders Armijn as a separate host profile.
 
-## Provider submission baseline revisions
+## Historical Provider submission baseline revisions
 
-New Provider drafts store `baselineProviderRevision`, copied from the linked
-Provider when the draft is first saved. No bulk data migration is required.
+Provider self-editing now publishes allowlisted fields directly with a Provider
+change-log entry. It does not create new `providerSubmission` documents.
+
+Existing submission records and the approval UI remain for historical
+compatibility. Historical drafts that already store `baselineProviderRevision`
+continue to use the original revision-safe approval behavior. No bulk data
+migration is required.
 
 - Existing drafts and review submissions without a baseline are preserved and
   cannot be approved safely. Reject them and request a new submission.

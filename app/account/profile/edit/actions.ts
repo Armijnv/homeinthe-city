@@ -1,25 +1,45 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import {
-  effectiveOwnerUserId,
-  providerOwnershipMatchFilter,
-  selectProviderForUser,
-  verifiedEmailAddresses,
+  canEditProviderField,
+  changedProviderFields,
+  disallowedProviderSelfEditFormFields,
+  enforceProviderEditableFields,
+  providerPatchFromChanges,
+  providerSelfEditRevisionStatus,
+  type ProviderEditCapability,
+  type ProviderFieldChange,
 } from "@/app/lib/clerkIdentity";
+import { requireProviderSelfEdit } from "@/app/lib/dashboard";
+import { providerChangeLogDocument } from "@/app/lib/providerChangeLog";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 
-type ProviderMatch = {
+type ProviderRecord = {
   _id: string;
   _rev: string;
+  name?: string;
   slug?: {
-    _type?: "slug";
     current?: string;
   };
-  roles?: string[];
-  primaryRole?: string;
+  headline_en?: string;
+  headline_pt?: string;
+  headline_nl?: string;
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
+  about_en?: string;
+  about_pt?: string;
+  about_nl?: string;
+  contactOptions?: Record<string, unknown>;
+  cities?: Array<{
+    _type?: "reference";
+    _key?: string;
+    _ref?: string;
+  }>;
+  languages?: Array<Record<string, unknown>>;
   mainPhoto?: {
     _type?: "image";
     alt?: string;
@@ -31,14 +51,7 @@ type ProviderMatch = {
   ownership?: {
     contactEmail?: string;
     ownerUserId?: string;
-  };
-};
-
-type ExistingSubmission = {
-  _id: string;
-  ownerUserId?: string;
-  profileSnapshot?: {
-    mainPhoto?: ProviderMatch["mainPhoto"];
+    ownershipStatus?: string;
   };
 };
 
@@ -49,18 +62,24 @@ class ProfileWorkflowError extends Error {
   }
 }
 
-const matchedProviderForAccountQuery = `
-  *[
-    _type == "provider" &&
-    (
-      ${providerOwnershipMatchFilter}
-    )
-  ]{
+const providerForSelfEditQuery = `
+  *[_type == "provider" && _id == $providerId][0]{
     _id,
     _rev,
+    name,
     slug,
-    roles,
-    primaryRole,
+    headline_en,
+    headline_pt,
+    headline_nl,
+    intro_en,
+    intro_pt,
+    intro_nl,
+    about_en,
+    about_pt,
+    about_nl,
+    contactOptions,
+    cities[]{_type, _key, _ref},
+    languages,
     mainPhoto{
       _type,
       alt,
@@ -68,13 +87,20 @@ const matchedProviderForAccountQuery = `
     },
     ownership{
       contactEmail,
-      ownerUserId
+      ownerUserId,
+      ownershipStatus
     }
   }
 `;
 
 const editableLanguageCodes = ["en", "pt", "nl"] as const;
-const editableLanguages = ["language-0", "language-1", "language-2", "language-3", "language-4"];
+const editableLanguages = [
+  "language-0",
+  "language-1",
+  "language-2",
+  "language-3",
+  "language-4",
+];
 const maxProfilePhotoSize = 10 * 1024 * 1024;
 
 function value(formData: FormData, key: string) {
@@ -99,6 +125,20 @@ function keyFromValue(nextValue: string, fallback: string) {
   return nextValue.toLowerCase().replace(/[^a-z0-9_-]+/g, "-") || fallback;
 }
 
+function definedOnly(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(definedOnly);
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([, entryValue]) => entryValue !== undefined)
+        .map(([key, entryValue]) => [key, definedOnly(entryValue)]),
+    );
+  }
+
+  return value;
+}
+
 async function uploadedProfilePhotoAsset(formData: FormData) {
   const entry = formData.get("profile-photo");
 
@@ -118,30 +158,24 @@ async function uploadedProfilePhotoAsset(formData: FormData) {
   });
 
   return {
-    _type: "reference",
+    _type: "reference" as const,
     _ref: asset._id,
   };
 }
 
-async function imageSnapshot(
-  provider: ProviderMatch,
-  existingSubmission: ExistingSubmission | null,
-  formData: FormData,
-) {
+async function imageValue(provider: ProviderRecord, formData: FormData) {
   const uploadedAsset = await uploadedProfilePhotoAsset(formData);
-  const existingImage =
-    existingSubmission?.profileSnapshot?.mainPhoto || provider.mainPhoto;
-  const asset = uploadedAsset || existingImage?.asset;
-  const alt = optionalValue(formData, "main-photo-alt") || existingImage?.alt;
+  const asset = uploadedAsset || provider.mainPhoto?.asset;
+  const alt = optionalValue(formData, "main-photo-alt") || provider.mainPhoto?.alt;
 
   if (!asset?._ref && !alt) return undefined;
 
   return {
-    _type: "image",
+    _type: "image" as const,
     ...(asset?._ref
       ? {
           asset: {
-            _type: "reference",
+            _type: "reference" as const,
             _ref: asset._ref,
           },
         }
@@ -150,24 +184,30 @@ async function imageSnapshot(
   };
 }
 
-async function buildProfileSnapshot(
-  provider: ProviderMatch,
-  existingSubmission: ExistingSubmission | null,
+function cityReferences(provider: ProviderRecord, cityIds: string[]) {
+  return cityIds.map((cityId) => {
+    const existing = provider.cities?.find((city) => city._ref === cityId);
+
+    return (
+      existing || {
+        _type: "reference" as const,
+        _ref: cityId,
+        _key: keyFromValue(cityId, "city"),
+      }
+    );
+  });
+}
+
+async function profileCandidate(
+  provider: ProviderRecord,
   formData: FormData,
+  capability: ProviderEditCapability,
 ) {
-  const mainPhoto = await imageSnapshot(provider, existingSubmission, formData);
-  const snapshot: Record<string, unknown> = {
+  const mainPhoto = canEditProviderField(capability, "mainPhoto")
+    ? await imageValue(provider, formData)
+    : undefined;
+  const candidate: Record<string, unknown> = {
     name: value(formData, "name"),
-    ...(provider.slug?.current
-      ? {
-          slug: {
-            _type: "slug",
-            current: provider.slug.current,
-          },
-        }
-      : {}),
-    roles: provider.roles || [],
-    primaryRole: provider.primaryRole,
     contactOptions: {
       _type: "object",
       email: optionalValue(formData, "contact-email"),
@@ -176,11 +216,7 @@ async function buildProfileSnapshot(
       website: optionalValue(formData, "contact-website"),
       preferredContact: optionalValue(formData, "preferred-contact"),
     },
-    cities: selectedValues(formData, "cities").map((cityId) => ({
-      _type: "reference",
-      _ref: cityId,
-      _key: keyFromValue(cityId, "city"),
-    })),
+    cities: cityReferences(provider, selectedValues(formData, "cities")),
     languages: editableLanguages
       .map((rowKey, index) => {
         const language = value(formData, `${rowKey}-code`);
@@ -202,30 +238,78 @@ async function buildProfileSnapshot(
   };
 
   editableLanguageCodes.forEach((language) => {
-    snapshot[`headline_${language}`] = value(formData, `headline_${language}`);
-    snapshot[`intro_${language}`] = value(formData, `intro_${language}`);
-    snapshot[`about_${language}`] = value(formData, `about_${language}`);
+    candidate[`headline_${language}`] = value(formData, `headline_${language}`);
+    candidate[`intro_${language}`] = value(formData, `intro_${language}`);
+    candidate[`about_${language}`] = value(formData, `about_${language}`);
   });
 
-  return snapshot;
+  return enforceProviderEditableFields(candidate, capability);
 }
 
-async function getSignedInProvider() {
-  const user = await currentUser();
+function isRevisionConflict(error: unknown) {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as { message?: string; statusCode?: number };
+  return (
+    candidate.statusCode === 409 ||
+    candidate.message?.toLowerCase().includes("revision") === true
+  );
+}
 
-  if (!user?.id) {
-    redirect("/sign-in");
+function staleEditError() {
+  return new ProfileWorkflowError(
+    "This profile changed after you opened the editor. Reload the page and review the latest version before publishing again.",
+  );
+}
+
+function profileErrorRedirect(error: unknown): never {
+  const message =
+    error instanceof ProfileWorkflowError
+      ? error.message
+      : "We could not publish your profile changes. Please try again.";
+
+  redirect(`/account/profile/edit?error=${encodeURIComponent(message)}`);
+}
+
+function revalidateProviderPublishing(slug?: string) {
+  revalidatePath("/dashboard");
+  revalidatePath("/account/profile/edit");
+  revalidatePath("/dashboard/admin/providers");
+  revalidatePath("/dashboard/admin/provider-changes");
+  revalidatePath("/providers");
+  revalidatePath("/pt/profissionais");
+  revalidatePath("/nl/professionals");
+  revalidatePath("/sitemap.xml");
+
+  if (!slug) return;
+  revalidatePath(`/providers/${slug}`);
+  revalidatePath(`/pt/profissionais/${slug}`);
+  revalidatePath(`/nl/professionals/${slug}`);
+}
+
+async function publishProviderProfileForCurrentUser(formData: FormData) {
+  const context = await requireProviderSelfEdit("/account/profile/edit");
+
+  if (!context.signedInEmail) {
+    throw new ProfileWorkflowError(
+      "A verified Clerk email is required to publish Provider changes.",
+    );
   }
 
-  const emails = verifiedEmailAddresses(user);
-  const providerMatches = await client.fetch<ProviderMatch[]>(
-    matchedProviderForAccountQuery,
-    {
-      userId: user.id,
-      emails,
-    },
+  const disallowedFields = disallowedProviderSelfEditFormFields(
+    Array.from(formData.keys()),
+    context.providerEdit,
   );
-  const provider = selectProviderForUser(providerMatches, user.id);
+
+  if (disallowedFields.length) {
+    throw new ProfileWorkflowError(
+      `These fields are not allowed for Provider self-editing: ${disallowedFields.join(", ")}.`,
+    );
+  }
+
+  const provider = await client.fetch<ProviderRecord | null>(
+    providerForSelfEditQuery,
+    { providerId: context.provider._id },
+  );
 
   if (!provider?._id) {
     throw new ProfileWorkflowError(
@@ -233,131 +317,85 @@ async function getSignedInProvider() {
     );
   }
 
-  const ownerEmail = provider.ownership?.contactEmail || emails[0];
-
-  if (!ownerEmail) {
-    throw new ProfileWorkflowError(
-      "Your provider profile does not have an email address.",
-    );
+  const submittedRevision = value(formData, "provider-revision");
+  if (
+    !submittedRevision ||
+    providerSelfEditRevisionStatus(submittedRevision, provider._rev) === "stale"
+  ) {
+    throw staleEditError();
   }
 
-  const ownerUserId = effectiveOwnerUserId(
-    provider.ownership?.ownerUserId,
-    user.id,
+  const candidate = await profileCandidate(provider, formData, context.providerEdit);
+  const profileChanges = changedProviderFields(
+    provider as unknown as Record<string, unknown>,
+    candidate,
   );
+  const ownershipChanges: ProviderFieldChange[] = [];
+  const patchValues = definedOnly(
+    providerPatchFromChanges(profileChanges),
+  ) as Record<string, unknown>;
 
-  return {
-    provider,
-    ownerEmail,
-    ownerUserId,
-  };
-}
-
-function profileErrorRedirect(error: unknown): never {
-  const message =
-    error instanceof ProfileWorkflowError
-      ? error.message
-      : "We could not save your profile changes. Please try again.";
-
-  redirect(`/account/profile/edit?error=${encodeURIComponent(message)}`);
-}
-
-async function saveProviderProfileDraftForCurrentUser(formData: FormData) {
-  const { provider, ownerEmail, ownerUserId } = await getSignedInProvider();
-  const existingSubmission = await client.fetch<ExistingSubmission | null>(
-    `*[
-      _type == "providerSubmission" &&
-      provider._ref == $providerId &&
-      status == "draft" &&
-      (
-        lower(ownerEmail) == $ownerEmail ||
-        ownerUserId == $ownerUserId
-      )
-    ] | order(_updatedAt desc)[0]{
-      _id,
-      ownerUserId,
-      profileSnapshot{
-        mainPhoto{
-          _type,
-          alt,
-          asset
-        }
-      }
-    }`,
-    {
-      providerId: provider._id,
-      ownerEmail: ownerEmail.toLowerCase(),
-      ownerUserId,
-    },
-  );
-  const profileSnapshot = await buildProfileSnapshot(
-    provider,
-    existingSubmission,
-    formData,
-  );
-
-  const submissionId =
-    existingSubmission?._id || `providerSubmission.${crypto.randomUUID()}`;
-
-  await writeClient
-    .transaction()
-    .createIfNotExists({
-      _id: submissionId,
-      _type: "providerSubmission",
-      provider: {
-        _type: "reference",
-        _ref: provider._id,
-      },
-      ownerUserId,
-      ownerEmail,
-      baselineProviderRevision: provider._rev,
-      status: "draft",
-    })
-    .patch(submissionId, {
-      set: {
-        provider: {
-          _type: "reference",
-          _ref: provider._id,
-        },
-        ownerUserId,
-        ownerEmail,
-        status: "draft",
-        profileSnapshot,
-      },
-    })
-    .commit();
-
-  return submissionId;
-}
-
-export async function saveProviderProfileDraft(formData: FormData) {
-  try {
-    assertSanityWriteToken();
-    await saveProviderProfileDraftForCurrentUser(formData);
-  } catch (error) {
-    unstable_rethrow(error);
-    profileErrorRedirect(error);
+  if (context.providerEdit.shouldBindOwnerUserId) {
+    if (provider.ownership?.ownerUserId !== context.user.id) {
+      ownershipChanges.push({
+        field: "ownership.ownerUserId",
+        beforeValue: provider.ownership?.ownerUserId,
+        afterValue: context.user.id,
+      });
+    }
+    if (provider.ownership?.ownershipStatus !== "claimed") {
+      ownershipChanges.push({
+        field: "ownership.ownershipStatus",
+        beforeValue: provider.ownership?.ownershipStatus,
+        afterValue: "claimed",
+      });
+    }
+    patchValues["ownership.ownerUserId"] = context.user.id;
+    patchValues["ownership.ownershipStatus"] = "claimed";
   }
 
-  redirect("/account/profile/edit?saved=1");
-}
+  const changes = [...profileChanges, ...ownershipChanges];
+  if (!changes.length) return { changed: false, slug: provider.slug?.current };
 
-export async function submitProviderProfileForReview(formData: FormData) {
+  const changedFieldNames = changes.map((change) => change.field);
+  const changeLog = providerChangeLogDocument({
+    context,
+    providerId: provider._id,
+    providerName: provider.name || "Provider",
+    providerSlug: provider.slug?.current,
+    changeType: "providerSelfPublished",
+    description: `Provider published changes to ${changedFieldNames.join(", ")}.`,
+    changes,
+  });
+
   try {
-    assertSanityWriteToken();
-    const submissionId = await saveProviderProfileDraftForCurrentUser(formData);
-
     await writeClient
-      .patch(submissionId)
-      .set({
-        status: "review",
-        submittedAt: new Date().toISOString(),
-      })
+      .transaction()
+      .patch(provider._id, (patch) =>
+        patch.ifRevisionId(submittedRevision).set(patchValues),
+      )
+      .create(changeLog)
       .commit();
   } catch (error) {
+    if (isRevisionConflict(error)) throw staleEditError();
+    throw error;
+  }
+
+  revalidateProviderPublishing(provider.slug?.current);
+  return { changed: true, slug: provider.slug?.current };
+}
+
+export async function publishProviderProfileChanges(formData: FormData) {
+  try {
+    assertSanityWriteToken();
+    const result = await publishProviderProfileForCurrentUser(formData);
+    redirect(
+      result.changed
+        ? "/account/profile/edit?published=1"
+        : "/account/profile/edit?unchanged=1",
+    );
+  } catch (error) {
     unstable_rethrow(error);
     profileErrorRedirect(error);
   }
-
-  redirect("/account/profile/edit?submitted=1");
 }

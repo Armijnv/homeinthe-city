@@ -1,9 +1,13 @@
+import "server-only";
+
 import { currentUser, type User } from "@clerk/nextjs/server";
 import { notFound, redirect } from "next/navigation";
 import {
   adminStatusForIdentity,
+  providerEditCapability,
   providerOwnershipMatchFilter,
   selectProviderForUser,
+  type ProviderEditCapability,
   verifiedEmailAddresses,
   verifiedPrimaryEmailAddress,
 } from "@/app/lib/clerkIdentity";
@@ -34,6 +38,7 @@ export type DashboardContext = {
   isAdmin: boolean;
   adminReason: string;
   isCityHost: boolean;
+  providerEdit: ProviderEditCapability;
 };
 
 export const matchedProviderForDashboardQuery = `
@@ -73,7 +78,8 @@ export const matchedProviderForDashboardQuery = `
       contactEmail,
       ownerUserId,
       ownershipStatus,
-      selfEditEnabled
+      selfEditEnabled,
+      selfEditableFields
     }
   }
 `;
@@ -92,10 +98,7 @@ export const cityForDashboardQuery = `
 `;
 
 export function configuredAdminEmails() {
-  const raw = [
-    process.env.DASHBOARD_ADMIN_EMAILS,
-    process.env.ADMIN_EMAILS,
-  ]
+  const raw = [process.env.DASHBOARD_ADMIN_EMAILS, process.env.ADMIN_EMAILS]
     .filter(Boolean)
     .join(",");
 
@@ -135,6 +138,12 @@ export async function getDashboardContext(returnTo = "/dashboard") {
   );
   const provider = selectProviderForUser(providerMatches, user.id);
   const adminStatus = adminStatusForUser(user);
+  const providerEdit = providerEditCapability({
+    provider,
+    userId: user.id,
+    verifiedEmails: emails,
+    isAdmin: adminStatus.isAdmin,
+  });
 
   return {
     user,
@@ -144,7 +153,21 @@ export async function getDashboardContext(returnTo = "/dashboard") {
     isAdmin: adminStatus.isAdmin,
     adminReason: adminStatus.reason,
     isCityHost: managedCities(provider).length > 0,
+    providerEdit,
   } satisfies DashboardContext;
+}
+
+export async function requireProviderSelfEdit(returnTo = "/account/profile/edit") {
+  const context = await getDashboardContext(returnTo);
+
+  if (!context.provider || !context.providerEdit.canEdit) {
+    notFound();
+  }
+
+  return {
+    ...context,
+    provider: context.provider,
+  };
 }
 
 export async function requireAdmin(returnTo = "/dashboard/admin") {
@@ -167,10 +190,7 @@ export async function requireCityHost(citySlug: string) {
     notFound();
   }
 
-  if (
-    !context.isAdmin &&
-    (!context.isCityHost || !isManagedCity(context.provider, citySlug))
-  ) {
+  if (!context.isAdmin && (!context.isCityHost || !isManagedCity(context.provider, citySlug))) {
     notFound();
   }
 

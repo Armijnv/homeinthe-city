@@ -11,9 +11,6 @@ const roleOptions = [
 
 const selfEditableFieldOptions = [
   { title: "Name", value: "name" },
-  { title: "Slug", value: "slug" },
-  { title: "Roles", value: "roles" },
-  { title: "Primary role", value: "primaryRole" },
   { title: "Cities", value: "cities" },
   { title: "Languages", value: "languages" },
   { title: "Headlines", value: "headlines" },
@@ -64,22 +61,20 @@ export const provider = defineType({
       name: "ownership",
       title: "Ownership",
       type: "object",
-      description:
-        "Preparation for future profile self-editing. This does not grant access by itself.",
+      description: "Server-enforced account ownership and Provider self-editing policy.",
       fields: [
         defineField({
           name: "contactEmail",
           title: "Contact Email",
           type: "email",
-          description:
-            "Email to verify and connect with a future owner account.",
+          description: "Email to verify and connect with a future owner account.",
         }),
         defineField({
           name: "ownerUserId",
-          title: "Future Owner User ID",
+          title: "Owner Clerk User ID",
           type: "string",
           description:
-            "Stable auth user id once profile accounts exist. Leave empty until ownership is verified.",
+            "Stable Clerk user ID. Verified-email reconnection fills this value when an unbound Provider first saves successfully.",
         }),
         defineField({
           name: "ownershipStatus",
@@ -93,6 +88,8 @@ export const provider = defineType({
               { title: "Claimed", value: "claimed" },
             ],
           },
+          description:
+            "Unbound and legacy records may reconnect by verified email. A successful reconnection becomes claimed.",
         }),
         defineField({
           name: "selfEditEnabled",
@@ -100,16 +97,17 @@ export const provider = defineType({
           type: "boolean",
           initialValue: false,
           description:
-            "Keep disabled until app authentication and document ownership checks are implemented.",
+            "Server-side switch for direct allowlisted Provider publishing. Administrators retain management access.",
         }),
         defineField({
           name: "selfEditableFields",
-          title: "Future Self-Editable Fields",
+          title: "Self-Editable Fields",
           type: "array",
           of: [{ type: "string" }],
           options: { list: selfEditableFieldOptions },
+          validation: (Rule) => Rule.unique(),
           description:
-            "Allowlist for a future profile editor. Server-side checks still need to enforce this.",
+            "Server-enforced allowlist for fields a Provider may publish directly.",
         }),
       ],
     }),
@@ -212,16 +210,36 @@ export const provider = defineType({
       ],
     }),
 
-    defineField({ name: "headline_en", title: "Headline (English)", type: "string" }),
-    defineField({ name: "headline_pt", title: "Headline (Portuguese)", type: "string" }),
-    defineField({ name: "headline_nl", title: "Headline (Dutch)", type: "string" }),
+    defineField({
+      name: "headline_en",
+      title: "Headline (English)",
+      type: "string",
+    }),
+    defineField({
+      name: "headline_pt",
+      title: "Headline (Portuguese)",
+      type: "string",
+    }),
+    defineField({
+      name: "headline_nl",
+      title: "Headline (Dutch)",
+      type: "string",
+    }),
 
     defineField({ name: "intro_en", title: "Intro (English)", type: "text" }),
-    defineField({ name: "intro_pt", title: "Intro (Portuguese)", type: "text" }),
+    defineField({
+      name: "intro_pt",
+      title: "Intro (Portuguese)",
+      type: "text",
+    }),
     defineField({ name: "intro_nl", title: "Intro (Dutch)", type: "text" }),
 
     defineField({ name: "about_en", title: "About (English)", type: "text" }),
-    defineField({ name: "about_pt", title: "About (Portuguese)", type: "text" }),
+    defineField({
+      name: "about_pt",
+      title: "About (Portuguese)",
+      type: "text",
+    }),
     defineField({ name: "about_nl", title: "About (Dutch)", type: "text" }),
 
     defineField({
@@ -368,8 +386,7 @@ export const provider = defineType({
           title: "Keep Legacy Routes",
           type: "boolean",
           initialValue: true,
-          description:
-            "Keep enabled until provider routes replace /hosts/[slug] safely.",
+          description: "Keep enabled until provider routes replace /hosts/[slug] safely.",
         }),
       ],
     }),

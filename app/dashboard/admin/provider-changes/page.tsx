@@ -17,6 +17,12 @@ type ProviderChange = {
   description?: string;
   actorName?: string;
   actorEmail?: string;
+  changedFields?: string[];
+  changes?: Array<{
+    field?: string;
+    beforeValue?: string;
+    afterValue?: string;
+  }>;
 };
 
 const providerChangesQuery = `
@@ -28,13 +34,16 @@ const providerChangesQuery = `
     changeType,
     description,
     actorName,
-    actorEmail
+    actorEmail,
+    changedFields,
+    changes
   }
 `;
 
 const changeLabels: Record<string, string> = {
   providerCreated: "Created",
   providerEdited: "Edited",
+  providerSelfPublished: "Self-published",
   managedCityAssigned: "City assigned",
   managedCityRemoved: "City removed",
 };
@@ -51,7 +60,7 @@ export default async function ProviderChangesPage() {
     <DashboardShell
       eyebrow="Admin"
       title="Provider changes"
-      intro="Recent admin provider creation, editing, and managed-city assignment activity."
+      intro="Recent administrator and Provider publishing activity. Provider self-publishing appears here immediately for oversight."
     >
       <BackToDashboard />
       {changes.length ? (
@@ -84,7 +93,32 @@ export default async function ProviderChangesPage() {
               <td className="px-5 py-4">
                 {changeLabels[change.changeType || ""] || change.changeType || "Change"}
               </td>
-              <td className="px-5 py-4">{change.description || "—"}</td>
+              <td className="px-5 py-4">
+                <div>{change.description || "—"}</div>
+                {change.changedFields?.length ? (
+                  <div className="mt-2 text-xs text-stone-400">
+                    Fields: {change.changedFields.join(", ")}
+                  </div>
+                ) : null}
+                {change.changes?.length ? (
+                  <details className="mt-2 text-xs text-stone-300">
+                    <summary className="cursor-pointer">Before / after</summary>
+                    <div className="mt-2 space-y-3">
+                      {change.changes.map((fieldChange) => (
+                        <div key={fieldChange.field}>
+                          <div className="font-medium text-white">
+                            {fieldChange.field}
+                          </div>
+                          <pre className="mt-1 whitespace-pre-wrap text-stone-400">
+                            Before: {fieldChange.beforeValue || "Not set"}
+                            {"\n"}After: {fieldChange.afterValue || "Not set"}
+                          </pre>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
+              </td>
             </tr>
           ))}
         </DataTable>

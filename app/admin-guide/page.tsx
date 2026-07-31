@@ -19,7 +19,7 @@ const sections: GuideSection[] = [
     title: "Sanity Studio",
     body: [
       "Sanity Studio is available at /studio for managing site content.",
-      "Provider records are the published profiles. Provider submissions are draft or review records created from provider account edits.",
+      "Provider records are the published profiles. Provider submissions remain only as historical compatibility records.",
     ],
   },
   {
@@ -40,14 +40,14 @@ const sections: GuideSection[] = [
     title: "How provider edits work",
     body: [
       "Providers edit their profile from /account/profile/edit.",
-      "Saving creates or updates a provider submission in draft status. Submitting moves the draft to review status.",
+      "Allowlisted profile changes publish directly. Each successful update creates an administrator-visible Provider change-log entry with the actor and changed fields.",
     ],
   },
   {
     title: "How to approve changes",
     body: [
-      "Open Sanity Studio and review provider submissions with review status.",
-      "Use the approval workflow to approve or reject the submission. Approved changes can then be applied to the public provider profile.",
+      "Normal Provider self-edits do not require approval. Review them from the Provider changes dashboard.",
+      "The approval workflow remains available only for historical or legacy provider submissions.",
     ],
   },
   {
@@ -64,9 +64,9 @@ const workingItems = [
   "login",
   "account page",
   "edit page",
-  "save draft",
-  "submit for review",
-  "approval workflow",
+  "direct allowlisted publishing",
+  "Provider change log",
+  "historical approval workflow",
 ];
 
 const untestedItems = [
@@ -95,7 +95,7 @@ export default async function AdminGuidePage() {
         </h1>
         <p className="mb-10 max-w-2xl leading-relaxed text-stone-300">
           Current notes for managing Home in the City provider accounts,
-          profile edits, and review workflow.
+          direct profile publishing, and administrator oversight.
         </p>
 
         <div className="space-y-5">

@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const { user, provider, signedInEmail, isAdmin, isCityHost } =
+  const { user, provider, signedInEmail, isAdmin, isCityHost, providerEdit } =
     await getDashboardContext();
   const providerSlug = provider?.slug?.current;
   const managedProviderCities = managedCities(provider);
@@ -45,11 +45,17 @@ export default async function DashboardPage() {
     {
       title: "Provider profile",
       text: provider
-        ? "Update your public provider profile through the existing draft-and-review workflow."
+        ? providerEdit.canEdit
+          ? "Publish allowlisted profile changes directly. Every update is recorded for administrator oversight."
+          : "Your provider profile is connected, but self-editing is not enabled for this account. An administrator can manage the profile."
         : "No provider profile is connected to this signed-in email yet. An admin can connect your account from the provider document.",
-      href: provider ? "/account/profile/edit" : undefined,
-      action: provider ? "Edit profile draft" : undefined,
-      status: provider ? "Available now" : "Needs admin setup",
+      href: providerEdit.canEdit ? "/account/profile/edit" : undefined,
+      action: providerEdit.canEdit ? "Edit and publish profile" : undefined,
+      status: providerEdit.canEdit
+        ? "Available now"
+        : provider
+          ? "Self-editing disabled"
+          : "Needs admin setup",
     },
     {
       title: "Public profile",
@@ -61,30 +67,31 @@ export default async function DashboardPage() {
       status: providerSlug ? "Published view" : "Pending",
     },
   ];
-  const cityHostCards: DashboardCardProps[] = isAdmin || isCityHost
-    ? [
-        {
-          title: isAdmin ? "All cities" : "Managed cities",
-          text: isAdmin
-            ? "Open city tools for every city in Sanity."
-            : `Open city-host tools for ${editableCities.map(cityName).join(", ")}.`,
-          href: "/dashboard/cities",
-          action: "Manage city tools",
-          status: isAdmin ? "Admin" : "City host",
-        },
-        ...editableCities
-          .filter((city) => city.slug?.current)
-          .map((city) => ({
-          title: cityName(city),
-          text: isAdmin
-            ? "Admin access to city content, recommendations, map places, and coordinate tools."
-            : "Prepare city content, recommendations, map places, and coordinate tools for this city.",
-          href: `/dashboard/cities/${city.slug?.current}`,
-          action: "Open city dashboard",
-          status: isAdmin ? city.guideStatus || "live" : "Managed city",
-        })),
-      ]
-    : [];
+  const cityHostCards: DashboardCardProps[] =
+    isAdmin || isCityHost
+      ? [
+          {
+            title: isAdmin ? "All cities" : "Managed cities",
+            text: isAdmin
+              ? "Open city tools for every city in Sanity."
+              : `Open city-host tools for ${editableCities.map(cityName).join(", ")}.`,
+            href: "/dashboard/cities",
+            action: "Manage city tools",
+            status: isAdmin ? "Admin" : "City host",
+          },
+          ...editableCities
+            .filter((city) => city.slug?.current)
+            .map((city) => ({
+              title: cityName(city),
+              text: isAdmin
+                ? "Admin access to city content, recommendations, map places, and coordinate tools."
+                : "Prepare city content, recommendations, map places, and coordinate tools for this city.",
+              href: `/dashboard/cities/${city.slug?.current}`,
+              action: "Open city dashboard",
+              status: isAdmin ? city.guideStatus || "live" : "Managed city",
+            })),
+        ]
+      : [];
   const adminCards: DashboardCardProps[] = isAdmin
     ? [
         {
@@ -117,7 +124,7 @@ export default async function DashboardPage() {
         },
         {
           title: "Approval Center",
-          text: "Review pending provider profile changes and approve or reject them without opening Studio.",
+          text: "Review historical or legacy provider submissions that still use the approval workflow.",
           href: "/dashboard/admin/approvals",
           action: "Open approvals",
           status: "Admin",
@@ -146,9 +153,7 @@ export default async function DashboardPage() {
       intro="A single entry point for providers, city hosts, and admins. The cards below are generated from the signed-in account and its connected Sanity provider profile."
       side={
         <section className="rounded-2xl border border-white/10 bg-white/10 p-5">
-          <p className="text-xs uppercase tracking-widest text-stone-400">
-            Signed in
-          </p>
+          <p className="text-xs uppercase tracking-widest text-stone-400">Signed in</p>
           <p className="mt-2 text-lg text-white">{signedInEmail || user.id}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {isAdmin ? (
@@ -158,22 +163,18 @@ export default async function DashboardPage() {
             ) : null}
             <Pill>{accessLevel(provider, isAdmin)}</Pill>
             {provider?.status ? <Pill>{provider.status}</Pill> : null}
-            {provider?.primaryRole ? (
-              <Pill>{providerRoleLabel(provider.primaryRole)}</Pill>
-            ) : null}
+            {provider?.primaryRole ? <Pill>{providerRoleLabel(provider.primaryRole)}</Pill> : null}
           </div>
         </section>
       }
     >
       {provider?.name ? (
         <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
-          <p className="text-xs uppercase tracking-widest text-stone-400">
-            Matched provider
-          </p>
+          <p className="text-xs uppercase tracking-widest text-stone-400">Matched provider</p>
           <h2 className="mt-3 text-2xl font-light text-white">{provider.name}</h2>
           <p className="mt-3 leading-relaxed text-stone-300">
-            This match uses the provider document ownership fields: owner user id
-            first, then contact email.
+            This match uses the provider document ownership fields: owner user id first, then
+            contact email.
           </p>
         </section>
       ) : null}
@@ -190,9 +191,7 @@ export default async function DashboardPage() {
           />
 
           <section className="rounded-2xl border border-white/10 bg-white/10 p-6 shadow-xl shadow-black/10">
-            <p className="mb-3 text-xs uppercase tracking-widest text-[#d6a85a]">
-              Current session
-            </p>
+            <p className="mb-3 text-xs uppercase tracking-widest text-[#d6a85a]">Current session</p>
             <h2 className="text-xl font-medium text-white">Sign out</h2>
             <p className="mt-3 text-sm leading-6 text-stone-300">
               End this dashboard session and return to the sign-in page.
@@ -244,8 +243,8 @@ export default async function DashboardPage() {
         <section className="mt-10 rounded-2xl border border-white/10 bg-white/10 p-6">
           <h2 className="text-xl font-medium text-white">Need access?</h2>
           <p className="mt-3 text-sm leading-6 text-stone-300">
-            Ask an admin to connect this Clerk account to a Sanity provider using
-            the owner user id or contact email fields.
+            Ask an admin to connect this Clerk account to a Sanity provider using the owner user id
+            or contact email fields.
           </p>
           <Link
             href="/"

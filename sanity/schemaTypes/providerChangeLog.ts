@@ -28,6 +28,7 @@ export const providerChangeLog = defineType({
         list: [
           { title: "Provider created", value: "providerCreated" },
           { title: "Provider edited", value: "providerEdited" },
+          { title: "Provider self-published", value: "providerSelfPublished" },
           { title: "Managed city assigned", value: "managedCityAssigned" },
           { title: "Managed city removed", value: "managedCityRemoved" },
         ],
@@ -43,6 +44,32 @@ export const providerChangeLog = defineType({
     defineField({ name: "actorName", title: "Changed By", type: "string" }),
     defineField({ name: "actorEmail", title: "Actor Email", type: "string" }),
     defineField({ name: "actorUserId", title: "Clerk User ID", type: "string" }),
+    defineField({
+      name: "changedFields",
+      title: "Changed Fields",
+      type: "array",
+      of: [{ type: "string" }],
+    }),
+    defineField({
+      name: "changes",
+      title: "Before / After Changes",
+      type: "array",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "field",
+              title: "Field",
+              type: "string",
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({ name: "beforeValue", title: "Before", type: "text" }),
+            defineField({ name: "afterValue", title: "After", type: "text" }),
+          ],
+        },
+      ],
+    }),
   ],
   preview: {
     select: {
