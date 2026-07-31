@@ -203,6 +203,7 @@ async function profileCandidate(
   formData: FormData,
   capability: ProviderEditCapability,
 ) {
+  const preferredContact = provider.contactOptions?.preferredContact;
   const mainPhoto = canEditProviderField(capability, "mainPhoto")
     ? await imageValue(provider, formData)
     : undefined;
@@ -214,7 +215,7 @@ async function profileCandidate(
       phone: optionalValue(formData, "contact-phone"),
       whatsapp: optionalValue(formData, "contact-whatsapp"),
       website: optionalValue(formData, "contact-website"),
-      preferredContact: optionalValue(formData, "preferred-contact"),
+      ...(typeof preferredContact === "string" ? { preferredContact } : {}),
     },
     cities: cityReferences(provider, selectedValues(formData, "cities")),
     languages: editableLanguages
@@ -286,7 +287,10 @@ function revalidateProviderPublishing(slug?: string) {
   revalidatePath(`/nl/professionals/${slug}`);
 }
 
-async function publishProviderProfileForCurrentUser(formData: FormData) {
+async function publishProviderProfileForCurrentUser(
+  submittedRevision: string,
+  formData: FormData,
+) {
   const context = await requireProviderSelfEdit("/account/profile/edit");
 
   if (!context.signedInEmail) {
@@ -317,7 +321,6 @@ async function publishProviderProfileForCurrentUser(formData: FormData) {
     );
   }
 
-  const submittedRevision = value(formData, "provider-revision");
   if (
     !submittedRevision ||
     providerSelfEditRevisionStatus(submittedRevision, provider._rev) === "stale"
@@ -385,10 +388,13 @@ async function publishProviderProfileForCurrentUser(formData: FormData) {
   return { changed: true, slug: provider.slug?.current };
 }
 
-export async function publishProviderProfileChanges(formData: FormData) {
+export async function publishProviderProfileChanges(
+  providerRevision: string,
+  formData: FormData,
+) {
   try {
     assertSanityWriteToken();
-    const result = await publishProviderProfileForCurrentUser(formData);
+    const result = await publishProviderProfileForCurrentUser(providerRevision, formData);
     redirect(
       result.changed
         ? "/account/profile/edit?published=1"

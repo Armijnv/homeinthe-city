@@ -148,14 +148,6 @@ const languageServices = [
   ["translatesTo", "Translates to"],
 ];
 
-const preferredContactOptions = [
-  ["", "Choose preferred option"],
-  ["email", "Email"],
-  ["phone", "Phone"],
-  ["whatsapp", "WhatsApp"],
-  ["website", "Website"],
-];
-
 const providerRoleLabels: Record<string, string> = {
   host: "Host",
   interpreter: "Interpreter",
@@ -231,6 +223,7 @@ export default async function Page({ searchParams }: PageProps) {
   const languages = provider.languages || [];
   const selectedCityRefs = new Set(provider.cityRefs || []);
   const photo = provider.mainPhoto;
+  const publishAction = publishProviderProfileChanges.bind(null, provider._rev);
 
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
@@ -303,11 +296,10 @@ export default async function Page({ searchParams }: PageProps) {
 
         {provider ? (
           <form
-            action={publishProviderProfileChanges}
+            action={publishAction}
             encType="multipart/form-data"
             className="space-y-10"
           >
-            <input type="hidden" name="provider-revision" value={provider._rev} />
             {canEditProviderField(providerEdit, "name") ? (
               <Section title="Basics">
                 <label className="block">
@@ -411,20 +403,6 @@ export default async function Page({ searchParams }: PageProps) {
                       defaultValue={contactOptions.website || ""}
                       className={inputClass()}
                     />
-                  </label>
-                  <label className="block md:col-span-2">
-                    <span className={labelClass()}>Preferred contact</span>
-                    <select
-                      name="preferred-contact"
-                      defaultValue={contactOptions.preferredContact || ""}
-                      className={inputClass()}
-                    >
-                      {preferredContactOptions.map(([optionValue, label]) => (
-                        <option key={optionValue} value={optionValue} className="text-black">
-                          {label}
-                        </option>
-                      ))}
-                    </select>
                   </label>
                 </div>
               </Section>

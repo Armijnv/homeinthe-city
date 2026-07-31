@@ -296,7 +296,6 @@ export function disallowedProviderSelfEditFormFields(
   return Array.from(
     new Set(
       formFields.filter((field) => {
-        if (field === "provider-revision") return false;
         const group = formFieldGroup(field);
         return !group || !canEditProviderField(capability, group);
       }),

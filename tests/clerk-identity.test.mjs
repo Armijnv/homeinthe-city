@@ -238,10 +238,64 @@ test("submitted fields outside the Provider allowlist are rejected", () => {
 
   assert.deepEqual(
     identity.disallowedProviderSelfEditFormFields(
-      ["provider-revision", "name", "headline_en", "roles", "ownership.contactEmail"],
+      ["name", "headline_en", "roles", "ownership.contactEmail"],
       capability,
     ),
     ["headline_en", "roles", "ownership.contactEmail"],
+  );
+});
+
+test("an intro-only edit ignores a stored non-allowlisted preferred contact", () => {
+  const capability = identity.providerEditCapability({
+    provider: providerOwnership({
+      ownerUserId: "user_owner",
+      selfEditableFields: ["intro"],
+    }),
+    userId: "user_owner",
+    verifiedEmails: [],
+    isAdmin: false,
+  });
+  const provider = {
+    intro_en: "Old intro",
+    contactOptions: { preferredContact: "whatsapp" },
+  };
+  const submittedFields = ["intro_en", "intro_pt", "intro_nl"];
+  const candidate = identity.enforceProviderEditableFields(
+    {
+      intro_en: "New intro",
+      contactOptions: provider.contactOptions,
+    },
+    capability,
+  );
+  const changes = identity.changedProviderFields(provider, candidate);
+
+  assert.deepEqual(
+    identity.disallowedProviderSelfEditFormFields(submittedFields, capability),
+    [],
+  );
+  assert.deepEqual(candidate, { intro_en: "New intro" });
+  assert.deepEqual(identity.providerPatchFromChanges(changes), {
+    intro_en: "New intro",
+  });
+});
+
+test("forged self-edit controls that are not allowlisted remain rejected", () => {
+  const capability = identity.providerEditCapability({
+    provider: providerOwnership({
+      ownerUserId: "user_owner",
+      selfEditableFields: ["intro"],
+    }),
+    userId: "user_owner",
+    verifiedEmails: [],
+    isAdmin: false,
+  });
+
+  assert.deepEqual(
+    identity.disallowedProviderSelfEditFormFields(
+      ["preferred-contact", "provider-revision"],
+      capability,
+    ),
+    ["preferred-contact", "provider-revision"],
   );
 });
 
