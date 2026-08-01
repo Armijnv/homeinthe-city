@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DashboardBackLink } from "@/app/dashboard/dashboard-ui";
 import { canEditProviderField } from "@/app/lib/clerkIdentity";
 import { requireProviderSelfEdit } from "@/app/lib/dashboard";
 import { publishProviderProfileChanges } from "./actions";
@@ -228,12 +229,7 @@ export default async function Page({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
       <div className="mx-auto max-w-5xl">
-        <Link
-          href="/dashboard"
-          className="mb-8 inline-flex text-sm text-stone-300 underline-offset-4 hover:text-white hover:underline"
-        >
-          Back to dashboard
-        </Link>
+        <DashboardBackLink href="/dashboard/provider" label="Provider workspace" />
 
         <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">Provider account</p>
         <h1 className="mb-8 text-4xl font-light leading-tight md:text-6xl">Edit profile</h1>

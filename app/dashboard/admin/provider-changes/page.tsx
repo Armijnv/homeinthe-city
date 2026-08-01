@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BackToDashboard, DashboardShell, Pill } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell, Pill } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import {
   providerChangeFieldLabel,
@@ -54,7 +54,7 @@ export default async function ProviderChangesPage() {
       title="Provider changes"
       intro="A readable oversight log of Provider publishing, administrator edits, and account connections. Complete technical audit data remains stored in Sanity."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       {changes.length ? (
         <div className="space-y-3">
           {changes.map((change) => {

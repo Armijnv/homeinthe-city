@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BackToDashboard, DashboardShell } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell } from "@/app/dashboard/dashboard-ui";
 import ProviderAdminForm, {
   type ProviderAdminCityOption,
 } from "@/app/dashboard/admin/providers/ProviderAdminForm";
@@ -32,7 +32,7 @@ export default async function NewProviderPage({ searchParams }: PageProps) {
       title="Create provider"
       intro="Create a curated provider profile, optionally assign city access, and keep it hidden until it is ready to publish."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin/providers" label="Providers" />
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
           {error}

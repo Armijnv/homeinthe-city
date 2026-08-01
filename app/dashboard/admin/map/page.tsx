@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -59,7 +59,7 @@ export default async function AdminMapHealthPage() {
       title="Map health"
       intro="A first read-only view into city map readiness, property coordinates, and obvious places where listing data needs cleanup."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       <DataTable
         headers={[
           "City",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { providerProfilePath } from "@/app/lib/cityGuides";
 import { cityName, providerRoleLabel, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
@@ -66,7 +66,7 @@ export default async function AdminProvidersPage() {
       title="Providers"
       intro="Create and edit curated provider profiles, publication status, roles, languages, public city coverage, and managed city permissions."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       <div className="mb-6 flex flex-wrap gap-4">
         <TableLink href="/dashboard/admin/providers/new">Create provider</TableLink>
         <TableLink href="/dashboard/admin/provider-changes">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BackToDashboard, DashboardShell } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { requirePropertyEditor } from "@/app/lib/propertyDashboard";
 import { client } from "@/sanity/lib/client";
 import { updatePropertyListing } from "../../actions";
@@ -31,7 +31,10 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
       title={property.title_en || property.title_pt || property.title_nl || "Edit property"}
       intro={context.isAdmin ? "Administrator editing includes publication and ownership controls." : "Edit your linked listing. Ownership, publication status, and Provider identity remain administrator-only."}
     >
-      <BackToDashboard />
+      <DashboardBackLink
+        href="/dashboard/properties"
+        label="Real estate workspace"
+      />
       {query.error ? <p className="mb-4 rounded-lg border border-red-300/40 bg-red-500/10 p-4 text-sm text-red-100">{query.error}</p> : null}
       {query.saved || query.created ? <p className="mb-4 rounded-lg border border-[#d6a85a]/40 bg-[#d6a85a]/10 p-4 text-sm text-[#f0d9aa]">{query.created ? "Property created and sent for administrator oversight." : "Property saved and the administrator change log was updated."}</p> : null}
       {query.unchanged ? <p className="mb-4 rounded-lg border border-white/15 bg-white/5 p-4 text-sm text-stone-300">No changes were detected.</p> : null}
@@ -39,4 +42,3 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
     </DashboardShell>
   );
 }
-

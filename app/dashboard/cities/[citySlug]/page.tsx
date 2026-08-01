@@ -8,7 +8,7 @@ import {
   saveCityRecommendationsAction,
 } from "@/app/dashboard/cities/[citySlug]/actions";
 import {
-  BackToDashboard,
+  DashboardBackLink,
   DashboardCard,
   DashboardShell,
   type DashboardCardProps,
@@ -148,7 +148,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
       title={name}
       intro="Edit the public city guide, local recommendations, map places, and coordinate readiness without opening Sanity Studio."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/cities" label="City workspace" />
       <div className="mb-10 grid gap-5 md:grid-cols-2">
         {cards.map((card) => (
           <DashboardCard key={card.title} {...card} />

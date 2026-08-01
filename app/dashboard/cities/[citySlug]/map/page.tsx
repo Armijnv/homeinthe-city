@@ -3,7 +3,7 @@ import MapPlaceManagement, {
   type MapPlaceProperty,
 } from "@/app/dashboard/MapPlaceManagement";
 import type { EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
-import { BackToDashboard, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink } from "@/app/dashboard/dashboard-ui";
 import {
   addMapPlaceWithState,
   deleteMapPlaceAction,
@@ -114,8 +114,10 @@ export default async function CityMapDashboardPage({ params, searchParams }: Pag
       intro="Manage map places for this city without opening Sanity Studio."
     >
       <div className="mb-8 flex flex-wrap gap-3">
-        <BackToDashboard />
-        <TableLink href={`/dashboard/cities/${citySlug}`}>Back to city tools</TableLink>
+        <DashboardBackLink
+          href={`/dashboard/cities/${citySlug}`}
+          label="City workspace"
+        />
       </div>
 
       <MapPlaceManagement

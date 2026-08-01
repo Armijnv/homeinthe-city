@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityGuidePath } from "@/app/lib/cityGuides";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
@@ -61,7 +61,7 @@ export default async function AdminCitiesPage() {
       intro="A city management overview for publication status, primary host assignment, map places, property listings, and city workspace links."
     >
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
-        <BackToDashboard />
+        <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
         <Link
           href="/dashboard/admin/cities/new"
           className="mb-8 inline-flex rounded-lg bg-[#d6a85a] px-5 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"

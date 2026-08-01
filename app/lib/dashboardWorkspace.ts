@@ -14,6 +14,7 @@ export function dashboardWorkspaceVisibility(
   return {
     admin: isAdmin,
     provider: Boolean(provider),
+    interpreter: Boolean(provider) && roles.has("interpreter"),
     cityHost: Boolean(provider?.managedCities?.length),
     realEstate: isAdmin || roles.has("realtor"),
   };

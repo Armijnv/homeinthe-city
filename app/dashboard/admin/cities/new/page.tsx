@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createCityAction } from "@/app/dashboard/admin/cities/actions";
-import { BackToDashboard, DashboardShell } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 
@@ -59,7 +59,7 @@ export default async function NewCityPage({ searchParams }: PageProps) {
       title="Create city"
       intro="Start a city guide in a safe hidden state, then continue filling it in with the existing city dashboard editors."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin/cities" label="Cities" />
 
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">

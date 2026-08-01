@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import {
-  BackToDashboard,
+  DashboardBackLink,
   DashboardShell,
   DataTable,
   TableLink,
@@ -54,7 +54,7 @@ export default async function AdminCityChangesPage() {
       title="Recent city changes"
       intro="The latest city content and map edits made by non-admin city hosts. Admin edits are intentionally not logged here."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       {changes.length ? (
         <DataTable headers={["When", "City", "Changed by", "Type", "Description"]}>
           {changes.map((change) => (

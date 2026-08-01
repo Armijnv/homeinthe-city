@@ -44,6 +44,11 @@ export default async function PropertyWorkspacePage() {
     ["available", "reserved", "sold", "rented"].includes(listing.status || ""),
   ).length;
   const unavailable = listings.length - published;
+  const isRealtor = Boolean(
+    context.provider &&
+      (context.provider.primaryRole === "realtor" ||
+        context.provider.roles?.includes("realtor")),
+  );
 
   return (
     <DashboardShell
@@ -62,12 +67,22 @@ export default async function PropertyWorkspacePage() {
           <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">Unavailable</p>
         </div>
       </div>
-      <Link
-        href="/dashboard/properties/new"
-        className="mb-5 inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2.5 text-sm font-semibold text-[#1a1f2e]"
-      >
-        Add property
-      </Link>
+      <div className="mb-5 flex flex-wrap gap-2">
+        <Link
+          href="/dashboard/properties/new"
+          className="inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2.5 text-sm font-semibold text-[#1a1f2e]"
+        >
+          Add property
+        </Link>
+        {isRealtor ? (
+          <Link
+            href="/dashboard/provider"
+            className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-4 py-2.5 text-sm text-white"
+          >
+            Realtor profile
+          </Link>
+        ) : null}
+      </div>
 
       {listings.length ? (
         <div className="space-y-3">
@@ -106,4 +121,3 @@ export default async function PropertyWorkspacePage() {
     </DashboardShell>
   );
 }
-

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BackToDashboard, DashboardShell } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { requirePropertyCreator } from "@/app/lib/propertyDashboard";
 import { client } from "@/sanity/lib/client";
 import { createPropertyListing } from "../actions";
@@ -27,10 +27,12 @@ export default async function NewPropertyPage({ searchParams }: PageProps) {
       title="Add property"
       intro={context.isAdmin ? "Create a listing and choose its publication status and linked Provider." : "Create a listing linked automatically to your Provider account. It starts unavailable until administrator review."}
     >
-      <BackToDashboard />
+      <DashboardBackLink
+        href="/dashboard/properties"
+        label="Real estate workspace"
+      />
       {params.error ? <p className="mb-4 rounded-lg border border-red-300/40 bg-red-500/10 p-4 text-sm text-red-100">{params.error}</p> : null}
       <PropertyListingForm action={createPropertyListing} cities={cities} realtors={realtors} isAdmin={context.isAdmin} />
     </DashboardShell>
   );
 }
-

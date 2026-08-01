@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DashboardBackLink } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { noindexRobots } from "@/app/lib/noindexMetadata";
 
@@ -87,6 +88,7 @@ export default async function AdminGuidePage() {
   return (
     <div className="min-h-screen bg-[#1a1f2e] px-6 pt-28 pb-16 text-white">
       <div className="mx-auto max-w-3xl">
+        <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
         <p className="mb-4 text-sm uppercase tracking-widest text-stone-400">
           Internal guide
         </p>

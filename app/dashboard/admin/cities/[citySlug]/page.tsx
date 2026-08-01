@@ -5,7 +5,7 @@ import {
   updateCityStatusAction,
 } from "@/app/dashboard/admin/cities/actions";
 import {
-  BackToDashboard,
+  DashboardBackLink,
   DashboardCard,
   DashboardShell,
   Pill,
@@ -143,7 +143,7 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
       title={name}
       intro="A read-only city workspace foundation for future content, sidebar, map, coordinate, and property management tools."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin/cities" label="Cities" />
 
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BackToDashboard, DashboardShell, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DashboardShell, TableLink } from "@/app/dashboard/dashboard-ui";
 import ProviderAdminForm, {
   type ProviderAdminCityOption,
   type ProviderAdminFormData,
@@ -66,7 +66,7 @@ export default async function EditProviderPage({ params, searchParams }: PagePro
         ) : null
       }
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin/providers" label="Providers" />
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
           {error}

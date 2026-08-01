@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import {
-  BackToDashboard,
+  DashboardBackLink,
   DashboardShell,
   DataTable,
   TableLink,
@@ -76,7 +76,7 @@ export default async function ApprovalCenterPage({ searchParams }: PageProps) {
       title="Approval Center"
       intro="Review pending provider profile edits and approve or reject them without opening Sanity Studio."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
           {error}

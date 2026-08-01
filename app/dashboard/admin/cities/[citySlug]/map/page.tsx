@@ -4,7 +4,7 @@ import MapPlaceManagement, {
   type MapPlaceProperty,
 } from "@/app/dashboard/MapPlaceManagement";
 import type { EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
-import { BackToDashboard, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, TableLink } from "@/app/dashboard/dashboard-ui";
 import {
   addMapPlaceWithState,
   deleteMapPlaceAction,
@@ -126,10 +126,10 @@ export default async function AdminCityMapPage({ params, searchParams }: PagePro
       intro="Manage city map places directly from the dashboard and review property listing coordinate status."
     >
       <div className="mb-8 flex flex-wrap gap-3">
-        <BackToDashboard />
-        <TableLink href={`/dashboard/admin/cities/${citySlug}`}>
-          Back to city detail
-        </TableLink>
+        <DashboardBackLink
+          href={`/dashboard/admin/cities/${citySlug}`}
+          label="City details"
+        />
         <TableLink href={cityGuidePath("en", citySlug)}>Public city page</TableLink>
         <TableLink href="/studio/structure/city">Studio fallback</TableLink>
       </div>

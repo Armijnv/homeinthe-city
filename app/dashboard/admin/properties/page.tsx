@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BackToDashboard, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -108,7 +108,7 @@ export default async function AdminPropertiesPage() {
       title="Properties"
       intro="Create and edit every listing, review publication status, and monitor recent real-estate agent changes."
     >
-      <BackToDashboard />
+      <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
       <Link
         href="/dashboard/properties/new"
         className="mb-5 inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2.5 text-sm font-semibold text-[#1a1f2e]"

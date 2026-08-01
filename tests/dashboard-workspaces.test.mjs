@@ -13,6 +13,7 @@ test("administrators see admin and Property tools", () => {
   assert.deepEqual(workspace.dashboardWorkspaceVisibility(null, true), {
     admin: true,
     provider: false,
+    interpreter: false,
     cityHost: false,
     realEstate: true,
   });
@@ -24,7 +25,13 @@ test("a normal Provider sees no admin or Property creation tools", () => {
       { roles: ["interpreter"], managedCities: [] },
       false,
     ),
-    { admin: false, provider: true, cityHost: false, realEstate: false },
+    {
+      admin: false,
+      provider: true,
+      interpreter: true,
+      cityHost: false,
+      realEstate: false,
+    },
   );
 });
 
@@ -55,12 +62,15 @@ test("a real-estate agent sees the real-estate workspace", () => {
   );
 });
 
-test("mobile dashboard places account actions after role workspaces", () => {
-  const providerWorkspace = dashboardSource.indexOf('title="My Provider profile"');
-  const propertyWorkspace = dashboardSource.indexOf('title="Real-estate workspace"');
+test("dashboard places account actions after workspace navigation and status", () => {
+  const workspaceHeading = dashboardSource.indexOf("Choose your workspace");
+  const providerWorkspace = dashboardSource.indexOf('href="/dashboard/provider"');
+  const propertyWorkspace = dashboardSource.indexOf('href="/dashboard/properties"');
+  const profileStatus = dashboardSource.indexOf('title="Profile and status"');
   const accountActions = dashboardSource.indexOf("data-dashboard-secondary-account-actions");
-  assert.ok(providerWorkspace > -1);
+  assert.ok(workspaceHeading > -1);
+  assert.ok(providerWorkspace > workspaceHeading);
   assert.ok(propertyWorkspace > providerWorkspace);
-  assert.ok(accountActions > propertyWorkspace);
+  assert.ok(profileStatus > propertyWorkspace);
+  assert.ok(accountActions > profileStatus);
 });
-

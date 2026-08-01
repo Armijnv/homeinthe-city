@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  BackToDashboard,
+  DashboardBackLink,
   DashboardShell,
   DataTable,
-  TableLink,
 } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -85,8 +84,10 @@ export default async function ProviderSubmissionDraftPage({
       intro="Inspect the submitted provider profile snapshot before approving or rejecting it."
     >
       <div className="mb-8 flex flex-wrap gap-3">
-        <BackToDashboard />
-        <TableLink href="/dashboard/admin/approvals">Back to approvals</TableLink>
+        <DashboardBackLink
+          href="/dashboard/admin/approvals"
+          label="Provider approvals"
+        />
       </div>
 
       {error ? (
