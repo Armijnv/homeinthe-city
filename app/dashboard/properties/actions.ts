@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import {
@@ -21,6 +20,8 @@ import {
 import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
+import { requireAdmin } from "@/app/lib/dashboard";
+import { activityValuesEqual } from "@/app/lib/activityChanges";
 
 class PropertyWorkflowError extends Error {
   constructor(message: string) {
@@ -406,15 +407,29 @@ function changedFields(
         const realtorRef = (beforeValue as { _ref?: string })._ref;
         return JSON.stringify({ _type: "reference", _ref: realtorRef }) !== JSON.stringify(value);
       }
-      return JSON.stringify(beforeValue) !== JSON.stringify(value);
+      if (isEmptyActivityValue(beforeValue) && isEmptyActivityValue(value)) return false;
+      return !activityValuesEqual(beforeValue, value);
     })
     .map(([field, afterValue]) => ({ field, beforeValue: before[field], afterValue }));
+}
+
+function isEmptyActivityValue(value: unknown): boolean {
+  if (value === undefined || value === null || value === "") return true;
+  if (Array.isArray(value)) return value.length === 0;
+  if (value && typeof value === "object") {
+    return Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key !== "_type" && key !== "_key")
+      .every(([, entry]) => isEmptyActivityValue(entry));
+  }
+  return false;
 }
 
 function revalidateProperty(citySlug?: string, listingSlug?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/properties");
   revalidatePath("/dashboard/admin/properties");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
   revalidatePath("/real-estate");
   revalidatePath("/pt/imoveis");
   revalidatePath("/nl/vastgoed");
@@ -467,10 +482,10 @@ export async function createPropertyListing(formData: FormData) {
       context.isAdmin,
       stringValue(formData, "status"),
     );
-    if (!["hidden", "available", "reserved", "sold", "rented"].includes(status)) {
+    if (!["hidden", "available", "reserved", "sold", "rented", "archived"].includes(status)) {
       throw new PropertyWorkflowError("Choose a valid publication status.");
     }
-    const propertyId = `property-${randomUUID()}`;
+    const propertyId = `property-${slug}`;
     const propertyDocument = {
       _id: propertyId,
       _type: "propertyListing",
@@ -525,7 +540,7 @@ export async function updatePropertyListing(
         throw new PropertyWorkflowError("Choose a valid real-estate Provider.");
       }
       const status = stringValue(formData, "status") || property.status || "hidden";
-      if (!["hidden", "available", "reserved", "sold", "rented"].includes(status)) {
+      if (!["hidden", "available", "reserved", "sold", "rented", "archived"].includes(status)) {
         throw new PropertyWorkflowError("Choose a valid publication status.");
       }
       patchValues.status = status;
@@ -570,4 +585,51 @@ export async function updatePropertyListing(
     unstable_rethrow(error);
     workflowRedirect(path, error);
   }
+}
+
+function safePropertyId(formData: FormData) {
+  const propertyId = stringValue(formData, "propertyId");
+  return /^[a-zA-Z0-9._-]+$/.test(propertyId) ? propertyId : "";
+}
+
+export async function setAdminPropertyStatusAction(formData: FormData) {
+  const path = "/dashboard/admin/properties";
+  assertSanityWriteToken();
+  const context = await requireAdmin(path);
+  const propertyId = safePropertyId(formData);
+  const status = stringValue(formData, "status");
+  if (!propertyId || !["available", "hidden", "archived"].includes(status)) return;
+  const property = await client.fetch<DashboardPropertyListing | null>(
+    `*[_type == "propertyListing" && _id == $propertyId][0]{_id, _rev, title_en, title_pt, title_nl, slug, status, "city": city->{slug}}`,
+    { propertyId },
+  );
+  if (!property || property.status === status) return;
+  const title = property.title_en || property.title_pt || property.title_nl || "Untitled listing";
+  const log = propertyChangeLogDocument({ context, propertyId, propertyTitle: title, propertySlug: property.slug?.current, changeType: "propertyEdited", changes: [{ field: "status", beforeValue: property.status, afterValue: status }] });
+  await writeClient.transaction().patch(propertyId, (patch) => patch.ifRevisionId(property._rev).set({ status })).create(log).commit();
+  revalidateProperty(property.city?.slug?.current, property.slug?.current);
+  revalidatePath("/dashboard/admin");
+}
+
+export async function deleteAdminPropertyAction(formData: FormData) {
+  const path = "/dashboard/admin/properties";
+  assertSanityWriteToken();
+  const context = await requireAdmin(path);
+  const propertyId = safePropertyId(formData);
+  if (!propertyId || stringValue(formData, "confirmation") !== "DELETE") return;
+  const property = await client.fetch<DashboardPropertyListing | null>(
+    `*[_type == "propertyListing" && _id == $propertyId][0]{_id, title_en, title_pt, title_nl, slug, status, "city": city->{slug}}`,
+    { propertyId },
+  );
+  if (!property) return;
+  const logIds = await client.fetch<string[]>(`*[_type == "propertyChangeLog" && property._ref == $propertyId]._id`, { propertyId });
+  const title = property.title_en || property.title_pt || property.title_nl || "Untitled listing";
+  let transaction = writeClient.transaction();
+  for (const logId of logIds) transaction = transaction.patch(logId, (patch) => patch.unset(["property"]));
+  const deletedLog = propertyChangeLogDocument({ context, propertyId, propertyTitle: title, propertySlug: property.slug?.current, changeType: "propertyDeleted", changes: [{ field: "status", beforeValue: property.status, afterValue: "deleted" }] });
+  const { property: _removedReference, ...retainedLog } = deletedLog;
+  void _removedReference;
+  await transaction.create(retainedLog).delete(propertyId).commit();
+  revalidateProperty(property.city?.slug?.current, property.slug?.current);
+  revalidatePath("/dashboard/admin");
 }

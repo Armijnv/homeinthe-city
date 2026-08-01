@@ -24,7 +24,7 @@ export function propertyChangeLogDocument({
   propertyId: string;
   propertyTitle: string;
   propertySlug?: string;
-  changeType: "propertyCreated" | "propertyEdited";
+  changeType: "propertyCreated" | "propertyEdited" | "propertyDeleted";
   changes: PropertyFieldChange[];
 }) {
   return {
@@ -45,6 +45,6 @@ export function propertyChangeLogDocument({
     actorName: context.user.fullName || context.signedInEmail,
     actorEmail: context.signedInEmail,
     actorUserId: context.user.id,
+    actorRole: context.isAdmin ? "Administrator" : "Realtor",
   };
 }
-

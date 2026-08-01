@@ -7,6 +7,7 @@ import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 import { publishedId } from "@/sanity/lib/providerSubmissionApproval";
+import { activityFieldChanges } from "@/app/lib/activityChanges";
 
 type ManagedCityReference = {
   _key?: string;
@@ -15,9 +16,18 @@ type ManagedCityReference = {
 
 type ProviderForAction = {
   _id: string;
+  _rev: string;
   name?: string;
   slug?: { current?: string };
   managedCities?: ManagedCityReference[];
+  cities?: ManagedCityReference[];
+  status?: string;
+  verificationStatus?: string;
+  roles?: string[];
+  primaryRole?: string;
+  languages?: Array<Record<string, unknown>>;
+  ownership?: { contactEmail?: string };
+  contactOptions?: { email?: string; whatsapp?: string; preferredContact?: string };
 };
 
 type CityForAction = {
@@ -259,9 +269,18 @@ async function providerForAction(providerId: string) {
   return client.fetch<ProviderForAction | null>(
     `*[_type == "provider" && _id == $providerId][0]{
       _id,
+      _rev,
       name,
       slug,
-      managedCities[]{_key, _ref}
+      status,
+      verificationStatus,
+      roles,
+      primaryRole,
+      languages,
+      cities[]{_key, _ref},
+      managedCities[]{_key, _ref},
+      ownership{contactEmail},
+      contactOptions{email, whatsapp, preferredContact}
     }`,
     { providerId },
   );
@@ -286,6 +305,8 @@ function revalidateProviderManagement(...slugs: Array<string | undefined>) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/admin/providers");
   revalidatePath("/dashboard/admin/provider-changes");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
   revalidatePath("/providers");
   revalidatePath("/pt/profissionais");
   revalidatePath("/nl/professionals");
@@ -369,6 +390,7 @@ export async function updateProviderAction(formData: FormData) {
 
   let nextSlug = "";
   let previousSlug = "";
+  let didChange = false;
   try {
     const existing = await providerForAction(providerId);
     if (!existing) throw new ProviderAdminError("Provider not found.");
@@ -407,39 +429,91 @@ export async function updateProviderAction(formData: FormData) {
         ? ["contactOptions.preferredContact"]
         : []),
     ];
-
-    const transaction = writeClient.transaction().patch(providerId, (patch) => {
-      let nextPatch = patch
-        .setIfMissing({
-          ownership: {
-            _type: "object",
-            ownershipStatus: "unclaimed",
-            selfEditEnabled: false,
-          },
-          contactOptions: { _type: "object" },
-        })
-        .set(setValues);
-      if (unsetPaths.length) nextPatch = nextPatch.unset(unsetPaths);
-      return nextPatch;
-    });
-    transaction.create(
-      providerChangeLogDocument({
-        context,
-        providerId,
-        providerName: input.name,
-        providerSlug: input.slug,
-        changeType: "providerEdited",
-        description: `Updated provider ${input.name} with ${input.status} visibility and ${input.verificationStatus} verification status.`,
-      }),
+    const afterContactEmail = input.contactEmail || undefined;
+    const afterWhatsapp = input.whatsapp || undefined;
+    const afterPreferredContact = input.whatsapp
+      ? "whatsapp"
+      : input.contactEmail
+        ? "email"
+        : undefined;
+    const changes = activityFieldChanges(
+      {
+        name: existing.name,
+        slug: existing.slug?.current,
+        status: existing.status,
+        verificationStatus: existing.verificationStatus,
+        roles: existing.roles || [],
+        primaryRole: existing.primaryRole,
+        languages: existing.languages || [],
+        cities: existing.cities || [],
+        managedCities: existing.managedCities || [],
+        "ownership.contactEmail": existing.ownership?.contactEmail,
+        "contactOptions.email": existing.contactOptions?.email,
+        "contactOptions.whatsapp": existing.contactOptions?.whatsapp,
+        "contactOptions.preferredContact": existing.contactOptions?.preferredContact,
+      },
+      {
+        name: input.name,
+        slug: input.slug,
+        status: input.status,
+        verificationStatus: input.verificationStatus,
+        roles: input.roles,
+        primaryRole: input.primaryRole,
+        languages: input.languages,
+        cities: input.cities,
+        managedCities: input.managedCities,
+        "ownership.contactEmail": afterContactEmail,
+        "contactOptions.email": afterContactEmail,
+        "contactOptions.whatsapp": afterWhatsapp,
+        "contactOptions.preferredContact": afterPreferredContact,
+      },
+      ["_type", "_key"],
     );
-    await transaction.commit();
+
+    if (!changes.length) {
+      nextSlug = existing.slug?.current || input.slug;
+    } else {
+      didChange = true;
+
+      const transaction = writeClient.transaction().patch(providerId, (patch) => {
+        let nextPatch = patch
+          .ifRevisionId(existing._rev)
+          .setIfMissing({
+            ownership: {
+              _type: "object",
+              ownershipStatus: "unclaimed",
+              selfEditEnabled: false,
+            },
+            contactOptions: { _type: "object" },
+          })
+          .set(setValues);
+        if (unsetPaths.length) nextPatch = nextPatch.unset(unsetPaths);
+        return nextPatch;
+      });
+      transaction.create(
+        providerChangeLogDocument({
+          context,
+          providerId,
+          providerName: input.name,
+          providerSlug: input.slug,
+          changeType: "providerEdited",
+          description: `Updated ${input.name}'s provider profile.`,
+          changes: changes.map((change) => ({
+            field: change.field,
+            beforeValue: change.beforeValue,
+            afterValue: change.afterValue,
+          })),
+        }),
+      );
+      await transaction.commit();
+    }
     revalidateProviderManagement(previousSlug, nextSlug);
   } catch (error) {
     redirect(
       `/dashboard/admin/providers/${providerId}?error=${encodeURIComponent(providerErrorMessage(error))}`,
     );
   }
-  redirect(`/dashboard/admin/providers/${providerId}?saved=updated`);
+  redirect(`/dashboard/admin/providers/${providerId}?saved=${didChange ? "updated" : "unchanged"}`);
 }
 
 export async function assignManagedCityAction(formData: FormData) {
@@ -471,7 +545,7 @@ export async function assignManagedCityAction(formData: FormData) {
     ];
     await writeClient
       .transaction()
-      .patch(providerId, { set: { managedCities: nextRefs } })
+      .patch(providerId, (patch) => patch.ifRevisionId(provider._rev).set({ managedCities: nextRefs }))
       .create(
         providerChangeLogDocument({
           context,
@@ -480,6 +554,7 @@ export async function assignManagedCityAction(formData: FormData) {
           providerSlug: provider.slug?.current,
           changeType: "managedCityAssigned",
           description: `Assigned ${cityName(city)} as a managed city.`,
+          changes: [{ field: "managedCities", beforeValue: existingRefs, afterValue: nextRefs }],
         }),
       )
       .commit();
@@ -514,7 +589,7 @@ export async function removeManagedCityAction(formData: FormData) {
 
   await writeClient
     .transaction()
-    .patch(providerId, { set: { managedCities: nextRefs } })
+    .patch(providerId, (patch) => patch.ifRevisionId(provider._rev).set({ managedCities: nextRefs }))
     .create(
       providerChangeLogDocument({
         context,
@@ -523,6 +598,7 @@ export async function removeManagedCityAction(formData: FormData) {
         providerSlug: provider.slug?.current,
         changeType: "managedCityRemoved",
         description: `Removed ${cityName(city)} from managed cities.`,
+        changes: [{ field: "managedCities", beforeValue: provider.managedCities || [], afterValue: nextRefs }],
       }),
     )
     .commit();

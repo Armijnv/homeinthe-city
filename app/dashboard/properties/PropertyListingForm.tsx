@@ -355,11 +355,11 @@ export function PropertyListingForm({
             <label className="block">
               <span className={labelClass}>Status</span>
               <select className={inputClass} name="status" defaultValue={property?.status || "hidden"}>
-                {['hidden', 'available', 'reserved', 'sold', 'rented'].map((status) => <option className="text-black" key={status} value={status}>{optionLabel(status)}</option>)}
+                {['hidden', 'available', 'reserved', 'sold', 'rented', 'archived'].map((status) => <option className="text-black" key={status} value={status}>{optionLabel(status)}</option>)}
               </select>
             </label>
             <label className="block">
-              <span className={labelClass}>Linked real-estate Provider</span>
+              <span className={labelClass}>Assigned realtor / listing owner</span>
               <select className={inputClass} name="linked-realtor" defaultValue={property?.linkedRealtor?._ref || ""}>
                 <option className="text-black" value="">No Provider</option>
                 {realtors.map((realtor) => <option className="text-black" key={realtor._id} value={realtor._id}>{realtor.name}</option>)}

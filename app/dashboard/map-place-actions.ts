@@ -13,6 +13,8 @@ import {
   uploadSanityImage,
 } from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
+import { client } from "@/sanity/lib/client";
+import { activityValuesEqual } from "@/app/lib/activityChanges";
 
 const mapPlaceFormFields = [
   "name_en",
@@ -101,6 +103,8 @@ function revalidateCityMapPaths(citySlug: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
   revalidatePath("/dashboard/admin/city-changes");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
   revalidatePath(`/dashboard/cities/${citySlug}`);
   revalidatePath(`/dashboard/cities/${citySlug}/map`);
   revalidatePath(`/dashboard/admin/cities/${citySlug}/map`);
@@ -257,6 +261,11 @@ export async function addMapPlaceWithState(
     if (latitude === null || longitude === null) {
       throw new MapPlaceActionError("Add valid latitude and longitude before saving.");
     }
+    const currentCity = await client.fetch<{ _rev: string } | null>(
+      `*[_type == "city" && _id == $cityId][0]{_rev}`,
+      { cityId: city._id },
+    );
+    if (!currentCity) throw new MapPlaceActionError("This city could not be loaded for editing.");
 
     const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
     imageWarning = uploadedImage.warning;
@@ -273,13 +282,14 @@ export async function addMapPlaceWithState(
     });
 
     const transaction = writeClient.transaction().patch(city._id, (patch) =>
-      patch.setIfMissing({ mapPlaces: [] }).append("mapPlaces", [mapPlace]),
+      patch.ifRevisionId(currentCity._rev).setIfMissing({ mapPlaces: [] }).append("mapPlaces", [mapPlace]),
     );
     const changeLog = cityChangeLogDocument({
       context,
       city,
       changeType: "mapPlaceAdded",
       description: `Added map place: ${text.name}.`,
+      changes: [{ field: "mapPlace", beforeValue: undefined, afterValue: mapPlace }],
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();
@@ -333,6 +343,14 @@ export async function updateMapPlaceWithState(
     }
 
     const selector = `mapPlaces[_key=="${placeKey}"]`;
+    const currentCity = await client.fetch<{ _rev: string; place?: Record<string, unknown> } | null>(
+      `*[_type == "city" && _id == $cityId][0]{_rev, "place": mapPlaces[_key == $placeKey][0]}`,
+      { cityId: city._id, placeKey },
+    );
+    const existingPlace = currentCity?.place;
+    if (!existingPlace) {
+      throw new MapPlaceActionError("This map place no longer exists.");
+    }
     const category = categoryFields(formData);
     const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
     imageWarning = uploadedImage.warning;
@@ -368,8 +386,30 @@ export async function updateMapPlaceWithState(
     const cleanSetValues = Object.fromEntries(
       Object.entries(setValues).filter(([, value]) => value !== undefined),
     );
+    const nextPlace = withoutUndefined({
+      ...existingPlace,
+      ...text,
+      categoryPreset: category.categoryPreset,
+      category: category.category,
+      categoryLabel_en: category.categoryLabel_en,
+      categoryLabel_pt: category.categoryLabel_pt,
+      categoryLabel_nl: category.categoryLabel_nl,
+      neighborhood: neighborhood || undefined,
+      latitude,
+      longitude,
+      website: website || undefined,
+      image: uploadedImage.image || (removeImage ? undefined : existingPlace.image),
+    });
+    if (activityValuesEqual(existingPlace, nextPlace)) {
+      return {
+        status: "success",
+        message: "No map place changes to save.",
+        values: valuesFromForm(formData),
+        submittedAt: Date.now(),
+      };
+    }
     const transaction = writeClient.transaction().patch(city._id, (patch) => {
-      const nextPatch = patch.set(cleanSetValues);
+      const nextPatch = patch.ifRevisionId(currentCity._rev).set(cleanSetValues);
       return unsetPaths.length ? nextPatch.unset(unsetPaths) : nextPatch;
     });
     const changeLog = cityChangeLogDocument({
@@ -377,6 +417,7 @@ export async function updateMapPlaceWithState(
       city,
       changeType: "mapPlaceUpdated",
       description: `Updated map place: ${text.name}.`,
+      changes: [{ field: "mapPlace", beforeValue: existingPlace, afterValue: nextPlace }],
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();
@@ -397,17 +438,25 @@ export async function deleteMapPlaceAction(citySlug: string, formData: FormData)
 
     const placeKey = placeKeyFromForm(formData);
     if (!city._id || !placeKey) return;
+    const currentCity = await client.fetch<{ _rev: string; place?: Record<string, unknown> } | null>(
+      `*[_type == "city" && _id == $cityId][0]{_rev, "place": mapPlaces[_key == $placeKey][0]}`,
+      { cityId: city._id, placeKey },
+    );
+    const existingPlace = currentCity?.place;
+    if (!existingPlace) return;
+    const placeName = String(existingPlace.name_en || existingPlace.name_pt || existingPlace.name_nl || existingPlace.name || "Untitled map place");
 
     const transaction = writeClient
       .transaction()
       .patch(city._id, (patch) =>
-        patch.unset([`mapPlaces[_key=="${placeKey}"]`]),
+        patch.ifRevisionId(currentCity._rev).unset([`mapPlaces[_key=="${placeKey}"]`]),
       );
     const changeLog = cityChangeLogDocument({
       context,
       city,
       changeType: "mapPlaceDeleted",
-      description: `Deleted map place (${placeKey}).`,
+      description: `Deleted map place: ${placeName}.`,
+      changes: [{ field: "mapPlace", beforeValue: existingPlace, afterValue: undefined }],
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
+import { cityChangeLogDocument } from "@/app/lib/cityChangeLog";
 
 class CityAdminError extends Error {}
 
@@ -81,12 +82,14 @@ function revalidateCityManagement(citySlug: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
   revalidatePath("/dashboard/admin/cities");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
   revalidatePath(`/dashboard/cities/${citySlug}`);
   revalidatePath(`/dashboard/admin/cities/${citySlug}`);
 }
 
 export async function createCityAction(formData: FormData) {
-  await requireAdmin("/dashboard/admin/cities/new");
+  const context = await requireAdmin("/dashboard/admin/cities/new");
 
   let citySlug = "";
 
@@ -140,7 +143,7 @@ export async function createCityAction(formData: FormData) {
     );
     if (existingId) throw new CityAdminError("That city already exists.");
 
-    await writeClient.create({
+    const cityDocument = {
       _id: cityId,
       _type: "city",
       name_en: nameEn,
@@ -167,7 +170,17 @@ export async function createCityAction(formData: FormData) {
           }
         : {}),
       ...(enabledLanguages.length ? { enabledLanguages } : {}),
+    };
+    const changeLog = cityChangeLogDocument({
+      context,
+      city: cityDocument,
+      changeType: "cityCreated",
+      description: `Created city workspace: ${nameEn}.`,
+      changes: [{ field: "city", beforeValue: undefined, afterValue: cityDocument }],
     });
+    let transaction = writeClient.transaction().create(cityDocument);
+    if (changeLog) transaction = transaction.create(changeLog);
+    await transaction.commit();
 
     revalidateCityManagement(citySlug);
   } catch (error) {
@@ -180,7 +193,7 @@ export async function createCityAction(formData: FormData) {
 }
 
 export async function updateCityStatusAction(formData: FormData) {
-  await requireAdmin("/dashboard/admin/cities");
+  const context = await requireAdmin("/dashboard/admin/cities");
 
   const cityId = cleanDocumentId(formString(formData, "cityId"));
   const citySlug = cleanSlug(formString(formData, "citySlug"));
@@ -195,18 +208,30 @@ export async function updateCityStatusAction(formData: FormData) {
       throw new CityAdminError("Choose a valid city visibility status.");
     }
 
-    const existingId = await client.fetch<string | null>(
+    const existing = await client.fetch<{ _id: string; _rev: string; guideStatus?: string; name_en?: string; name_pt?: string; name_nl?: string; slug?: { current?: string } } | null>(
       `*[
         _type == "city" &&
         _id == $cityId &&
         slug.current == $citySlug
-      ][0]._id`,
+      ][0]{_id, _rev, guideStatus, name_en, name_pt, name_nl, slug}`,
       { cityId, citySlug },
     );
-    if (!existingId) throw new CityAdminError("City not found.");
-
-    await writeClient.patch(cityId).set({ guideStatus }).commit();
-    revalidateCityManagement(citySlug);
+    if (!existing) throw new CityAdminError("City not found.");
+    if (existing.guideStatus === guideStatus) {
+      revalidateCityManagement(citySlug);
+    } else {
+      const changeLog = cityChangeLogDocument({
+        context,
+        city: existing,
+        changeType: "cityStatus",
+        description: `Changed ${existing.name_en || existing.name_pt || existing.name_nl || citySlug} publication status to ${guideStatus}.`,
+        changes: [{ field: "guideStatus", beforeValue: existing.guideStatus, afterValue: guideStatus }],
+      });
+      let transaction = writeClient.transaction().patch(cityId, (patch) => patch.ifRevisionId(existing._rev).set({ guideStatus }));
+      if (changeLog) transaction = transaction.create(changeLog);
+      await transaction.commit();
+      revalidateCityManagement(citySlug);
+    }
   } catch (error) {
     redirect(
       `/dashboard/admin/cities/${citySlug}?error=${encodeURIComponent(cityErrorMessage(error))}`,
@@ -217,7 +242,7 @@ export async function updateCityStatusAction(formData: FormData) {
 }
 
 export async function updateCityCoordinatesAction(formData: FormData) {
-  await requireAdmin("/dashboard/admin/cities");
+  const context = await requireAdmin("/dashboard/admin/cities");
 
   const cityId = cleanDocumentId(formString(formData, "cityId"));
   const citySlug = cleanSlug(formString(formData, "citySlug"));
@@ -231,17 +256,30 @@ export async function updateCityCoordinatesAction(formData: FormData) {
       throw new CityAdminError("Add both latitude and longitude.");
     }
 
-    const existingId = await client.fetch<string | null>(
+    const existing = await client.fetch<{ _id: string; _rev: string; latitude?: number; longitude?: number; name_en?: string; name_pt?: string; name_nl?: string; slug?: { current?: string } } | null>(
       `*[
         _type == "city" &&
         _id == $cityId &&
         slug.current == $citySlug
-      ][0]._id`,
+      ][0]{_id, _rev, latitude, longitude, name_en, name_pt, name_nl, slug}`,
       { cityId, citySlug },
     );
-    if (!existingId) throw new CityAdminError("City not found.");
-
-    await writeClient.patch(cityId).set(coordinates).commit();
+    if (!existing) throw new CityAdminError("City not found.");
+    if (existing.latitude !== coordinates.latitude || existing.longitude !== coordinates.longitude) {
+      const changeLog = cityChangeLogDocument({
+        context,
+        city: existing,
+        changeType: "cityCoordinates",
+        description: `Updated coordinates for ${existing.name_en || existing.name_pt || existing.name_nl || citySlug}.`,
+        changes: [
+          { field: "latitude", beforeValue: existing.latitude, afterValue: coordinates.latitude },
+          { field: "longitude", beforeValue: existing.longitude, afterValue: coordinates.longitude },
+        ],
+      });
+      let transaction = writeClient.transaction().patch(cityId, (patch) => patch.ifRevisionId(existing._rev).set(coordinates));
+      if (changeLog) transaction = transaction.create(changeLog);
+      await transaction.commit();
+    }
     revalidateCityManagement(citySlug);
   } catch (error) {
     redirect(

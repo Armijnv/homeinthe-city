@@ -40,10 +40,9 @@ export default async function PropertyWorkspacePage() {
     isAdmin: context.isAdmin,
     providerId: context.provider?._id || "",
   });
-  const published = listings.filter((listing) =>
-    ["available", "reserved", "sold", "rented"].includes(listing.status || ""),
-  ).length;
-  const unavailable = listings.length - published;
+  const published = listings.filter((listing) => listing.status === "available").length;
+  const unavailable = listings.filter((listing) => ["reserved", "sold", "rented"].includes(listing.status || "")).length;
+  const hidden = listings.filter((listing) => ["hidden", "archived"].includes(listing.status || "")).length;
   const isRealtor = Boolean(
     context.provider &&
       (context.provider.primaryRole === "realtor" ||
@@ -57,14 +56,18 @@ export default async function PropertyWorkspacePage() {
       intro="Create and maintain property content. Ownership and edit permissions are checked again on every page load and save."
     >
       <BackToDashboard />
-      <div className="mb-5 grid grid-cols-2 gap-3 sm:max-w-md">
+      <div className="mb-5 grid grid-cols-2 gap-3 sm:max-w-2xl sm:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <p className="text-2xl font-light text-white">{published}</p>
           <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">Public</p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-4">
           <p className="text-2xl font-light text-white">{unavailable}</p>
-          <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">Unavailable</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">Rented / Unavailable</p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <p className="text-2xl font-light text-white">{hidden}</p>
+          <p className="mt-1 text-xs uppercase tracking-widest text-stone-400">Draft / Hidden</p>
         </div>
       </div>
       <div className="mb-5 flex flex-wrap gap-2">
@@ -103,7 +106,7 @@ export default async function PropertyWorkspacePage() {
                   <Link className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-white" href={`/dashboard/properties/${listing._id}/edit`}>
                     Edit
                   </Link>
-                  {listing.citySlug && listing.slug && listing.status !== "hidden" ? (
+                  {listing.citySlug && listing.slug && !["hidden", "archived"].includes(listing.status || "") ? (
                     <Link className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-[#d6a85a]" href={`/real-estate/${listing.citySlug}/${listing.slug}`}>
                       View public listing
                     </Link>

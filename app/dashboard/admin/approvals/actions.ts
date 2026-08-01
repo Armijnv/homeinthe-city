@@ -44,10 +44,11 @@ function reviewerLabel(email?: string) {
 function approvalReturnPath(formData: FormData, submissionId: string) {
   const requestedPath = String(formData.get("returnTo") || "");
   const detailPath = `/dashboard/admin/approvals/${encodeURIComponent(submissionId)}`;
+  const activityPath = `/dashboard/admin/activity/${encodeURIComponent(`approval:${submissionId}`)}`;
 
-  return requestedPath === detailPath
-    ? detailPath
-    : "/dashboard/admin/approvals";
+  if (requestedPath === detailPath) return detailPath;
+  if (requestedPath === activityPath) return activityPath;
+  return "/dashboard/admin/approvals";
 }
 
 function redirectApprovalError(returnPath: string, message: string): never {
@@ -125,7 +126,10 @@ export async function approveProviderSubmissionAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard/admin/approvals");
-  redirect("/dashboard/admin/approvals");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }
 
 export async function rejectProviderSubmissionAction(formData: FormData) {
@@ -134,6 +138,7 @@ export async function rejectProviderSubmissionAction(formData: FormData) {
 
   const submissionId = publishedId(String(formData.get("submissionId") || ""));
   if (!submissionId) return;
+  const returnPath = approvalReturnPath(formData, submissionId);
 
   const reviewNote =
     String(formData.get("reviewNote") || "").trim() || "Rejected without a note.";
@@ -146,5 +151,8 @@ export async function rejectProviderSubmissionAction(formData: FormData) {
   }).commit();
 
   revalidatePath("/dashboard/admin/approvals");
-  redirect("/dashboard/admin/approvals");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
+  revalidatePath(returnPath);
+  redirect(returnPath);
 }

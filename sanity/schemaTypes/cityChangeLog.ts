@@ -26,8 +26,14 @@ export const cityChangeLog = defineType({
       type: "string",
       options: {
         list: [
+          { title: "City created", value: "cityCreated" },
           { title: "City content", value: "cityContent" },
+          { title: "City publication", value: "cityStatus" },
+          { title: "City coordinates", value: "cityCoordinates" },
           { title: "Recommendations", value: "recommendations" },
+          { title: "Recommendation added", value: "recommendationAdded" },
+          { title: "Recommendation updated", value: "recommendationUpdated" },
+          { title: "Recommendation deleted", value: "recommendationDeleted" },
           { title: "Map place added", value: "mapPlaceAdded" },
           { title: "Map place updated", value: "mapPlaceUpdated" },
           { title: "Map place deleted", value: "mapPlaceDeleted" },
@@ -44,6 +50,21 @@ export const cityChangeLog = defineType({
     defineField({ name: "actorName", title: "Changed By", type: "string" }),
     defineField({ name: "actorEmail", title: "Actor Email", type: "string" }),
     defineField({ name: "actorUserId", title: "Clerk User ID", type: "string" }),
+    defineField({ name: "actorRole", title: "Actor Role", type: "string" }),
+    defineField({ name: "changedFields", title: "Changed Fields", type: "array", of: [{ type: "string" }] }),
+    defineField({
+      name: "changes",
+      title: "Before / After Changes",
+      type: "array",
+      of: [{
+        type: "object",
+        fields: [
+          defineField({ name: "field", title: "Field", type: "string" }),
+          defineField({ name: "beforeValue", title: "Before", type: "text" }),
+          defineField({ name: "afterValue", title: "After", type: "text" }),
+        ],
+      }],
+    }),
     defineField({
       name: "provider",
       title: "Provider",

@@ -16,7 +16,7 @@ export const propertyChangeLog = defineType({
       title: "Property",
       type: "reference",
       to: [{ type: "propertyListing" }],
-      validation: (Rule) => Rule.required(),
+      weak: true,
     }),
     defineField({ name: "propertyTitle", title: "Property Title", type: "string" }),
     defineField({ name: "propertySlug", title: "Property Slug", type: "string" }),
@@ -28,6 +28,7 @@ export const propertyChangeLog = defineType({
         list: [
           { title: "Property created", value: "propertyCreated" },
           { title: "Property edited", value: "propertyEdited" },
+          { title: "Property deleted", value: "propertyDeleted" },
         ],
       },
       validation: (Rule) => Rule.required(),
@@ -35,6 +36,7 @@ export const propertyChangeLog = defineType({
     defineField({ name: "actorName", title: "Changed By", type: "string" }),
     defineField({ name: "actorEmail", title: "Actor Email", type: "string" }),
     defineField({ name: "actorUserId", title: "Clerk User ID", type: "string" }),
+    defineField({ name: "actorRole", title: "Actor Role", type: "string" }),
     defineField({
       name: "changedFields",
       title: "Changed Fields",
@@ -71,4 +73,3 @@ export const propertyChangeLog = defineType({
     },
   },
 });
-

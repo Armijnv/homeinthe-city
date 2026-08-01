@@ -121,6 +121,7 @@ export const propertyListing = defineType({
           { title: "Sold", value: "sold" },
           { title: "Rented", value: "rented" },
           { title: "Hidden", value: "hidden" },
+          { title: "Archived", value: "archived" },
         ],
       },
       validation: (Rule) => Rule.required(),

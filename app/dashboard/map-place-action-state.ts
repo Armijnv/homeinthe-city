@@ -1,5 +1,5 @@
 export type MapPlaceActionState = {
-  status: "idle" | "error";
+  status: "idle" | "success" | "error";
   message?: string;
   values?: Record<string, string>;
   submittedAt?: number;

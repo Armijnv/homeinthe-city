@@ -32,7 +32,7 @@ export type PropertyListing = {
     current?: string;
   };
   listingType?: "rent" | "sale";
-  status?: "available" | "reserved" | "sold" | "rented" | "hidden";
+  status?: "available" | "reserved" | "sold" | "rented" | "hidden" | "archived";
   city?: {
     name_en?: string;
     name_pt?: string;

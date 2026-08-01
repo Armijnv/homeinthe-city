@@ -342,7 +342,7 @@ function listingTypeLabel(listing: PropertyListing, lang: Lang) {
 
 function statusLabel(listing: PropertyListing, lang: Lang) {
   if (!listing.status) return "";
-  if (listing.status === "hidden") return "";
+  if (listing.status === "hidden" || listing.status === "archived") return "";
   return labels[lang][listing.status] || listing.status;
 }
 
@@ -1247,7 +1247,7 @@ function PremiumRealEstatePortal({
   const ownerHref = premiumOwnerHref(lang);
   const cities = citySummariesFromListings(listings, lang);
   const availableListingCount = listings.filter(
-    (listing) => listing.status !== "hidden",
+    (listing) => !["hidden", "archived"].includes(listing.status || ""),
   ).length;
   const availabilityText =
     availableListingCount === 0

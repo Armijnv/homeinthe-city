@@ -6,6 +6,8 @@ import { requireCityHost } from "@/app/lib/dashboard";
 import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
 import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
+import { client } from "@/sanity/lib/client";
+import { activityFieldChanges, keyedArrayActivityChanges } from "@/app/lib/activityChanges";
 
 export type CityDashboardActionState = {
   status: "idle" | "success" | "error";
@@ -56,6 +58,12 @@ type RecommendationGuideInput = {
   };
   relatedProvider?: { _type?: string; _ref?: string };
   relatedCity?: { _type?: string; _ref?: string };
+};
+
+type CityContentRecord = Record<string, unknown> & {
+  _rev: string;
+  sidebarCards?: SidebarCardInput[];
+  recommendationGuides?: RecommendationGuideInput[];
 };
 
 const languages = ["en", "pt", "nl"] as const;
@@ -337,11 +345,17 @@ function revalidateCityPaths(citySlug: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/cities");
   revalidatePath("/dashboard/admin/city-changes");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/admin/activity");
   revalidatePath(`/dashboard/cities/${citySlug}`);
   revalidatePath(`/dashboard/admin/cities/${citySlug}`);
   revalidatePath(`/brazil/${citySlug}`);
   revalidatePath(`/pt/brasil/${citySlug}`);
   revalidatePath(`/nl/brazilie/${citySlug}`);
+}
+
+function recommendationTitle(recommendation?: RecommendationGuideInput) {
+  return recommendation?.title_en || recommendation?.title_pt || recommendation?.title_nl || "Untitled recommendation";
 }
 
 export async function saveCityContentAction(
@@ -357,6 +371,16 @@ export async function saveCityContentAction(
     if (!city._id) {
       throw new CityDashboardActionError("This city could not be found.");
     }
+    const existing = await client.fetch<CityContentRecord | null>(
+      `*[_type == "city" && _id == $cityId][0]{
+        _rev, headline_en, headline_pt, headline_nl,
+        intro_en, intro_pt, intro_nl,
+        introBlocks_en, introBlocks_pt, introBlocks_nl,
+        sidebarCards, enabledLanguages
+      }`,
+      { cityId: city._id },
+    );
+    if (!existing) throw new CityDashboardActionError("This city could not be loaded for editing.");
 
     const sidebarCards = sanitizeSidebarCards(
       safeArrayFromJson<SidebarCardInput>(
@@ -403,8 +427,22 @@ export async function saveCityContentAction(
     const cleanSetValues = Object.fromEntries(
       Object.entries(setValues).filter(([, value]) => value !== undefined),
     );
+    const comparableBefore: Record<string, unknown> = {};
+    const comparableAfter: Record<string, unknown> = {};
+    for (const field of Object.keys(setValues)) {
+      comparableBefore[field] = field === "sidebarCards" || field.startsWith("introBlocks_")
+        ? existing?.[field] || []
+        : existing?.[field];
+      comparableAfter[field] = field === "sidebarCards" || field.startsWith("introBlocks_")
+        ? setValues[field] || []
+        : setValues[field];
+    }
+    const changes = activityFieldChanges(comparableBefore, comparableAfter);
+    if (!changes.length) {
+      return { status: "success", message: "No city content changes to save.", submittedAt: Date.now() };
+    }
     const transaction = writeClient.transaction().patch(city._id, (patch) => {
-      const nextPatch = patch.set(cleanSetValues);
+      const nextPatch = patch.ifRevisionId(existing._rev).set(cleanSetValues);
       return unsetPaths.length ? nextPatch.unset(unsetPaths) : nextPatch;
     });
     const changeLog = cityChangeLogDocument({
@@ -412,6 +450,7 @@ export async function saveCityContentAction(
       city,
       changeType: "cityContent",
       description: "Updated city guide content or sidebar cards.",
+      changes,
     });
     if (changeLog) transaction.create(changeLog);
     await transaction.commit();
@@ -440,6 +479,11 @@ export async function saveCityRecommendationsAction(
     if (!city._id) {
       throw new CityDashboardActionError("This city could not be found.");
     }
+    const existing = await client.fetch<CityContentRecord | null>(
+      `*[_type == "city" && _id == $cityId][0]{_rev, recommendationGuides}`,
+      { cityId: city._id },
+    );
+    if (!existing) throw new CityDashboardActionError("This city could not be loaded for editing.");
 
     const sanitizedGuides = sanitizeRecommendationGuides(
       safeArrayFromJson<RecommendationGuideInput>(
@@ -485,16 +529,25 @@ export async function saveCityRecommendationsAction(
       }),
     );
 
-    const transaction = writeClient
-      .transaction()
-      .patch(city._id, { set: { recommendationGuides } });
-    const changeLog = cityChangeLogDocument({
-      context,
-      city,
-      changeType: "recommendations",
-      description: `Updated ${recommendationGuides.length} curated recommendation guide${recommendationGuides.length === 1 ? "" : "s"}. Legacy recommendations were preserved.`,
+    const beforeGuides = existing?.recommendationGuides || [];
+    const recommendationChanges = keyedArrayActivityChanges(beforeGuides, recommendationGuides);
+    const activityLogs = recommendationChanges.map((change) => {
+      const recommendation = change.after || change.before;
+      const verb = change.type === "added" ? "Added" : change.type === "deleted" ? "Deleted" : "Updated";
+      return cityChangeLogDocument({
+        context,
+        city,
+        changeType: change.type === "added" ? "recommendationAdded" : change.type === "deleted" ? "recommendationDeleted" : "recommendationUpdated",
+        description: `${verb} recommendation: ${recommendationTitle(recommendation)}.`,
+        changes: [{ field: "recommendation", beforeValue: change.before, afterValue: change.after }],
+      });
     });
-    if (changeLog) transaction.create(changeLog);
+    const logs = activityLogs.filter((log): log is NonNullable<typeof log> => Boolean(log));
+    if (!logs.length) {
+      return { status: "success", message: "No recommendation changes to save.", submittedAt: Date.now() };
+    }
+    let transaction = writeClient.transaction().patch(city._id, (patch) => patch.ifRevisionId(existing._rev).set({ recommendationGuides }));
+    for (const log of logs) transaction = transaction.create(log);
     await transaction.commit();
     revalidateCityPaths(citySlug);
 
