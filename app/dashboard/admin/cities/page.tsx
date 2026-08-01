@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityGuidePath } from "@/app/lib/cityGuides";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
@@ -48,17 +48,21 @@ export const metadata: Metadata = {
   title: "Admin Cities",
 };
 
-export default async function AdminCitiesPage() {
+type PageProps = { searchParams: Promise<{ attention?: string }> };
+
+export default async function AdminCitiesPage({ searchParams }: PageProps) {
   await requireAdmin("/dashboard/admin/cities");
-  const cities = await client.fetch<AdminCity[]>(adminCitiesQuery, {
-    publicStatuses: publicListingStatuses,
-  });
+  const [{ attention }, cities] = await Promise.all([
+    searchParams,
+    client.fetch<AdminCity[]>(adminCitiesQuery, { publicStatuses: publicListingStatuses }),
+  ]);
+  const filteredCities = attention === "without-host" ? cities.filter((city) => !city.primaryHost) : cities;
 
   return (
     <DashboardShell
       eyebrow="Admin"
-      title="Cities"
-      intro="A city management overview for publication status, primary host assignment, map places, property listings, and city workspace links."
+      title={attention === "without-host" ? "Cities without host" : "Cities"}
+      intro={attention === "without-host" ? "These cities have no primary host. Open the exact city record to assign one." : "A city management overview for publication status, primary host assignment, map places, property listings, and city workspace links."}
     >
       <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
         <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
@@ -68,10 +72,11 @@ export default async function AdminCitiesPage() {
         >
           Create city
         </Link>
+        {attention ? <Link href="/dashboard/admin/cities" className="text-sm text-[#d6a85a]">Show all cities</Link> : null}
       </div>
 
-      <div className="grid gap-4 md:hidden">
-        {cities.map((city) => {
+      <div className="grid gap-4 lg:grid-cols-2">
+        {filteredCities.map((city) => {
           const slug = city.slug?.current;
 
           return (
@@ -114,63 +119,14 @@ export default async function AdminCitiesPage() {
                     Admin detail
                   </TableLink>
                   <TableLink href={cityGuidePath("en", slug)}>Public</TableLink>
+                  {!city.primaryHost ? <TableLink href={`/studio/structure/city;${city._id}`}>Assign Host</TableLink> : null}
                 </div>
               ) : null}
             </article>
           );
         })}
       </div>
-
-      <div className="hidden md:block">
-        <DataTable
-          headers={[
-            "City",
-            "Slug",
-            "Country",
-            "Status",
-            "Map places",
-            "Listings",
-            "Primary host",
-            "Links",
-          ]}
-        >
-          {cities.map((city) => {
-            const slug = city.slug?.current;
-
-            return (
-              <tr key={city._id}>
-                <td className="px-5 py-4">
-                  <div className="font-medium text-white">{cityName(city)}</div>
-                </td>
-                <td className="px-5 py-4">{slug || "No slug"}</td>
-                <td className="px-5 py-4">{city.country || "Brazil"}</td>
-                <td className="px-5 py-4">{city.guideStatus || "live"}</td>
-                <td className="px-5 py-4">{city.mapPlaceCount || 0}</td>
-                <td className="px-5 py-4">{city.propertyListingCount || 0}</td>
-                <td className="px-5 py-4">
-                  {city.primaryHost?.name ? (
-                    <span className="text-stone-200">{city.primaryHost.name}</span>
-                  ) : (
-                    <span className="text-[#d6a85a]">Missing</span>
-                  )}
-                </td>
-                <td className="px-5 py-4">
-                  <div className="flex flex-wrap gap-3">
-                    {slug ? (
-                      <>
-                        <TableLink href={`/dashboard/admin/cities/${slug}`}>
-                          Admin detail
-                        </TableLink>
-                        <TableLink href={cityGuidePath("en", slug)}>Public</TableLink>
-                      </>
-                    ) : null}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </DataTable>
-      </div>
+      {!filteredCities.length ? <p className="rounded-xl border border-white/10 bg-white/5 p-5 text-stone-300">No cities currently need this attention.</p> : null}
     </DashboardShell>
   );
 }

@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import {
   DashboardBackLink,
   DashboardShell,
-  DataTable,
 } from "@/app/dashboard/dashboard-ui";
+import { activityFieldLabel, humanActivityValue } from "@/app/lib/activityPresentation";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 import {
@@ -52,10 +52,14 @@ export const metadata: Metadata = {
   title: "Provider Submission Draft",
 };
 
-function displayValue(value: unknown) {
-  if (value === null || value === undefined) return "Empty";
-  if (typeof value === "string") return value || "Empty";
-  return JSON.stringify(value, null, 2);
+function referenceIds(value: unknown, ids = new Set<string>()) {
+  if (Array.isArray(value)) value.forEach((entry) => referenceIds(entry, ids));
+  else if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (typeof record._ref === "string") ids.add(record._ref);
+    Object.values(record).forEach((entry) => referenceIds(entry, ids));
+  }
+  return ids;
 }
 
 export default async function ProviderSubmissionDraftPage({
@@ -76,6 +80,12 @@ export default async function ProviderSubmissionDraftPage({
   if (!submission) notFound();
 
   const fields = changedSnapshotFields(submission.profileSnapshot);
+  const ids = [...referenceIds(submission.profileSnapshot)];
+  const referencedRecords = ids.length ? await client.fetch<Array<{ _id: string; name?: string }>>(
+    `*[_id in $ids]{_id, "name": coalesce(name, name_en, name_pt, name_nl, title_en, title_pt, title_nl, originalFilename)}`,
+    { ids },
+  ) : [];
+  const references = Object.fromEntries(referencedRecords.map((record) => [record._id, { name: record.name || "Linked item" }]));
 
   return (
     <DashboardShell
@@ -112,12 +122,12 @@ export default async function ProviderSubmissionDraftPage({
               Approve
             </button>
           </form>
-          <form action={rejectProviderSubmissionAction} className="flex flex-wrap gap-3">
+          <form action={rejectProviderSubmissionAction} className="grid w-full gap-3 sm:w-auto sm:grid-cols-[minmax(12rem,1fr)_auto]">
             <input type="hidden" name="submissionId" value={submission._id} />
             <input
               name="reviewNote"
               placeholder="Optional rejection note"
-              className="rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-stone-400"
+              className="min-h-11 min-w-0 rounded-lg border border-white/15 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-stone-400"
             />
             <button
               type="submit"
@@ -129,18 +139,14 @@ export default async function ProviderSubmissionDraftPage({
         </section>
       ) : null}
 
-      <DataTable headers={["Field", "Submitted value"]}>
+      <section className="grid gap-3">
         {fields.map((field) => (
-          <tr key={field}>
-            <td className="px-5 py-4 font-medium text-white">{field}</td>
-            <td className="px-5 py-4">
-              <pre className="max-w-xl whitespace-pre-wrap rounded-lg bg-black/20 p-3 text-xs text-stone-200">
-                {displayValue(submission.profileSnapshot?.[field])}
-              </pre>
-            </td>
-          </tr>
+          <article key={field} className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
+            <h2 className="font-medium text-white">{activityFieldLabel(field)}</h2>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-stone-200">{humanActivityValue(submission.profileSnapshot?.[field], references)}</p>
+          </article>
         ))}
-      </DataTable>
+      </section>
     </DashboardShell>
   );
 }

@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import {
   DashboardBackLink,
   DashboardShell,
-  DataTable,
   TableLink,
 } from "@/app/dashboard/dashboard-ui";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
 import { changedSnapshotFields } from "@/sanity/lib/providerSubmissionApproval";
+import { providerChangeFieldLabel } from "@/app/lib/providerChangePresentation";
 import {
   approveProviderSubmissionAction,
   rejectProviderSubmissionAction,
@@ -60,7 +60,7 @@ function formatDate(value?: string) {
 function changeSummary(snapshot?: Record<string, unknown>) {
   const fields = changedSnapshotFields(snapshot);
   if (!fields.length) return "No editable fields detected";
-  return fields.join(", ");
+  return fields.map(providerChangeFieldLabel).join(", ");
 }
 
 export default async function ApprovalCenterPage({ searchParams }: PageProps) {
@@ -82,34 +82,21 @@ export default async function ApprovalCenterPage({ searchParams }: PageProps) {
           {error}
         </p>
       ) : null}
-      <DataTable
-        headers={[
-          "Provider",
-          "Submitted",
-          "Changes",
-          "Draft",
-          "Approve",
-          "Reject",
-        ]}
-      >
+      <div className="grid gap-4 lg:grid-cols-2">
         {submissions.map((submission) => (
-          <tr key={submission._id}>
-            <td className="px-5 py-4">
+          <article key={submission._id} className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
               <div className="font-medium text-white">
                 {submission.provider?.name || submission.ownerEmail || "Provider"}
               </div>
               <div className="mt-1 text-xs text-stone-400">{submission.ownerEmail}</div>
-            </td>
-            <td className="px-5 py-4">{formatDate(submission.submittedAt)}</td>
-            <td className="px-5 py-4">{changeSummary(submission.profileSnapshot)}</td>
-            <td className="px-5 py-4">
-              <TableLink
-                href={`/dashboard/admin/approvals/${encodeURIComponent(submission._id)}`}
-              >
-                View draft
-              </TableLink>
-            </td>
-            <td className="px-5 py-4">
+              </div>
+              <span className="text-xs text-stone-400">{formatDate(submission.submittedAt)}</span>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-stone-200"><span className="text-stone-500">Changed: </span>{changeSummary(submission.profileSnapshot)}</p>
+            <div className="mt-4 flex flex-wrap gap-3 border-t border-white/10 pt-4">
+              <TableLink href={`/dashboard/admin/approvals/${encodeURIComponent(submission._id)}`}>Review changes</TableLink>
               <form action={approveProviderSubmissionAction}>
                 <input type="hidden" name="submissionId" value={submission._id} />
                 <input
@@ -119,31 +106,30 @@ export default async function ApprovalCenterPage({ searchParams }: PageProps) {
                 />
                 <button
                   type="submit"
-                  className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+                  className="min-h-11 rounded-lg bg-[#d6a85a] px-4 py-2 text-sm font-semibold text-[#1a1f2e]"
                 >
                   Approve
                 </button>
               </form>
-            </td>
-            <td className="px-5 py-4">
-              <form action={rejectProviderSubmissionAction} className="space-y-2">
+            </div>
+              <form action={rejectProviderSubmissionAction} className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                 <input type="hidden" name="submissionId" value={submission._id} />
                 <input
                   name="reviewNote"
                   placeholder="Optional note"
-                  className="w-full rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-stone-400"
+                  className="min-h-11 min-w-0 rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-stone-400"
                 />
                 <button
                   type="submit"
-                  className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+                  className="min-h-11 rounded-lg border border-white/15 px-4 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
                 >
                   Reject
                 </button>
               </form>
-            </td>
-          </tr>
+          </article>
         ))}
-      </DataTable>
+      </div>
+      {!submissions.length ? <p className="rounded-xl border border-white/10 bg-white/5 p-5 text-stone-300">No provider edits are awaiting approval.</p> : null}
     </DashboardShell>
   );
 }

@@ -59,9 +59,9 @@ export default async function AdminDashboardPage() {
   ]);
   const statusCards = [
     ["Pending approvals", `${summary.pendingApprovals} provider ${summary.pendingApprovals === 1 ? "edit" : "edits"}`, "/dashboard/admin/approvals"],
-    ["Property drafts", `${summary.propertyDrafts} unpublished`, "/dashboard/admin/properties"],
-    ["Providers needing assignment", String(summary.providersNeedingAssignment), "/dashboard/admin/providers"],
-    ["Cities without host", String(summary.citiesWithoutHost), "/dashboard/admin/cities"],
+    ["Property drafts", `${summary.propertyDrafts} unpublished`, "/dashboard/admin/properties?attention=drafts"],
+    ["Providers needing assignment", String(summary.providersNeedingAssignment), "/dashboard/admin/providers?attention=unassigned"],
+    ["Cities without host", String(summary.citiesWithoutHost), "/dashboard/admin/cities?attention=without-host"],
   ] as const;
   const activitySummary = [
     ["Profile photos", "profilePhotos"],
@@ -92,7 +92,7 @@ export default async function AdminDashboardPage() {
       <section className="mb-6">
         <h2 className="mb-3 text-lg font-medium text-white">Activity since yesterday</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-          {activitySummary.map(([label, key]) => <Link key={key} href="/dashboard/admin/activity" className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-[#d6a85a]/60"><p className="text-2xl font-light text-white">{activityCounts[key] || 0}</p><p className="mt-1 text-xs uppercase tracking-widest text-stone-400">{label}</p></Link>)}
+          {activitySummary.map(([label, key]) => <Link key={key} href={`/dashboard/admin/activity?category=${key}`} className="rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-[#d6a85a]/60"><p className="text-2xl font-light text-white">{activityCounts[key] || 0}</p><p className="mt-1 text-xs uppercase tracking-widest text-stone-400">{label}</p></Link>)}
         </div>
       </section>
       <section className="mb-6">

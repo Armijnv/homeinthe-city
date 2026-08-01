@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DashboardBackLink, DataTable, TableLink } from "@/app/dashboard/dashboard-ui";
+import { DashboardBackLink, TableLink } from "@/app/dashboard/dashboard-ui";
 import { DashboardShell } from "@/app/dashboard/dashboard-ui";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
@@ -60,16 +60,7 @@ export default async function AdminMapHealthPage() {
       intro="A first read-only view into city map readiness, property coordinates, and obvious places where listing data needs cleanup."
     >
       <DashboardBackLink href="/dashboard/admin" label="Admin workspace" />
-      <DataTable
-        headers={[
-          "City",
-          "Map places",
-          "Listings with coordinates",
-          "Listings missing coordinates",
-          "Warning",
-          "Links",
-        ]}
-      >
+      <div className="grid gap-4 lg:grid-cols-2">
         {cities.map((city) => {
           const slug = city.slug?.current;
           const withCoordinates = city.propertyWithCoordinates || 0;
@@ -83,29 +74,19 @@ export default async function AdminMapHealthPage() {
                 : "";
 
           return (
-            <tr key={city._id}>
-              <td className="px-5 py-4 font-medium text-white">{cityName(city)}</td>
-              <td className="px-5 py-4">{city.mapPlaceCount || 0}</td>
-              <td className="px-5 py-4">{withCoordinates}</td>
-              <td className="px-5 py-4">{missingCoordinates}</td>
-              <td className="px-5 py-4">
-                {warning ? (
-                  <span className="text-[#d6a85a]">{warning}</span>
-                ) : (
-                  "No obvious issue"
-                )}
-              </td>
-              <td className="px-5 py-4">
-                {slug ? (
-                  <TableLink href={`/dashboard/admin/cities/${slug}/map`}>
-                    City map tools
-                  </TableLink>
-                ) : null}
-              </td>
-            </tr>
+            <article key={city._id} className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
+              <h2 className="font-medium text-white">{cityName(city)}</h2>
+              <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-3">
+                <div><dt className="text-xs uppercase tracking-widest text-stone-500">Map places</dt><dd className="mt-1 text-stone-200">{city.mapPlaceCount || 0}</dd></div>
+                <div><dt className="text-xs uppercase tracking-widest text-stone-500">With coordinates</dt><dd className="mt-1 text-stone-200">{withCoordinates}</dd></div>
+                <div><dt className="text-xs uppercase tracking-widest text-stone-500">Missing coordinates</dt><dd className="mt-1 text-stone-200">{missingCoordinates}</dd></div>
+              </dl>
+              <p className={`mt-4 text-sm ${warning ? "text-[#d6a85a]" : "text-stone-300"}`}>{warning || "No obvious issue"}</p>
+              {slug ? <div className="mt-4 border-t border-white/10 pt-4"><TableLink href={`/dashboard/admin/cities/${slug}/map`}>City map tools</TableLink></div> : null}
+            </article>
           );
         })}
-      </DataTable>
+      </div>
     </DashboardShell>
   );
 }

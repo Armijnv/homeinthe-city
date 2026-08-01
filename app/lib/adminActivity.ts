@@ -1,6 +1,7 @@
 import "server-only";
 
 import { client } from "@/sanity/lib/client";
+import { activityValuesEqual } from "@/app/lib/activityChanges";
 
 export type ActivityKind = "provider" | "city" | "property" | "approval";
 
@@ -25,6 +26,7 @@ export type AdminActivity = {
   status?: string;
   actorEmail?: string;
   actorUserId?: string;
+  references?: Record<string, { name: string; type?: string; imageUrl?: string }>;
 };
 
 type RawActivity = {
@@ -45,6 +47,7 @@ type RawActivity = {
   reviewedBy?: string;
   ownerEmail?: string;
   profileSnapshot?: Record<string, unknown>;
+  providerCurrent?: Record<string, unknown>;
 };
 
 const activityQueries: Record<ActivityKind, string> = {
@@ -66,7 +69,8 @@ const activityQueries: Record<ActivityKind, string> = {
   }`,
   approval: `*[_type == "providerSubmission"] | order(coalesce(reviewedAt, submittedAt) desc){
     _id, "occurredAt": coalesce(reviewedAt, submittedAt), status, reviewedBy, ownerEmail,
-    "subjectName": coalesce(provider->name, ownerEmail), "subjectRole": coalesce(profileSnapshot.primaryRole, provider->primaryRole), profileSnapshot
+    "subjectName": coalesce(provider->name, ownerEmail), "subjectRole": coalesce(profileSnapshot.primaryRole, provider->primaryRole), profileSnapshot,
+    "providerCurrent": provider->{name, slug, roles, primaryRole, cities, managedCities, languages, headline_en, headline_pt, headline_nl, intro_en, intro_pt, intro_nl, about_en, about_pt, about_nl, contactOptions, mainPhoto}
   }`,
 };
 
@@ -80,9 +84,25 @@ const roleLabels: Record<string, string> = {
 function providerAction(raw: RawActivity) {
   const name = raw.subjectName || "a provider";
   const fields = raw.changes?.map((change) => change.field) || raw.changedFields || [];
-  if (fields.includes("mainPhoto")) return `updated ${name}'s profile photo`;
+  const self = raw.actorName?.trim().toLowerCase() === name.trim().toLowerCase();
+  const owner = self ? "their" : `${name}'s`;
+  if (fields.length === 1 && fields.includes("mainPhoto")) return `changed ${owner} profile photo`;
+  if (fields.length === 1 && fields[0]?.match(/^intro_(en|pt|nl)$/)) {
+    const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
+    return `updated ${owner} ${language} introduction`;
+  }
+  if (fields.length === 1 && fields[0]?.match(/^about_(en|pt|nl)$/)) {
+    const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
+    return `updated ${owner} ${language} bio`;
+  }
+  if (fields.length === 1 && fields[0] === "languages") return `updated ${owner} languages`;
+  if (fields.length === 1 && fields[0] === "cities") return `updated ${owner} cities served`;
+  if (fields.length === 1 && fields[0] === "headline_en") return `updated ${owner} English headline`;
+  if (fields.length === 1 && fields[0] === "headline_pt") return `updated ${owner} Portuguese headline`;
+  if (fields.length === 1 && fields[0] === "headline_nl") return `updated ${owner} Dutch headline`;
+  if (fields.length === 1 && fields[0] === "contactOptions") return `updated ${owner} contact information`;
   if (raw.changeType === "providerCreated") return `created ${name}'s provider profile`;
-  if (raw.changeType === "providerSelfPublished") return `published changes to ${name}'s profile`;
+  if (raw.changeType === "providerSelfPublished") return `updated ${owner} profile`;
   if (raw.changeType === "managedCityAssigned") return `assigned a city to ${name}`;
   if (raw.changeType === "managedCityRemoved") return `removed a city from ${name}`;
   return `updated ${name}'s provider profile`;
@@ -90,28 +110,42 @@ function providerAction(raw: RawActivity) {
 
 function cityAction(raw: RawActivity) {
   const subject = raw.description?.replace(/^(Added|Updated|Deleted) (recommendation|map place):?\s*/i, "").replace(/\.$/, "");
+  const fields = raw.changes?.map((change) => change.field) || raw.changedFields || [];
   if (raw.changeType === "cityCreated") return "created the city workspace";
   if (raw.changeType === "cityStatus") return "changed city publication status";
   if (raw.changeType === "cityCoordinates") return "updated city coordinates";
-  if (raw.changeType === "mapPlaceAdded") return raw.description || "added a map place";
-  if (raw.changeType === "mapPlaceUpdated") return raw.description || "updated a map place";
-  if (raw.changeType === "mapPlaceDeleted") return raw.description || "deleted a map place";
+  if (raw.changeType === "mapPlaceAdded") return `added the map place “${subject || "Untitled place"}”`;
+  if (raw.changeType === "mapPlaceUpdated") return `updated the map place “${subject || "Untitled place"}”`;
+  if (raw.changeType === "mapPlaceDeleted") return `deleted the map place “${subject || "Untitled place"}”`;
   if (raw.changeType === "recommendationAdded") return `added the recommendation “${subject || "Untitled recommendation"}”`;
   if (raw.changeType === "recommendationUpdated") return `updated the recommendation “${subject || "Untitled recommendation"}”`;
   if (raw.changeType === "recommendationDeleted") return `deleted the recommendation “${subject || "Untitled recommendation"}”`;
   if (raw.changeType === "recommendations") return "updated city recommendations";
+  if (fields.length === 1 && fields[0]?.match(/^intro_(en|pt|nl)$/)) {
+    const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
+    return `updated the ${language} city introduction`;
+  }
+  if (fields.length === 1 && ["heroImage", "mainImage"].includes(fields[0] || "")) return "changed the city hero image";
   return "updated city content";
 }
 
 function propertyAction(raw: RawActivity) {
   const title = raw.subjectName || "a property listing";
+  const fields = raw.changes?.map((change) => change.field) || raw.changedFields || [];
   const status = raw.changes?.find((change) => change.field === "status")?.afterValue;
-  if (raw.changeType === "propertyDeleted") return `deleted the ${title} property listing`;
-  if (status === "available") return `published the ${title} property listing`;
-  if (status === "hidden") return `unpublished the ${title} property listing`;
-  if (status === "archived") return `archived the ${title} property listing`;
-  if (raw.changeType === "propertyCreated") return `created the ${title} property listing`;
-  return `updated the ${title} property listing`;
+  if (raw.changeType === "propertyDeleted") return `deleted ${title}`;
+  if (status === "available") return `published ${title}`;
+  if (status === "hidden") return `unpublished ${title}`;
+  if (status === "archived") return `archived ${title}`;
+  if (raw.changeType === "propertyCreated") return `created ${title}`;
+  if (fields.length === 1 && fields[0]?.match(/^(intro|description)_(en|pt|nl)$/)) {
+    const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
+    return `updated the ${language} introduction for ${title}`;
+  }
+  if (fields.length === 1 && ["mainImage", "gallery"].includes(fields[0] || "")) return `updated the photos for ${title}`;
+  if (fields.length === 1 && fields[0] === "price") return `updated the price for ${title}`;
+  if (fields.some((field) => ["linkedRealtor", "realtor", "owner"].includes(field || ""))) return `changed the assigned realtor for ${title}`;
+  return `updated ${title}`;
 }
 
 function approvalAction(raw: RawActivity) {
@@ -131,10 +165,15 @@ function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
     : kind === "property" ? propertyAction(raw)
     : approvalAction(raw);
   const location = raw.location || raw.subjectName || (kind === "approval" ? "Provider approvals" : "Platform");
+  const approvalChanges = kind === "approval" && raw.status !== "approved" && raw.profileSnapshot
+    ? Object.entries(raw.profileSnapshot).flatMap(([field, value]) => activityValuesEqual(raw.providerCurrent?.[field], value, ["_type", "_key"])
+      ? []
+      : [{ field, beforeValue: loggedActivityValue(raw.providerCurrent?.[field]), afterValue: loggedActivityValue(value) }])
+    : [];
   const changes = raw.changes?.length
     ? raw.changes
-    : kind === "approval" && raw.profileSnapshot
-      ? Object.entries(raw.profileSnapshot).map(([field, value]) => ({ field, beforeValue: "Not retained", afterValue: typeof value === "string" ? value : JSON.stringify(value, null, 2) }))
+    : approvalChanges.length
+      ? approvalChanges
       : raw.description
         ? [{ field: kind === "city" ? "content" : "summary", beforeValue: "Not retained", afterValue: raw.description }]
         : [];
@@ -157,6 +196,39 @@ function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
     actorEmail: raw.actorEmail,
     actorUserId: raw.actorUserId,
   };
+}
+
+function loggedActivityValue(value: unknown) {
+  if (value === undefined) return "Not set";
+  return typeof value === "string" ? value : JSON.stringify(value, null, 2);
+}
+
+function referencedIds(changes: ActivityChange[]) {
+  const ids = new Set<string>();
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) return value.forEach(visit);
+    if (!value || typeof value !== "object") return;
+    const record = value as Record<string, unknown>;
+    if (typeof record._ref === "string") ids.add(record._ref);
+    Object.values(record).forEach(visit);
+  };
+  for (const change of changes) {
+    for (const value of [change.beforeValue, change.afterValue]) {
+      if (!value || value === "Not set" || value === "Not retained") continue;
+      try { visit(JSON.parse(value)); } catch { /* Plain text has no references. */ }
+    }
+  }
+  return [...ids];
+}
+
+async function activityReferences(activity: AdminActivity) {
+  const ids = referencedIds(activity.changes);
+  if (!ids.length) return {};
+  const records = await client.fetch<Array<{ _id: string; type?: string; name?: string; imageUrl?: string }>>(
+    `*[_id in $ids]{_id, "type": _type, "name": coalesce(name, title_en, title_pt, title_nl, name_en, name_pt, name_nl, originalFilename), "imageUrl": select(_type == "sanity.imageAsset" => url)}`,
+    { ids },
+  );
+  return Object.fromEntries(records.map((record) => [record._id, { name: record.name || "Linked item", type: record.type, imageUrl: record.imageUrl }]));
 }
 
 export async function fetchAdminActivities({
@@ -185,7 +257,10 @@ export async function fetchAdminActivity(key: string) {
   if (!activityQueries[kind] || !id) return null;
   const records = await client.fetch<RawActivity[]>(activityQueries[kind]);
   const raw = records.find((record) => record._id === id) || null;
-  return raw ? toActivity(kind, raw) : null;
+  if (!raw) return null;
+  const activity = toActivity(kind, raw);
+  activity.references = await activityReferences(activity);
+  return activity;
 }
 
 export function relativeActivityTime(value?: string) {
