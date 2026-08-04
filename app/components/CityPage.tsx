@@ -32,6 +32,9 @@ import {
   interpreterRoute,
 } from "@/app/lib/interpreterPages";
 import CityLiveInfoWidget from "@/app/components/CityLiveInfoWidget";
+import CityExperienceLayout, {
+  type CityExperienceSection,
+} from "@/app/components/CityExperienceLayout";
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
@@ -105,6 +108,129 @@ const cityGuideContent = {
       "Ontdek restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten voor uw verblijf in Porto Alegre.",
     hostLine:
       "Samengesteld door Armijn van Dijk, uw lokale contact voor zakelijke bezoeken, tolken, verblijf en praktische ondersteuning in de stad.",
+  },
+};
+
+const portoAlegreExperienceCopy = {
+  en: {
+    positioning:
+      "Local guidance, business interpretation and practical support from someone who knows Porto Alegre.",
+    navigationTitle: "What would you like to discover?",
+    navigationItems: [
+      {
+        id: "about-city",
+        title: "About the City",
+        description:
+          "Culture, character, economy, neighborhoods and quality of life.",
+      },
+      {
+        id: "living-working",
+        title: "Living & Working",
+        description:
+          "Business, housing, practical support, interpreter services and local assistance.",
+      },
+      {
+        id: "explore-city",
+        title: "Explore the City",
+        description:
+          "Maps, restaurants, attractions, articles and recommendations.",
+      },
+      {
+        id: "host-favorites",
+        title: "Host's Favorites",
+        description: "Personal recommendations from the local host.",
+      },
+    ],
+    aboutTitle: "About the City",
+    livingTitle: "Living & Working",
+    livingIntro:
+      "Home in the City is a trusted local contact for business visits, practical questions and informed housing decisions.",
+    exploreTitle: "Explore the City",
+    exploreIntro:
+      "Use the map and local guides to discover useful places and understand the city in context.",
+    favoritesTitle: "Host's Favorites",
+    favoritesIntro: "Personal recommendations from your local host.",
+    meetHostTitle: "Meet Your Host",
+  },
+  pt: {
+    positioning:
+      "Orientação local, interpretação de negócios e apoio prático de quem conhece Porto Alegre.",
+    navigationTitle: "O que você gostaria de descobrir?",
+    navigationItems: [
+      {
+        id: "about-city",
+        title: "Sobre a Cidade",
+        description:
+          "Cultura, identidade, economia, bairros e qualidade de vida.",
+      },
+      {
+        id: "living-working",
+        title: "Viver e Trabalhar",
+        description:
+          "Negócios, moradia, apoio prático, serviços de intérprete e assistência local.",
+      },
+      {
+        id: "explore-city",
+        title: "Explore a Cidade",
+        description:
+          "Mapas, restaurantes, atrações, artigos e recomendações.",
+      },
+      {
+        id: "host-favorites",
+        title: "Favoritos do Anfitrião",
+        description: "Recomendações pessoais do anfitrião local.",
+      },
+    ],
+    aboutTitle: "Sobre a Cidade",
+    livingTitle: "Viver e Trabalhar",
+    livingIntro:
+      "A Home in the City é um contato local de confiança para visitas de negócios, dúvidas práticas e decisões informadas sobre moradia.",
+    exploreTitle: "Explore a Cidade",
+    exploreIntro:
+      "Use o mapa e os guias locais para descobrir lugares úteis e entender a cidade em seu contexto.",
+    favoritesTitle: "Favoritos do Anfitrião",
+    favoritesIntro: "Recomendações pessoais do seu anfitrião local.",
+    meetHostTitle: "Conheça Seu Anfitrião",
+  },
+  nl: {
+    positioning:
+      "Lokale begeleiding, zakelijk tolken en praktische ondersteuning van iemand die Porto Alegre kent.",
+    navigationTitle: "Wat wilt u ontdekken?",
+    navigationItems: [
+      {
+        id: "about-city",
+        title: "Over de Stad",
+        description:
+          "Cultuur, karakter, economie, wijken en levenskwaliteit.",
+      },
+      {
+        id: "living-working",
+        title: "Wonen & Werken",
+        description:
+          "Zakendoen, wonen, praktische hulp, tolkdiensten en lokale ondersteuning.",
+      },
+      {
+        id: "explore-city",
+        title: "Ontdek de Stad",
+        description:
+          "Kaarten, restaurants, bezienswaardigheden, artikelen en aanbevelingen.",
+      },
+      {
+        id: "host-favorites",
+        title: "Favorieten van de Host",
+        description: "Persoonlijke aanbevelingen van de lokale host.",
+      },
+    ],
+    aboutTitle: "Over de Stad",
+    livingTitle: "Wonen & Werken",
+    livingIntro:
+      "Home in the City is een vertrouwd lokaal contact voor zakenbezoeken, praktische vragen en weloverwogen woonbeslissingen.",
+    exploreTitle: "Ontdek de Stad",
+    exploreIntro:
+      "Gebruik de kaart en lokale gidsen om nuttige plekken te ontdekken en de stad in context te begrijpen.",
+    favoritesTitle: "Favorieten van de Host",
+    favoritesIntro: "Persoonlijke aanbevelingen van uw lokale host.",
+    meetHostTitle: "Ontmoet Uw Host",
   },
 };
 
@@ -664,6 +790,262 @@ function cityMapEntriesFromListings({
   });
 }
 
+function ExperienceRecommendationGuides({
+  recommendations,
+  places,
+  lang,
+  cityName,
+  copy,
+}: {
+  recommendations: CityGuideRecommendationGuide[];
+  places: MapPlace[];
+  lang: Lang;
+  cityName: string;
+  copy: (typeof fallbackGuideCopy)[Lang];
+}) {
+  if (!recommendations.length) return null;
+
+  return (
+    <div className="space-y-5">
+      {recommendations.map((recommendation, index) => {
+        const values = recommendation as Record<string, unknown>;
+        const title = localizedRecommendationGuideText(values, "title", lang);
+        if (!title) return null;
+
+        const introduction = localizedRecommendationGuideText(
+          values,
+          "introduction",
+          lang,
+        );
+        const content = localizedRecommendationGuideText(values, "content", lang);
+        const relatedPlaces = places.filter(
+          (place) =>
+            place._key &&
+            recommendation.relatedMapPlaceKeys?.includes(place._key),
+        );
+        const relatedProviderSlug = recommendation.relatedProvider?.slug?.current;
+        const relatedCitySlug = recommendation.relatedCity?.slug?.current;
+        const relatedCityName = relatedCitySlug
+          ? cityGuideName(recommendation.relatedCity, lang, relatedCitySlug)
+          : "";
+
+        return (
+          <article
+            key={recommendation._key || `${title}-${index}`}
+            className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
+          >
+            {recommendation.featuredImage?.asset?.url ? (
+              <div className="relative aspect-[16/8] w-full bg-stone-200">
+                <Image
+                  src={recommendation.featuredImage.asset.url}
+                  alt={recommendation.featuredImage.alt || `${title}, ${cityName}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 1080px"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+
+            <div className="p-5 sm:p-6">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9b6b22]">
+                {recommendationCategoryLabel(recommendation, lang)}
+              </p>
+              <h3 className="mt-2 text-xl font-medium text-stone-950 sm:text-2xl">
+                {title}
+              </h3>
+
+              {introduction ? (
+                <p className="mt-3 max-w-3xl leading-7 text-stone-700">
+                  {introduction}
+                </p>
+              ) : null}
+
+              {content ? (
+                <details className="group mt-5 border-t border-stone-200 pt-4">
+                  <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 [&::-webkit-details-marker]:hidden">
+                    {copy.readRecommendation}
+                  </summary>
+                  <div className="mt-6 space-y-5">
+                    <RecommendationGuideBody content={content} />
+
+                    {relatedPlaces.length ? (
+                      <aside className="rounded-xl border border-stone-200 bg-white p-4">
+                        <h4 className="font-medium text-stone-900">
+                          {copy.relatedPlaces}
+                        </h4>
+                        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {relatedPlaces.map((place) => (
+                            <li key={place._key}>
+                              <a
+                                href={`#${mapPlaceAnchorId(place._key || "")}`}
+                                className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+                              >
+                                {localizedMapPlaceText(place, "name", lang)}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </aside>
+                    ) : null}
+
+                    {relatedProviderSlug || relatedCitySlug ? (
+                      <div className="flex flex-wrap gap-3 border-t border-stone-200 pt-5 text-sm">
+                        {relatedProviderSlug ? (
+                          <Link
+                            href={providerProfilePath(lang, relatedProviderSlug)}
+                            className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
+                          >
+                            {copy.relatedHost}: {recommendation.relatedProvider?.name}
+                          </Link>
+                        ) : null}
+                        {relatedCitySlug ? (
+                          <Link
+                            href={cityGuidePath(lang, relatedCitySlug)}
+                            className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
+                          >
+                            {copy.relatedCity}: {relatedCityName}
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              ) : null}
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+function ExperienceRecommendations({
+  groups,
+  favoritePlaces,
+  lang,
+  copy,
+}: {
+  groups: RecommendationGroup[];
+  favoritePlaces: MapPlace[];
+  lang: Lang;
+  copy: (typeof fallbackGuideCopy)[Lang];
+}) {
+  if (!groups.length && !favoritePlaces.length) return null;
+
+  return (
+    <div className="space-y-7">
+      {groups.map((group) => (
+        <div
+          key={group.id}
+          className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
+        >
+          <h3 className="mb-4 text-lg font-medium text-stone-900">
+            {group.label}
+          </h3>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {group.items.map((recommendation, index) => {
+              const title = localizedRecommendationText(
+                recommendation,
+                "name",
+                lang,
+              );
+              const detail = localizedRecommendationText(
+                recommendation,
+                "detail",
+                lang,
+              );
+              const description = localizedRecommendationText(
+                recommendation,
+                "description",
+                lang,
+              );
+
+              return (
+                <article
+                  key={`${group.id}-${title}-${index}`}
+                  className="rounded-2xl border border-stone-200 bg-stone-50 p-5"
+                >
+                  {recommendation.favorite ? (
+                    <p className="mb-2 text-xs uppercase tracking-widest text-[#9b6b22]">
+                      {copy.recommendationPick}
+                    </p>
+                  ) : null}
+                  <h4 className="text-base font-medium text-stone-950">{title}</h4>
+                  {recommendation.neighborhood ? (
+                    <p className="mt-1 text-sm text-stone-500">
+                      {recommendation.neighborhood}
+                    </p>
+                  ) : null}
+                  {detail ? (
+                    <p className="mt-3 text-sm leading-6 text-stone-700">{detail}</p>
+                  ) : null}
+                  {description && description !== detail ? (
+                    <p className="mt-3 text-sm leading-6 text-stone-600">
+                      {description}
+                    </p>
+                  ) : null}
+                  {recommendation.website ? (
+                    <a
+                      href={recommendation.website}
+                      target={
+                        recommendation.website.startsWith("http")
+                          ? "_blank"
+                          : undefined
+                      }
+                      rel={
+                        recommendation.website.startsWith("http")
+                          ? "noreferrer"
+                          : undefined
+                      }
+                      className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
+                    >
+                      {copy.recommendationLink}
+                    </a>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+
+      {!groups.length && favoritePlaces.length ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {favoritePlaces.map((place, index) => {
+            const title = localizedMapPlaceText(place, "name", lang);
+            const detail = localizedMapPlaceText(place, "detail", lang);
+            const description = localizedMapPlaceText(place, "description", lang);
+
+            return (
+              <article
+                key={place._key || `${title}-${index}`}
+                className="rounded-2xl border border-stone-200 bg-stone-50 p-5"
+              >
+                <p className="mb-2 text-xs uppercase tracking-widest text-[#9b6b22]">
+                  {copy.recommendationPick}
+                </p>
+                <h3 className="text-base font-medium text-stone-950">{title}</h3>
+                {place.neighborhood ? (
+                  <p className="mt-1 text-sm text-stone-500">{place.neighborhood}</p>
+                ) : null}
+                {detail ? (
+                  <p className="mt-3 text-sm leading-6 text-stone-700">{detail}</p>
+                ) : null}
+                {description && description !== detail ? (
+                  <p className="mt-3 text-sm leading-6 text-stone-600">
+                    {description}
+                  </p>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function CityPage({
   lang,
   citySlug,
@@ -755,6 +1137,333 @@ export default function CityPage({
       !isExactDuplicateSidebarCard(card, lang, serviceHrefs) &&
       !(hasCityInterpreter && interpreterRoute(getLocalizedHref(card, lang))),
   );
+
+  if (isPortoAlegre) {
+    const experienceCopy = portoAlegreExperienceCopy[lang];
+    const aboutBlocks = introBlocks.length
+      ? introBlocks
+      : introText
+        ? [introText]
+        : [];
+    const favoritePlaces = places.filter((place) => place.favorite);
+    const sections: CityExperienceSection[] = [
+      {
+        id: "about-city",
+        title: experienceCopy.aboutTitle,
+        content: aboutBlocks.length ? (
+          <div className="max-w-4xl space-y-4">
+            {aboutBlocks.map((block, index) => (
+              <p key={index} className="leading-7 text-stone-700">
+                {block}
+              </p>
+            ))}
+          </div>
+        ) : null,
+      },
+      {
+        id: "living-working",
+        title: experienceCopy.livingTitle,
+        intro: experienceCopy.livingIntro,
+        content: (
+          <div className="grid gap-5 md:grid-cols-2">
+            {serviceCards.map((card) => (
+              <article
+                key={card.href}
+                className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
+              >
+                <h3 className="text-xl font-medium text-stone-950">
+                  {card.title}
+                </h3>
+                {card.text ? (
+                  <p className="mt-3 text-sm leading-6 text-stone-700">
+                    {card.text}
+                  </p>
+                ) : null}
+                {card.href.startsWith("mailto:") ? (
+                  <a
+                    href={card.href}
+                    className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                  >
+                    {card.button}
+                  </a>
+                ) : (
+                  <Link
+                    href={card.href}
+                    className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                  >
+                    {card.button}
+                  </Link>
+                )}
+              </article>
+            ))}
+
+            {sidebarCards.map((card, index) => {
+              const cardTitle = localizedField(card, "title", lang);
+              const cardText = localizedField(card, "text", lang);
+              const cardHref = localizedField(card, "href", lang);
+              const cardButton = localizedField(card, "button", lang);
+
+              return cardTitle ? (
+                <article
+                  key={`${cardHref}-${index}`}
+                  className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
+                >
+                  <h3 className="text-xl font-medium text-stone-950">
+                    {cardTitle}
+                  </h3>
+                  {cardText ? (
+                    <p className="mt-3 text-sm leading-6 text-stone-700">
+                      {cardText}
+                    </p>
+                  ) : null}
+                  {cardHref && cardButton ? (
+                    <a
+                      href={cardHref}
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                    >
+                      {cardButton}
+                    </a>
+                  ) : null}
+                </article>
+              ) : null;
+            })}
+          </div>
+        ),
+      },
+      {
+        id: "explore-city",
+        title: experienceCopy.exploreTitle,
+        intro: experienceCopy.exploreIntro,
+        content: (
+          <div className="space-y-8">
+            {mapEntries.length ? (
+              <CityMap
+                entries={mapEntries}
+                lang={lang}
+                cityName={cityName}
+                cityCenter={{
+                  latitude: city?.latitude,
+                  longitude: city?.longitude,
+                }}
+              />
+            ) : null}
+
+            {recommendationGuides.length ? (
+              <div className="border-t border-stone-200 pt-8">
+                <h3 className="text-2xl font-medium text-stone-950">
+                  {fallbackCopy.recommendationGuidesTitle}
+                </h3>
+                <p className="mt-3 max-w-3xl leading-7 text-stone-600">
+                  {fallbackCopy.recommendationGuidesIntro(cityName)}
+                </p>
+                <div className="mt-6">
+                  <ExperienceRecommendationGuides
+                    recommendations={recommendationGuides}
+                    places={places}
+                    lang={lang}
+                    cityName={cityName}
+                    copy={fallbackCopy}
+                  />
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        id: "host-favorites",
+        title: experienceCopy.favoritesTitle,
+        intro: experienceCopy.favoritesIntro,
+        content: (
+          <ExperienceRecommendations
+            groups={recommendationGroups}
+            favoritePlaces={favoritePlaces}
+            lang={lang}
+            copy={fallbackCopy}
+          />
+        ),
+      },
+      {
+        id: "meet-host",
+        title: experienceCopy.meetHostTitle,
+        content: displayHost ? (
+          <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-start">
+            <div className="relative h-24 w-24 overflow-hidden rounded-full bg-stone-200 sm:h-28 sm:w-28">
+              <Image
+                src={displayHost.photoUrl}
+                alt={displayHost.photoAlt}
+                fill
+                sizes="112px"
+                className="object-cover"
+              />
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-medium text-stone-950">
+                {displayHost.name}
+              </h3>
+              <p className="mt-1 text-stone-600">{displayHost.role}</p>
+              {hostLine ? (
+                <p className="mt-4 max-w-3xl leading-7 text-stone-700">
+                  {hostLine}
+                </p>
+              ) : null}
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                {displayHost.profileHref ? (
+                  <Link
+                    href={displayHost.profileHref}
+                    className="inline-flex min-h-11 items-center rounded-full border border-stone-300 px-5 py-2.5 text-sm text-stone-800 hover:bg-stone-50"
+                  >
+                    {t.profile}
+                  </Link>
+                ) : null}
+
+                {displayHost.actions.map((action, index) => (
+                  <a
+                    key={action.href}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noreferrer" : undefined}
+                    className="inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                  >
+                    {index === 0
+                      ? localizedCityGuideText(city, "cta", lang) || t.cta
+                      : action.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null,
+      },
+    ];
+
+    const hero = (
+      <>
+        <div className="max-w-[calc(100%-5.75rem)] md:hidden">
+          <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+        </div>
+
+        <div className="flex gap-3 text-xl" aria-label="City guide languages">
+          {cityGuideEnabledLanguages(city).map((language) => (
+            <a
+              key={language}
+              href={cityGuidePath(language, citySlug)}
+              aria-label={
+                language === "en"
+                  ? "English"
+                  : language === "pt"
+                    ? "Portuguese"
+                    : "Dutch"
+              }
+              aria-current={language === lang ? "page" : undefined}
+            >
+              {language === "en" ? "🇬🇧" : language === "pt" ? "🇧🇷" : "🇳🇱"}
+            </a>
+          ))}
+        </div>
+
+        <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
+          {title ? (
+            <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
+              {title}
+            </h1>
+          ) : null}
+          {introText ? (
+            <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
+              {introText}
+            </p>
+          ) : null}
+          <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">
+            {experienceCopy.positioning}
+          </p>
+          {hostLine ? (
+            <p className="mt-4 max-w-2xl leading-relaxed text-stone-600">
+              {hostLine}
+            </p>
+          ) : null}
+        </div>
+      </>
+    );
+
+    return (
+      <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pb-14 pt-28 md:bg-transparent">
+        {recommendationGuides.length ? (
+          <JsonLdScript
+            data={recommendationGuideJsonLd({
+              recommendations: recommendationGuides,
+              lang,
+              cityName,
+              citySlug,
+            })}
+          />
+        ) : null}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
+
+        {displayHost ? (
+          <div className="group fixed right-4 top-24 z-[70] md:right-8 lg:top-24">
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-label={t.hostCardTitle}
+              className="relative block h-20 w-20 cursor-pointer rounded-full md:h-24 md:w-24 lg:h-28 lg:w-28"
+              onClick={() => setOpen(!open)}
+            >
+              <Image
+                src={displayHost.photoUrl}
+                alt={displayHost.photoAlt}
+                fill
+                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
+                className="rounded-full border-4 border-white object-cover shadow-xl"
+              />
+            </button>
+
+            {open ? (
+              <>
+                {displayHost.profileHref ? (
+                  <Link
+                    href={displayHost.profileHref}
+                    className="absolute right-28 top-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-28 lg:right-32"
+                  >
+                    {t.profile}
+                  </Link>
+                ) : null}
+
+                {displayHost.actions.slice(0, 2).map((action, index) => (
+                  <a
+                    key={action.href}
+                    href={action.href}
+                    target={action.external ? "_blank" : undefined}
+                    rel={action.external ? "noreferrer" : undefined}
+                    className={
+                      index === 0
+                        ? "absolute right-32 top-16 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-32 lg:right-36 lg:top-20"
+                        : "absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
+                    }
+                  >
+                    {action.label}
+                  </a>
+                ))}
+              </>
+            ) : null}
+          </div>
+        ) : null}
+
+        <CityExperienceLayout
+          hero={hero}
+          sideRail={
+            <div className="hidden md:block">
+              <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+            </div>
+          }
+          navigationTitle={experienceCopy.navigationTitle}
+          navigationItems={experienceCopy.navigationItems}
+          sections={sections}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
