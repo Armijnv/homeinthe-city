@@ -27,7 +27,7 @@ const providerForAdminQuery = `
     languages[]{language, level, services},
     cities[]->{_id},
     managedCities[]->{_id},
-    ownership{contactEmail, ownerUserId, ownershipStatus},
+    ownership{contactEmail, ownerUserId, ownershipStatus, selfEditEnabled, selfEditableFields},
     contactOptions{email, whatsapp}
   }
 `;

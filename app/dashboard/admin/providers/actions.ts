@@ -8,6 +8,7 @@ import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 import { publishedId } from "@/sanity/lib/providerSubmissionApproval";
 import { activityFieldChanges } from "@/app/lib/activityChanges";
+import { providerSelfEditableFields } from "@/app/lib/clerkIdentityPolicy";
 
 type ManagedCityReference = {
   _key?: string;
@@ -26,7 +27,11 @@ type ProviderForAction = {
   roles?: string[];
   primaryRole?: string;
   languages?: Array<Record<string, unknown>>;
-  ownership?: { contactEmail?: string };
+  ownership?: {
+    contactEmail?: string;
+    selfEditEnabled?: boolean;
+    selfEditableFields?: string[];
+  };
   contactOptions?: { email?: string; whatsapp?: string; preferredContact?: string };
 };
 
@@ -68,6 +73,7 @@ const allowedVerificationStatuses = new Set([
   "verified",
   "rejected",
 ]);
+const allowedSelfEditableFields = new Set<string>(providerSelfEditableFields);
 
 function formString(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -211,6 +217,8 @@ async function providerInput(formData: FormData, providerId?: string) {
   );
   const contactEmail = cleanEmail(formString(formData, "contactEmail"));
   const whatsapp = cleanWhatsApp(formString(formData, "whatsapp"));
+  const selfEditEnabled = formString(formData, "selfEditEnabled") === "true";
+  const selfEditableFields = selectedStrings(formData, "selfEditableFields");
 
   if (!name) throw new ProviderAdminError("Provider name is required.");
   if (!slug) throw new ProviderAdminError("Provider slug is required.");
@@ -225,6 +233,12 @@ async function providerInput(formData: FormData, providerId?: string) {
   }
   if (!roles.includes(primaryRole)) roles.push(primaryRole);
   if (!roles.length) throw new ProviderAdminError("Choose at least one role.");
+  if (selfEditableFields.some((field) => !allowedSelfEditableFields.has(field))) {
+    throw new ProviderAdminError("Choose only supported self-editable profile sections.");
+  }
+  if (providerId && selfEditEnabled && !selfEditableFields.length) {
+    throw new ProviderAdminError("Choose at least one self-editable profile section before enabling self-editing.");
+  }
 
   const duplicateId = await client.fetch<string | null>(
     `*[_type == "provider" && slug.current == $slug && _id != $providerId][0]._id`,
@@ -259,6 +273,8 @@ async function providerInput(formData: FormData, providerId?: string) {
     roles,
     contactEmail,
     whatsapp,
+    selfEditEnabled,
+    selfEditableFields,
     languages: providerLanguages(formData),
     cities: references(cityIds.cities, "served"),
     managedCities: references(cityIds.managedCities, "managed"),
@@ -279,7 +295,7 @@ async function providerForAction(providerId: string) {
       languages,
       cities[]{_key, _ref},
       managedCities[]{_key, _ref},
-      ownership{contactEmail},
+      ownership{contactEmail, selfEditEnabled, selfEditableFields},
       contactOptions{email, whatsapp, preferredContact}
     }`,
     { providerId },
@@ -413,6 +429,8 @@ export async function updateProviderAction(formData: FormData) {
             "contactOptions.email": input.contactEmail,
           }
         : {}),
+      "ownership.selfEditEnabled": input.selfEditEnabled,
+      "ownership.selfEditableFields": input.selfEditableFields,
       ...(input.whatsapp ? { "contactOptions.whatsapp": input.whatsapp } : {}),
       ...(input.whatsapp
         ? { "contactOptions.preferredContact": "whatsapp" }
@@ -448,6 +466,8 @@ export async function updateProviderAction(formData: FormData) {
         cities: existing.cities || [],
         managedCities: existing.managedCities || [],
         "ownership.contactEmail": existing.ownership?.contactEmail,
+        "ownership.selfEditEnabled": existing.ownership?.selfEditEnabled === true,
+        "ownership.selfEditableFields": existing.ownership?.selfEditableFields || [],
         "contactOptions.email": existing.contactOptions?.email,
         "contactOptions.whatsapp": existing.contactOptions?.whatsapp,
         "contactOptions.preferredContact": existing.contactOptions?.preferredContact,
@@ -463,6 +483,8 @@ export async function updateProviderAction(formData: FormData) {
         cities: input.cities,
         managedCities: input.managedCities,
         "ownership.contactEmail": afterContactEmail,
+        "ownership.selfEditEnabled": input.selfEditEnabled,
+        "ownership.selfEditableFields": input.selfEditableFields,
         "contactOptions.email": afterContactEmail,
         "contactOptions.whatsapp": afterWhatsapp,
         "contactOptions.preferredContact": afterPreferredContact,

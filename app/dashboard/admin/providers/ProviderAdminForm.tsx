@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { providerSelfEditableFields } from "@/app/lib/clerkIdentityPolicy";
 
 export type ProviderAdminCityOption = {
   _id: string;
@@ -28,6 +29,8 @@ export type ProviderAdminFormData = {
     contactEmail?: string;
     ownerUserId?: string;
     ownershipStatus?: string;
+    selfEditEnabled?: boolean;
+    selfEditableFields?: string[];
   };
   contactOptions?: {
     email?: string;
@@ -70,6 +73,17 @@ const languageServices = [
   ["translatesTo", "Translates to"],
 ] as const;
 
+const selfEditableFieldLabels: Record<(typeof providerSelfEditableFields)[number], string> = {
+  name: "Name",
+  cities: "Cities served",
+  languages: "Languages",
+  headlines: "Headlines",
+  intro: "Introduction text",
+  about: "About text",
+  contactOptions: "Contact options",
+  mainPhoto: "Profile photo",
+};
+
 const inputClass =
   "w-full rounded-lg border border-white/15 bg-[#1a1f2e] px-4 py-3 text-sm text-white placeholder:text-stone-500";
 
@@ -95,6 +109,7 @@ export default function ProviderAdminForm({
   const selectedRoles = new Set(provider?.roles || []);
   const servedCityIds = selectedIds(provider?.cities);
   const managedCityIds = selectedIds(provider?.managedCities);
+  const selectedSelfEditableFields = new Set(provider?.ownership?.selfEditableFields || []);
   const languageValues = new Map(
     provider?.languages
       ?.filter((entry) => entry.language)
@@ -232,6 +247,46 @@ export default function ProviderAdminForm({
           </p>
         )}
       </section>
+
+      {provider?._id ? (
+        <section className="rounded-2xl border border-white/10 bg-white/10 p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-2xl font-light text-white">Provider self-editing</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-300">
+                Controls whether this provider can update the selected profile sections from their own dashboard. Administrator access is unaffected.
+              </p>
+            </div>
+            <span className={`w-fit rounded-full border px-3 py-1 text-xs uppercase tracking-widest ${provider.ownership?.selfEditEnabled ? "border-emerald-300/30 text-emerald-200" : "border-white/15 text-stone-300"}`}>
+              {provider.ownership?.selfEditEnabled ? "Enabled" : "Disabled"}
+            </span>
+          </div>
+          <div className="mt-6 grid gap-5 md:grid-cols-2">
+            <label>
+              <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Self-editing status</span>
+              <select name="selfEditEnabled" className={inputClass} defaultValue={provider.ownership?.selfEditEnabled ? "true" : "false"}>
+                <option value="false">Disabled</option>
+                <option value="true">Enabled</option>
+              </select>
+              <span className="mt-2 block text-sm leading-6 text-stone-300">
+                The provider must still match the connected Clerk account or verified contact email.
+              </span>
+            </label>
+            <fieldset>
+              <legend className="text-xs uppercase tracking-widest text-stone-400">Allowed profile sections</legend>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {providerSelfEditableFields.map((field) => (
+                  <label key={field} className="flex min-h-11 items-center gap-3 rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm text-stone-200">
+                    <input type="checkbox" name="selfEditableFields" value={field} defaultChecked={selectedSelfEditableFields.has(field)} className="size-4 shrink-0 accent-[#d6a85a]" />
+                    {selfEditableFieldLabels[field]}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-3 text-sm leading-6 text-stone-300">When enabled, at least one section must be selected.</p>
+            </fieldset>
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-2xl border border-white/10 bg-white/10 p-6">
         <h2 className="text-2xl font-light text-white">Roles</h2>
