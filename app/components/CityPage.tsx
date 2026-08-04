@@ -54,7 +54,7 @@ type CityMapEntry = import("@/app/components/CityMap").CityMapEntry;
 
 type ServiceCard = {
   title: string;
-  text: string;
+  text?: string;
   button: string;
   href: string;
 };
@@ -110,14 +110,6 @@ const cityGuideContent = {
 
 const fallbackGuideCopy = {
   en: {
-    intro: (cityName: string) =>
-      `A Home in the City guide for ${cityName} is being prepared with local context, practical support and curated places.`,
-    hostLine:
-      "Local recommendations and support options will appear here as the guide grows.",
-    placesTitle: "Local picks coming soon",
-    placesText:
-      "Restaurants, cafés, cultural places and practical city tips will be added from the Sanity City document.",
-    recommendationsTitle: "Local recommendations",
     recommendationGuidesTitle: "Guides from local hosts",
     recommendationGuidesIntro: (cityName: string) =>
       `Curated ${cityName} guides with local context and practical advice from people who know the city.`,
@@ -129,23 +121,9 @@ const fallbackGuideCopy = {
     recommendationLink: "Open link",
     recommendationPick: "Home in the City pick",
     realEstateTitle: (cityName: string) => `${cityName} real estate`,
-    realEstateText:
-      "See available property listings while the city guide is being expanded.",
     realEstateButton: "View properties",
-    supportTitle: "Local support",
-    supportText:
-      "Contact Home in the City for practical questions while this guide is being completed.",
-    supportButton: "Contact",
   },
   pt: {
-    intro: (cityName: string) =>
-      `Um guia da Home in the City para ${cityName} está sendo preparado com contexto local, apoio prático e lugares selecionados.`,
-    hostLine:
-      "Recomendações locais e opções de apoio aparecerão aqui conforme o guia crescer.",
-    placesTitle: "Indicações locais em breve",
-    placesText:
-      "Restaurantes, cafés, espaços culturais e dicas práticas serão adicionados pelo documento de Cidade no Sanity.",
-    recommendationsTitle: "Recomendações locais",
     recommendationGuidesTitle: "Guias dos anfitriões locais",
     recommendationGuidesIntro: (cityName: string) =>
       `Guias selecionados de ${cityName}, com contexto local e conselhos práticos de quem conhece a cidade.`,
@@ -157,23 +135,9 @@ const fallbackGuideCopy = {
     recommendationLink: "Abrir link",
     recommendationPick: "Indicação Home in the City",
     realEstateTitle: (cityName: string) => `Imóveis em ${cityName}`,
-    realEstateText:
-      "Veja anúncios disponíveis enquanto o guia da cidade está sendo expandido.",
     realEstateButton: "Ver imóveis",
-    supportTitle: "Apoio local",
-    supportText:
-      "Entre em contato com a Home in the City para dúvidas práticas enquanto este guia é concluído.",
-    supportButton: "Contato",
   },
   nl: {
-    intro: (cityName: string) =>
-      `Een Home in the City-gids voor ${cityName} wordt voorbereid met lokale context, praktische hulp en geselecteerde plekken.`,
-    hostLine:
-      "Lokale aanbevelingen en hulpopties verschijnen hier naarmate de gids groeit.",
-    placesTitle: "Lokale tips binnenkort",
-    placesText:
-      "Restaurants, cafés, culturele plekken en praktische stadstips worden toegevoegd vanuit het Sanity City-document.",
-    recommendationsTitle: "Lokale aanbevelingen",
     recommendationGuidesTitle: "Gidsen van lokale hosts",
     recommendationGuidesIntro: (cityName: string) =>
       `Samengestelde gidsen voor ${cityName}, met lokale context en praktisch advies van mensen die de stad kennen.`,
@@ -185,13 +149,7 @@ const fallbackGuideCopy = {
     recommendationLink: "Open link",
     recommendationPick: "Home in the City tip",
     realEstateTitle: (cityName: string) => `Vastgoed in ${cityName}`,
-    realEstateText:
-      "Bekijk beschikbaar woningaanbod terwijl de stadsgids wordt uitgebreid.",
     realEstateButton: "Bekijk woningen",
-    supportTitle: "Lokale hulp",
-    supportText:
-      "Neem contact op met Home in the City voor praktische vragen terwijl deze gids wordt afgerond.",
-    supportButton: "Contact",
   },
 };
 
@@ -220,7 +178,7 @@ function localizedField<T extends "title" | "text" | "button" | "href">(
   const localized = card[`${field}_${lang}`];
   const english = card[`${field}_en`];
 
-  return localized || english || "";
+  return (localized || english || "").trim();
 }
 
 function fallbackServiceCards({
@@ -260,20 +218,10 @@ function fallbackServiceCards({
   if (includeRealEstate) {
     cards.push({
       title: copy.realEstateTitle(cityName),
-      text: copy.realEstateText,
       button: copy.realEstateButton,
       href: `${realEstatePrefix}/${citySlug}`,
     });
   }
-
-  cards.push(
-    {
-      title: copy.supportTitle,
-      text: copy.supportText,
-      button: copy.supportButton,
-      href: "mailto:contact@homeinthe.city",
-    },
-  );
 
   return cards;
 }
@@ -752,21 +700,18 @@ export default function CityPage({
       cta: "Talk to me",
       profile: "Profile",
       hostCardTitle: "Local host",
-      fallbackTitle: "City guide coming soon",
     },
     pt: {
       helpTitle: "Precisa de ajuda na cidade?",
       cta: "Fale comigo",
       profile: "Perfil",
       hostCardTitle: "Anfitriao local",
-      fallbackTitle: "Guia da cidade em breve",
     },
     nl: {
       helpTitle: "Hulp nodig in de stad?",
       cta: "Stuur me een bericht",
       profile: "Profiel",
       hostCardTitle: "Lokale host",
-      fallbackTitle: "Stadsgids binnenkort",
     },
   };
 
@@ -776,18 +721,22 @@ export default function CityPage({
   const fallbackCopy = fallbackGuideCopy[lang];
   const headline = localizedCityGuideText(city, "headline", lang);
   const intro = localizedCityGuideText(city, "intro", lang);
-  const introBlocks = localizedCityGuideList(city, "introBlocks", lang);
+  const introBlocks = localizedCityGuideList(city, "introBlocks", lang)
+    .map((block) => block.trim())
+    .filter(Boolean);
   const places: MapPlace[] = city?.mapPlaces || [];
-  const recommendationGuides = city?.recommendationGuides || [];
+  const recommendationGuides = (city?.recommendationGuides || []).filter((recommendation) =>
+    Boolean(localizedRecommendationGuideText(recommendation as Record<string, unknown>, "title", lang)),
+  );
   const recommendationGroups = groupedRecommendations(city?.recommendations || [], lang);
   const mapEntries = [
     ...cityMapEntriesFromPlaces(places, lang),
     ...cityMapEntriesFromListings({ listings: propertyListings, lang, citySlug }),
   ];
   const guide = isPortoAlegre ? cityGuideContent[lang] : null;
-  const title = guide?.title || headline || `${cityName}: ${t.fallbackTitle}`;
-  const introText = guide?.intro || intro || fallbackCopy.intro(cityName);
-  const hostLine = guide?.hostLine || fallbackCopy.hostLine;
+  const title = guide?.title || headline || localizedCityGuideText(city, "name", lang);
+  const introText = guide?.intro || intro;
+  const hostLine = guide?.hostLine || "";
   const serviceCards = fallbackServiceCards({
     lang,
     citySlug,
@@ -892,48 +841,16 @@ export default function CityPage({
             ))}
           </div>
 
-          <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
-            <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
-              {title}
-            </h1>
-
-            <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
-              {introText}
-            </p>
-
-            <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">
-              {hostLine}
-            </p>
-
-            <div className="mt-6 space-y-4">
-              {introBlocks.map((block: string, index: number) => (
-                <p
-                  key={index}
-                  className="max-w-2xl leading-relaxed text-stone-700"
-                >
-                  {block}
-                </p>
-              ))}
+          {title || introText || hostLine || introBlocks.length ? (
+            <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
+              {title ? <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">{title}</h1> : null}
+              {introText ? <p className="max-w-2xl font-medium leading-relaxed text-stone-700">{introText}</p> : null}
+              {hostLine ? <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">{hostLine}</p> : null}
+              {introBlocks.length ? <div className="mt-6 space-y-4">{introBlocks.map((block: string, index: number) => <p key={index} className="max-w-2xl leading-relaxed text-stone-700">{block}</p>)}</div> : null}
             </div>
-          </div>
+          ) : null}
 
-          {mapEntries.length ? (
-            <CityMap
-              entries={mapEntries}
-              lang={lang}
-              cityName={cityName}
-              cityCenter={{ latitude: city?.latitude, longitude: city?.longitude }}
-            />
-          ) : (
-            <div className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
-              <h2 className="mb-3 text-2xl text-stone-800">
-                {fallbackCopy.placesTitle}
-              </h2>
-              <p className="leading-relaxed text-stone-600">
-                {fallbackCopy.placesText}
-              </p>
-            </div>
-          )}
+          {mapEntries.length ? <CityMap entries={mapEntries} lang={lang} cityName={cityName} cityCenter={{ latitude: city?.latitude, longitude: city?.longitude }} /> : null}
 
           {recommendationGuides.length ? (
             <section
@@ -1158,18 +1075,18 @@ export default function CityPage({
             </section>
           ) : null}
 
-          <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
+          {primaryHostAction ? <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
             <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>
 
             <a
-              href={primaryHostAction?.href || "mailto:contact@homeinthe.city"}
-              target={primaryHostAction?.external ? "_blank" : undefined}
-              rel={primaryHostAction?.external ? "noreferrer" : undefined}
+              href={primaryHostAction.href}
+              target={primaryHostAction.external ? "_blank" : undefined}
+              rel={primaryHostAction.external ? "noreferrer" : undefined}
               className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
             >
               {localizedCityGuideText(city, "cta", lang) || t.cta}
             </a>
-          </div>
+          </div> : null}
         </div>
 
         <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
@@ -1238,9 +1155,7 @@ export default function CityPage({
                 {card.title}
               </h3>
 
-              <p className="mb-5 text-sm leading-relaxed text-stone-700">
-                {card.text}
-              </p>
+              {card.text ? <p className="mb-5 text-sm leading-relaxed text-stone-700">{card.text}</p> : null}
 
               {card.href.startsWith("mailto:") ? (
                 <a
@@ -1264,29 +1179,25 @@ export default function CityPage({
              SANITY CITY CARDS
           ====================================================== */}
 
-          {sidebarCards.map((card, index) => (
-            localizedField(card, "title", lang) ? (
+          {sidebarCards.map((card, index) => {
+            const cardTitle = localizedField(card, "title", lang);
+            const cardText = localizedField(card, "text", lang);
+            const cardHref = localizedField(card, "href", lang);
+            const cardButton = localizedField(card, "button", lang);
+
+            return cardTitle ? (
               <div
-                key={`${getLocalizedHref(card, lang)}-${index}`}
+                key={`${cardHref}-${index}`}
                 className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
               >
-                <h3 className="mb-3 text-lg font-medium text-black">
-                  {localizedField(card, "title", lang)}
-                </h3>
+                <h3 className={`${cardText || (cardHref && cardButton) ? "mb-3" : ""} text-lg font-medium text-black`}>{cardTitle}</h3>
 
-                <p className="mb-5 text-sm leading-relaxed text-stone-700">
-                  {localizedField(card, "text", lang)}
-                </p>
+                {cardText ? <p className={`${cardHref && cardButton ? "mb-5" : ""} text-sm leading-relaxed text-stone-700`}>{cardText}</p> : null}
 
-                <a
-                  href={localizedField(card, "href", lang)}
-                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-                >
-                  {localizedField(card, "button", lang)}
-                </a>
+                {cardHref && cardButton ? <a href={cardHref} className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800">{cardButton}</a> : null}
               </div>
             ) : null
-          ))}
+          })}
 
         </div>
       </div>

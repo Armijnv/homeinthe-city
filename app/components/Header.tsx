@@ -87,7 +87,7 @@ function MenuContent({
           </Link>
           <Link
             href={providerLogin.href}
-            className="rounded-lg bg-[#d7b46a] px-4 py-3 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efcf88]"
+            className="inline-flex min-h-11 w-fit items-center rounded-lg border border-[#d7b46a]/60 px-4 py-2 text-sm font-medium text-[#d7b46a] transition hover:border-[#d7b46a] hover:bg-[#d7b46a]/10 hover:text-[#efcf88]"
           >
             {providerLogin.label}
           </Link>
@@ -541,7 +541,7 @@ export default function Header({
 
           <Link
             href={providerLogin.href}
-            className="rounded-full bg-[#d7b46a] px-5 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-[#efcf88]"
+            className="inline-flex min-h-11 items-center rounded-full border border-[#d7b46a]/60 px-4 text-xs font-medium text-[#d7b46a] transition hover:border-[#d7b46a] hover:bg-[#d7b46a]/10 hover:text-[#efcf88]"
           >
             {providerLogin.label}
           </Link>
