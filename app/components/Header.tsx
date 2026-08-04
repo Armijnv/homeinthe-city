@@ -45,6 +45,7 @@ function MenuContent({
   availableLanguages,
   featuredInterpreter,
   providerLogin,
+  providerSectionLabel,
 }: {
   mobile?: boolean;
   menuSections: MenuSection[];
@@ -54,6 +55,7 @@ function MenuContent({
   availableLanguages: CityGuideLang[];
   featuredInterpreter: MenuLink;
   providerLogin: MenuLink;
+  providerSectionLabel: string;
 }) {
   return (
     <nav
@@ -84,12 +86,6 @@ function MenuContent({
             className="rounded-lg border border-[#d7b46a]/50 bg-[#d7b46a]/10 px-4 py-3 text-sm font-medium text-white"
           >
             {featuredInterpreter.label}
-          </Link>
-          <Link
-            href={providerLogin.href}
-            className="inline-flex min-h-11 w-fit items-center rounded-lg border border-[#d7b46a]/60 px-[13px] py-2 text-xs font-normal text-[#d7b46a] transition hover:border-[#d7b46a] hover:bg-[#d7b46a]/10 hover:text-[#efcf88]"
-          >
-            {providerLogin.label}
           </Link>
         </div>
       ) : null}
@@ -130,6 +126,19 @@ function MenuContent({
             </div>
           </section>
         ))}
+      </div>
+
+      <div className="mt-auto border-t border-white/10 pt-4">
+        <p className="text-[10px] uppercase tracking-widest text-white/35">
+          {providerSectionLabel}
+        </p>
+
+        <Link
+          href={providerLogin.href}
+          className="inline-flex min-h-11 items-center text-sm text-white/55 transition hover:text-[#d7b46a]"
+        >
+          {providerLogin.label}
+        </Link>
       </div>
     </nav>
   );
@@ -200,6 +209,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Your local guide · Wherever business takes you",
+      forProviders: "For Providers",
       providerLogin: "Provider Login",
       comingSoon: "Coming soon",
     },
@@ -227,6 +237,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Seu apoio local · Onde os negócios levarem você",
+      forProviders: "Para prestadores",
       providerLogin: "Login de prestador",
       comingSoon: "Em breve",
     },
@@ -254,6 +265,7 @@ export default function Header({
       email: "Email",
       contact: "WhatsApp",
       tagline: "Je lokale gids · Waar je zakenreis je ook brengt",
+      forProviders: "Voor aanbieders",
       providerLogin: "Provider Login",
       comingSoon: "Binnenkort",
     },
@@ -539,13 +551,6 @@ export default function Header({
             {t.interpreter}
           </Link>
 
-          <Link
-            href={providerLogin.href}
-            className="inline-flex min-h-11 items-center rounded-full border border-[#d7b46a]/60 px-[13px] text-[11px] font-normal text-[#d7b46a] transition hover:border-[#d7b46a] hover:bg-[#d7b46a]/10 hover:text-[#efcf88]"
-          >
-            {providerLogin.label}
-          </Link>
-
           <details className="relative" onClick={closeMenuOnLinkClick}>
             <summary className="cursor-pointer list-none rounded-full border border-white/15 px-5 py-2 text-sm text-white/80 transition hover:border-white/35 hover:text-white [&::-webkit-details-marker]:hidden">
               {t.menu}
@@ -559,6 +564,7 @@ export default function Header({
               availableLanguages={availableLanguages}
               featuredInterpreter={featuredInterpreter}
               providerLogin={providerLogin}
+              providerSectionLabel={t.forProviders}
             />
           </details>
 
@@ -594,6 +600,7 @@ export default function Header({
             availableLanguages={availableLanguages}
             featuredInterpreter={featuredInterpreter}
             providerLogin={providerLogin}
+            providerSectionLabel={t.forProviders}
           />
         </details>
       </div>

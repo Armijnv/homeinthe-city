@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPageSource, headerSource] = await Promise.all([
+const [cityPageSource, headerSource, footerSource] = await Promise.all([
   readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
   readFile(new URL("../app/components/Header.tsx", import.meta.url), "utf8"),
+  readFile(new URL("../app/components/Footer.tsx", import.meta.url), "utf8"),
 ]);
 
 test("city pages do not render automatic incomplete-guide copy", () => {
@@ -27,8 +28,11 @@ test("empty city sections are conditional and configured sidebar values are opti
   assert.match(cityPageSource, /cardHref && cardButton \? <a/);
 });
 
-test("Provider Login keeps its route and a 44px minimum target with secondary styling", () => {
+test("Provider Login is available only in the separated menu section and footer", () => {
   assert.match(headerSource, /label: t\.providerLogin,\s*href: "\/dashboard"/);
-  const loginLinks = headerSource.match(/className="[^"]*min-h-11[^"]*border border-\[#d7b46a\][^"]*"/g) || [];
-  assert.equal(loginLinks.length, 2);
+  assert.match(headerSource, /className="mt-auto border-t border-white\/10 pt-4"/);
+  assert.match(headerSource, /href=\{providerLogin\.href\}\s*className="inline-flex min-h-11/);
+  assert.equal((headerSource.match(/href=\{providerLogin\.href\}/g) || []).length, 1);
+  assert.match(footerSource, /href="\/dashboard"/);
+  assert.match(footerSource, /\{t\.forProviders\}/);
 });
