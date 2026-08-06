@@ -8,6 +8,7 @@ import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 import { client } from "@/sanity/lib/client";
 import { activityFieldChanges, keyedArrayActivityChanges } from "@/app/lib/activityChanges";
+import { cityPageExperienceFieldNames } from "@/app/lib/cityPageExperience";
 
 export type CityDashboardActionState = {
   status: "idle" | "success" | "error";
@@ -62,6 +63,13 @@ type RecommendationGuideInput = {
 
 type CityContentRecord = Record<string, unknown> & {
   _rev: string;
+  heroImage?: {
+    _type?: string;
+    alt?: string;
+    asset?: { _type?: string; _ref?: string };
+    crop?: { top?: number; bottom?: number; left?: number; right?: number };
+    hotspot?: { x?: number; y?: number; height?: number; width?: number };
+  };
   sidebarCards?: SidebarCardInput[];
   recommendationGuides?: RecommendationGuideInput[];
 };
@@ -130,11 +138,38 @@ function preserveOrCreateKey(value: unknown, prefix: string, fallback: string, i
     : keyFromValue(prefix, fallback, index);
 }
 
-function introBlocksFromForm(formData: FormData, lang: string) {
+function introBlocksFromForm(
+  formData: FormData,
+  lang: string,
+  preserveLineBreaks = false,
+) {
   return stringValue(formData, `introBlocks_${lang}`)
-    .split(/\n{2,}|\r?\n/)
+    .split(preserveLineBreaks ? /\r?\n\s*\r?\n/ : /\n{2,}|\r?\n/)
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function cityPageExperienceFromForm(formData: FormData) {
+  return {
+    _type: "object",
+    ...Object.fromEntries(
+      languages.map((lang) => [
+        lang,
+        {
+          _type: "object",
+          ...Object.fromEntries(
+            cityPageExperienceFieldNames.flatMap((field) => {
+              const value = stringValue(
+                formData,
+                `experience_${lang}_${field}`,
+              );
+              return value ? [[field, value]] : [];
+            }),
+          ),
+        },
+      ]),
+    ),
+  };
 }
 
 function sanitizeSidebarCards(rawCards: SidebarCardInput[]) {
@@ -242,6 +277,34 @@ async function uploadedRecommendationImage(
       error instanceof Error
         ? `The featured image for “${fallbackAlt}” could not be uploaded: ${error.message}`
         : `The featured image for “${fallbackAlt}” could not be uploaded. Please try again.`,
+    );
+  }
+}
+
+async function uploadedCityHeroImage(formData: FormData) {
+  const entry = formData.get("heroImage");
+  const selected = stringValue(formData, "heroImageSelected") === "1";
+
+  if (!(entry instanceof File) || entry.size === 0) {
+    if (selected) {
+      throw new CityDashboardActionError(
+        "The hero image was not received. Please select it again.",
+      );
+    }
+    return undefined;
+  }
+
+  try {
+    return await uploadSanityImage(
+      entry,
+      stringValue(formData, "heroImageAlt") || "Porto Alegre skyline",
+    );
+  } catch (error) {
+    console.error("City hero image upload failed", error);
+    throw new CityDashboardActionError(
+      error instanceof Error
+        ? `The hero image could not be uploaded: ${error.message}`
+        : "The hero image could not be uploaded. Please try again.",
     );
   }
 }
@@ -373,10 +436,11 @@ export async function saveCityContentAction(
     }
     const existing = await client.fetch<CityContentRecord | null>(
       `*[_type == "city" && _id == $cityId][0]{
-        _rev, headline_en, headline_pt, headline_nl,
+        _rev, name_en, name_pt, name_nl, heroImage,
+        headline_en, headline_pt, headline_nl,
         intro_en, intro_pt, intro_nl,
         introBlocks_en, introBlocks_pt, introBlocks_nl,
-        sidebarCards, enabledLanguages
+        cityPageExperience, sidebarCards, enabledLanguages
       }`,
       { cityId: city._id },
     );
@@ -416,9 +480,32 @@ export async function saveCityContentAction(
     }
 
     for (const lang of languages) {
+      if (citySlug === "porto-alegre") {
+        setValues[`name_${lang}`] = stringValue(formData, `name_${lang}`) || undefined;
+      }
       setValues[`headline_${lang}`] = stringValue(formData, `headline_${lang}`) || undefined;
       setValues[`intro_${lang}`] = stringValue(formData, `intro_${lang}`) || undefined;
-      setValues[`introBlocks_${lang}`] = introBlocksFromForm(formData, lang);
+      setValues[`introBlocks_${lang}`] = introBlocksFromForm(
+        formData,
+        lang,
+        citySlug === "porto-alegre",
+      );
+    }
+
+    if (citySlug === "porto-alegre") {
+      setValues.cityPageExperience = cityPageExperienceFromForm(formData);
+      const uploadedHeroImage = await uploadedCityHeroImage(formData);
+      if (uploadedHeroImage) {
+        setValues.heroImage = uploadedHeroImage;
+      } else if (existing.heroImage?.asset?._ref) {
+        setValues.heroImage = {
+          ...existing.heroImage,
+          alt:
+            stringValue(formData, "heroImageAlt") ||
+            existing.heroImage.alt ||
+            "Porto Alegre skyline",
+        };
+      }
     }
 
     const unsetPaths = Object.entries(setValues)
@@ -449,7 +536,10 @@ export async function saveCityContentAction(
       context,
       city,
       changeType: "cityContent",
-      description: "Updated city guide content or sidebar cards.",
+      description:
+        citySlug === "porto-alegre"
+          ? "Updated Porto Alegre page content."
+          : "Updated city guide content or sidebar cards.",
       changes,
     });
     if (changeLog) transaction.create(changeLog);

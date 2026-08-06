@@ -27,6 +27,94 @@ const mapCategoryPresets = [
   { title: "Custom category", value: "custom" },
 ];
 
+const cityExperienceFields = [
+  { name: "aboutCardTitle", title: "About card title", type: "string" },
+  {
+    name: "aboutCardDescription",
+    title: "About card description",
+    type: "text",
+    rows: 3,
+  },
+  { name: "livingCardTitle", title: "Living & Working card title", type: "string" },
+  {
+    name: "livingCardDescription",
+    title: "Living & Working card description",
+    type: "text",
+    rows: 3,
+  },
+  { name: "exploreCardTitle", title: "Explore card title", type: "string" },
+  {
+    name: "exploreCardDescription",
+    title: "Explore card description",
+    type: "text",
+    rows: 3,
+  },
+  { name: "favoritesCardTitle", title: "Host favorites card title", type: "string" },
+  {
+    name: "favoritesCardDescription",
+    title: "Host favorites card description",
+    type: "text",
+    rows: 3,
+  },
+  { name: "aboutTitle", title: "About section title", type: "string" },
+  { name: "livingTitle", title: "Living & Working section title", type: "string" },
+  {
+    name: "livingIntroduction",
+    title: "Living & Working introduction",
+    type: "text",
+    rows: 4,
+  },
+  {
+    name: "livingBody",
+    title: "Living & Working formatted body",
+    type: "text",
+    rows: 12,
+    description:
+      "Use blank lines for paragraphs. Start consecutive lines with '- ' for a bullet list.",
+  },
+  { name: "exploreTitle", title: "Explore section title", type: "string" },
+  {
+    name: "exploreIntroduction",
+    title: "Explore section introduction",
+    type: "text",
+    rows: 4,
+  },
+  { name: "favoritesTitle", title: "Host favorites section title", type: "string" },
+  {
+    name: "favoritesIntroduction",
+    title: "Host favorites introduction",
+    type: "text",
+    rows: 4,
+  },
+  { name: "meetHostTitle", title: "Meet your host section title", type: "string" },
+  {
+    name: "meetHostIntroduction",
+    title: "Meet your host introduction",
+    type: "text",
+    rows: 4,
+  },
+] as const;
+
+function cityExperienceLanguageField(
+  name: "en" | "pt" | "nl",
+  title: string,
+) {
+  return defineField({
+    name,
+    title,
+    type: "object",
+    fields: cityExperienceFields.map((field) =>
+      defineField({
+        name: field.name,
+        title: field.title,
+        type: field.type,
+        rows: "rows" in field ? field.rows : undefined,
+        description: "description" in field ? field.description : undefined,
+      }),
+    ),
+  });
+}
+
 export const city = defineType({
   name: "city",
   title: "City",
@@ -140,6 +228,25 @@ export const city = defineType({
     ====================================================== */
 
     defineField({
+      name: "heroImage",
+      title: "Porto Alegre Hero Image",
+      type: "image",
+      description: "The main image in the experimental Porto Alegre page hero.",
+      hidden: ({ document }) =>
+        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
+        "porto-alegre",
+      options: { hotspot: true },
+      fields: [
+        defineField({
+          name: "alt",
+          title: "Alternative text",
+          type: "string",
+          description: "A short description of the image for accessibility.",
+        }),
+      ],
+    }),
+
+    defineField({
       name: "headline_en",
       title: "Headline (English)",
       type: "string",
@@ -194,6 +301,22 @@ export const city = defineType({
       title: "Intro Blocks (Dutch)",
       type: "array",
       of: [{ type: "text" }],
+    }),
+
+    defineField({
+      name: "cityPageExperience",
+      title: "Porto Alegre Page Experience",
+      type: "object",
+      description:
+        "Optional section and discovery-card copy for the experimental Porto Alegre page.",
+      hidden: ({ document }) =>
+        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
+        "porto-alegre",
+      fields: [
+        cityExperienceLanguageField("en", "English"),
+        cityExperienceLanguageField("pt", "Portuguese"),
+        cityExperienceLanguageField("nl", "Dutch"),
+      ],
     }),
 
     /* ======================================================

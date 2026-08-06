@@ -19,6 +19,7 @@ import {
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
+import { portoAlegreExperienceLocale } from "@/app/lib/cityPageExperience";
 import {
   localizedRecommendationGuideText,
   mapPlaceAnchorId,
@@ -32,9 +33,7 @@ import {
   interpreterRoute,
 } from "@/app/lib/interpreterPages";
 import CityLiveInfoWidget from "@/app/components/CityLiveInfoWidget";
-import CityExperienceLayout, {
-  type CityExperienceSection,
-} from "@/app/components/CityExperienceLayout";
+import CityExperienceLayout from "@/app/components/CityExperienceLayout";
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
@@ -81,157 +80,6 @@ type DisplayHost = {
   photoAlt: string;
   profileHref?: string;
   actions: HostAction[];
-};
-
-/* ======================================================
-   PORTO ALEGRE CITY GUIDE CONTENT
-====================================================== */
-
-const cityGuideContent = {
-  en: {
-    title: "Porto Alegre: Your Local Guide in Southern Brazil",
-    intro:
-      "Discover restaurants, business locations, cultural venues, walks, practical information and trusted local contacts for your stay in Porto Alegre.",
-    hostLine:
-      "Hosted by Armijn van Dijk, your local contact for business visits, interpretation, housing and practical support in the city.",
-  },
-  pt: {
-    title: "Porto Alegre: Seu Guia Local no Sul do Brasil",
-    intro:
-      "Descubra restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas e contatos locais confiáveis para sua estadia em Porto Alegre.",
-    hostLine:
-      "Com curadoria de Armijn van Dijk, seu contato local para visitas de negócios, interpretação, hospedagem e apoio prático na cidade.",
-  },
-  nl: {
-    title: "Porto Alegre: Uw Lokale Gids in Zuid-Brazilië",
-    intro:
-      "Ontdek restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie en betrouwbare lokale contacten voor uw verblijf in Porto Alegre.",
-    hostLine:
-      "Samengesteld door Armijn van Dijk, uw lokale contact voor zakelijke bezoeken, tolken, verblijf en praktische ondersteuning in de stad.",
-  },
-};
-
-const portoAlegreExperienceCopy = {
-  en: {
-    positioning:
-      "Local guidance, business interpretation and practical support from someone who knows Porto Alegre.",
-    navigationTitle: "What would you like to discover?",
-    navigationItems: [
-      {
-        id: "about-city",
-        title: "About the City",
-        description:
-          "Culture, character, economy, neighborhoods and quality of life.",
-      },
-      {
-        id: "living-working",
-        title: "Living & Working",
-        description:
-          "Business, housing, practical support, interpreter services and local assistance.",
-      },
-      {
-        id: "explore-city",
-        title: "Explore the City",
-        description:
-          "Maps, restaurants, attractions, articles and recommendations.",
-      },
-      {
-        id: "host-favorites",
-        title: "Host's Favorites",
-        description: "Personal recommendations from the local host.",
-      },
-    ],
-    aboutTitle: "About the City",
-    livingTitle: "Living & Working",
-    livingIntro:
-      "Home in the City is a trusted local contact for business visits, practical questions and informed housing decisions.",
-    exploreTitle: "Explore the City",
-    exploreIntro:
-      "Use the map and local guides to discover useful places and understand the city in context.",
-    favoritesTitle: "Host's Favorites",
-    favoritesIntro: "Personal recommendations from your local host.",
-    meetHostTitle: "Meet Your Host",
-  },
-  pt: {
-    positioning:
-      "Orientação local, interpretação de negócios e apoio prático de quem conhece Porto Alegre.",
-    navigationTitle: "O que você gostaria de descobrir?",
-    navigationItems: [
-      {
-        id: "about-city",
-        title: "Sobre a Cidade",
-        description:
-          "Cultura, identidade, economia, bairros e qualidade de vida.",
-      },
-      {
-        id: "living-working",
-        title: "Viver e Trabalhar",
-        description:
-          "Negócios, moradia, apoio prático, serviços de intérprete e assistência local.",
-      },
-      {
-        id: "explore-city",
-        title: "Explore a Cidade",
-        description:
-          "Mapas, restaurantes, atrações, artigos e recomendações.",
-      },
-      {
-        id: "host-favorites",
-        title: "Favoritos do Anfitrião",
-        description: "Recomendações pessoais do anfitrião local.",
-      },
-    ],
-    aboutTitle: "Sobre a Cidade",
-    livingTitle: "Viver e Trabalhar",
-    livingIntro:
-      "A Home in the City é um contato local de confiança para visitas de negócios, dúvidas práticas e decisões informadas sobre moradia.",
-    exploreTitle: "Explore a Cidade",
-    exploreIntro:
-      "Use o mapa e os guias locais para descobrir lugares úteis e entender a cidade em seu contexto.",
-    favoritesTitle: "Favoritos do Anfitrião",
-    favoritesIntro: "Recomendações pessoais do seu anfitrião local.",
-    meetHostTitle: "Conheça Seu Anfitrião",
-  },
-  nl: {
-    positioning:
-      "Lokale begeleiding, zakelijk tolken en praktische ondersteuning van iemand die Porto Alegre kent.",
-    navigationTitle: "Wat wilt u ontdekken?",
-    navigationItems: [
-      {
-        id: "about-city",
-        title: "Over de Stad",
-        description:
-          "Cultuur, karakter, economie, wijken en levenskwaliteit.",
-      },
-      {
-        id: "living-working",
-        title: "Wonen & Werken",
-        description:
-          "Zakendoen, wonen, praktische hulp, tolkdiensten en lokale ondersteuning.",
-      },
-      {
-        id: "explore-city",
-        title: "Ontdek de Stad",
-        description:
-          "Kaarten, restaurants, bezienswaardigheden, artikelen en aanbevelingen.",
-      },
-      {
-        id: "host-favorites",
-        title: "Favorieten van de Host",
-        description: "Persoonlijke aanbevelingen van de lokale host.",
-      },
-    ],
-    aboutTitle: "Over de Stad",
-    livingTitle: "Wonen & Werken",
-    livingIntro:
-      "Home in the City is een vertrouwd lokaal contact voor zakenbezoeken, praktische vragen en weloverwogen woonbeslissingen.",
-    exploreTitle: "Ontdek de Stad",
-    exploreIntro:
-      "Gebruik de kaart en lokale gidsen om nuttige plekken te ontdekken en de stad in context te begrijpen.",
-    favoritesTitle: "Favorieten van de Host",
-    favoritesIntro: "Persoonlijke aanbevelingen van uw lokale host.",
-    meetHostTitle: "Ontmoet Uw Host",
-  },
 };
 
 const fallbackGuideCopy = {
@@ -1082,18 +930,21 @@ export default function CityPage({
       cta: "Talk to me",
       profile: "Profile",
       hostCardTitle: "Local host",
+      discoverTitle: "What would you like to discover?",
     },
     pt: {
       helpTitle: "Precisa de ajuda na cidade?",
       cta: "Fale comigo",
       profile: "Perfil",
       hostCardTitle: "Anfitriao local",
+      discoverTitle: "O que você gostaria de descobrir?",
     },
     nl: {
       helpTitle: "Hulp nodig in de stad?",
       cta: "Stuur me een bericht",
       profile: "Profiel",
       hostCardTitle: "Lokale host",
+      discoverTitle: "Wat wilt u ontdekken?",
     },
   };
 
@@ -1115,10 +966,9 @@ export default function CityPage({
     ...cityMapEntriesFromPlaces(places, lang),
     ...cityMapEntriesFromListings({ listings: propertyListings, lang, citySlug }),
   ];
-  const guide = isPortoAlegre ? cityGuideContent[lang] : null;
-  const title = guide?.title || headline || localizedCityGuideText(city, "name", lang);
-  const introText = guide?.intro || intro;
-  const hostLine = guide?.hostLine || "";
+  const title = headline || localizedCityGuideText(city, "name", lang);
+  const introText = intro;
+  const hostLine = "";
   const serviceCards = fallbackServiceCards({
     lang,
     citySlug,
@@ -1139,101 +989,144 @@ export default function CityPage({
   );
 
   if (isPortoAlegre) {
-    const experienceCopy = portoAlegreExperienceCopy[lang];
-    const aboutBlocks = introBlocks.length
-      ? introBlocks
-      : introText
-        ? [introText]
-        : [];
-    const favoritePlaces = places.filter((place) => place.favorite);
-    const sections: CityExperienceSection[] = [
+    const experienceCopy = portoAlegreExperienceLocale(
+      city?.cityPageExperience,
+      lang,
+    );
+    const navigationItems = [
       {
         id: "about-city",
-        title: experienceCopy.aboutTitle,
-        content: aboutBlocks.length ? (
-          <div className="max-w-4xl space-y-4">
-            {aboutBlocks.map((block, index) => (
-              <p key={index} className="leading-7 text-stone-700">
-                {block}
-              </p>
-            ))}
-          </div>
-        ) : null,
+        title: experienceCopy.aboutCardTitle || "",
+        description: experienceCopy.aboutCardDescription,
       },
       {
         id: "living-working",
-        title: experienceCopy.livingTitle,
-        intro: experienceCopy.livingIntro,
-        content: (
-          <div className="grid gap-5 md:grid-cols-2">
-            {serviceCards.map((card) => (
-              <article
-                key={card.href}
-                className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
-              >
-                <h3 className="text-xl font-medium text-stone-950">
-                  {card.title}
-                </h3>
-                {card.text ? (
-                  <p className="mt-3 text-sm leading-6 text-stone-700">
-                    {card.text}
-                  </p>
-                ) : null}
-                {card.href.startsWith("mailto:") ? (
-                  <a
-                    href={card.href}
-                    className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                  >
-                    {card.button}
-                  </a>
-                ) : (
-                  <Link
-                    href={card.href}
-                    className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                  >
-                    {card.button}
-                  </Link>
-                )}
-              </article>
-            ))}
-
-            {sidebarCards.map((card, index) => {
-              const cardTitle = localizedField(card, "title", lang);
-              const cardText = localizedField(card, "text", lang);
-              const cardHref = localizedField(card, "href", lang);
-              const cardButton = localizedField(card, "button", lang);
-
-              return cardTitle ? (
-                <article
-                  key={`${cardHref}-${index}`}
-                  className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
-                >
-                  <h3 className="text-xl font-medium text-stone-950">
-                    {cardTitle}
-                  </h3>
-                  {cardText ? (
-                    <p className="mt-3 text-sm leading-6 text-stone-700">
-                      {cardText}
-                    </p>
-                  ) : null}
-                  {cardHref && cardButton ? (
-                    <a
-                      href={cardHref}
-                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                    >
-                      {cardButton}
-                    </a>
-                  ) : null}
-                </article>
-              ) : null;
-            })}
-          </div>
-        ),
+        title: experienceCopy.livingCardTitle || "",
+        description: experienceCopy.livingCardDescription,
       },
       {
         id: "explore-city",
+        title: experienceCopy.exploreCardTitle || "",
+        description: experienceCopy.exploreCardDescription,
+      },
+      {
+        id: "host-favorites",
+        title: experienceCopy.favoritesCardTitle || "",
+        description: experienceCopy.favoritesCardDescription,
+      },
+    ].filter((item) => item.title);
+    const favoritePlaces = places.filter((place) => place.favorite);
+    const hasLivingContent = Boolean(
+      experienceCopy.livingIntroduction ||
+        experienceCopy.livingBody ||
+        serviceCards.length ||
+        sidebarCards.length,
+    );
+    const hasExploreContent = Boolean(
+      experienceCopy.exploreIntroduction ||
+        mapEntries.length ||
+        recommendationGuides.length,
+    );
+    const hasFavoritesContent = Boolean(
+      experienceCopy.favoritesIntroduction ||
+        recommendationGroups.length ||
+        favoritePlaces.length,
+    );
+    const sections = [
+      experienceCopy.aboutTitle && (intro || introBlocks.length) ? {
+        id: "about-city",
+        title: experienceCopy.aboutTitle,
+        intro: intro || undefined,
+        content: introBlocks.length ? (
+          <div className="max-w-4xl">
+            <RecommendationGuideBody content={introBlocks.join("\n\n")} />
+          </div>
+        ) : null,
+      } : null,
+      experienceCopy.livingTitle && hasLivingContent ? {
+        id: "living-working",
+        title: experienceCopy.livingTitle,
+        intro: experienceCopy.livingIntroduction,
+        content: (
+          <div className="space-y-6">
+            {experienceCopy.livingBody ? (
+              <div className="max-w-4xl">
+                <RecommendationGuideBody content={experienceCopy.livingBody} />
+              </div>
+            ) : null}
+
+            {serviceCards.length || sidebarCards.length ? (
+              <div className="grid gap-5 md:grid-cols-2">
+                {serviceCards.map((card) => (
+                  <article
+                    key={card.href}
+                    className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
+                  >
+                    <h3 className="text-xl font-medium text-stone-950">
+                      {card.title}
+                    </h3>
+                    {card.text ? (
+                      <p className="mt-3 text-sm leading-6 text-stone-700">
+                        {card.text}
+                      </p>
+                    ) : null}
+                    {card.href.startsWith("mailto:") ? (
+                      <a
+                        href={card.href}
+                        className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                      >
+                        {card.button}
+                      </a>
+                    ) : (
+                      <Link
+                        href={card.href}
+                        className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                      >
+                        {card.button}
+                      </Link>
+                    )}
+                  </article>
+                ))}
+
+                {sidebarCards.map((card, index) => {
+                  const cardTitle = localizedField(card, "title", lang);
+                  const cardText = localizedField(card, "text", lang);
+                  const cardHref = localizedField(card, "href", lang);
+                  const cardButton = localizedField(card, "button", lang);
+
+                  return cardTitle ? (
+                    <article
+                      key={`${cardHref}-${index}`}
+                      className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
+                    >
+                      <h3 className="text-xl font-medium text-stone-950">
+                        {cardTitle}
+                      </h3>
+                      {cardText ? (
+                        <p className="mt-3 text-sm leading-6 text-stone-700">
+                          {cardText}
+                        </p>
+                      ) : null}
+                      {cardHref && cardButton ? (
+                        <a
+                          href={cardHref}
+                          className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                        >
+                          {cardButton}
+                        </a>
+                      ) : null}
+                    </article>
+                  ) : null;
+                })}
+              </div>
+            ) : null}
+          </div>
+        ),
+      } : null,
+      experienceCopy.exploreTitle && hasExploreContent ? {
+        id: "explore-city",
         title: experienceCopy.exploreTitle,
-        intro: experienceCopy.exploreIntro,
+        intro: experienceCopy.exploreIntroduction,
         content: (
           <div className="space-y-8">
             {mapEntries.length ? (
@@ -1269,11 +1162,11 @@ export default function CityPage({
             ) : null}
           </div>
         ),
-      },
-      {
+      } : null,
+      experienceCopy.favoritesTitle && hasFavoritesContent ? {
         id: "host-favorites",
         title: experienceCopy.favoritesTitle,
-        intro: experienceCopy.favoritesIntro,
+        intro: experienceCopy.favoritesIntroduction,
         content: (
           <ExperienceRecommendations
             groups={recommendationGroups}
@@ -1282,10 +1175,12 @@ export default function CityPage({
             copy={fallbackCopy}
           />
         ),
-      },
-      {
+      } : null,
+      experienceCopy.meetHostTitle &&
+      (experienceCopy.meetHostIntroduction || displayHost) ? {
         id: "meet-host",
         title: experienceCopy.meetHostTitle,
+        intro: experienceCopy.meetHostIntroduction,
         content: displayHost ? (
           <div className="grid gap-6 sm:grid-cols-[auto_1fr] sm:items-start">
             <div className="relative h-24 w-24 overflow-hidden rounded-full bg-stone-200 sm:h-28 sm:w-28">
@@ -1303,12 +1198,6 @@ export default function CityPage({
                 {displayHost.name}
               </h3>
               <p className="mt-1 text-stone-600">{displayHost.role}</p>
-              {hostLine ? (
-                <p className="mt-4 max-w-3xl leading-7 text-stone-700">
-                  {hostLine}
-                </p>
-              ) : null}
-
               <div className="mt-6 flex flex-wrap gap-3">
                 {displayHost.profileHref ? (
                   <Link
@@ -1336,8 +1225,10 @@ export default function CityPage({
             </div>
           </div>
         ) : null,
-      },
-    ];
+      } : null,
+    ].filter(
+      (section): section is NonNullable<typeof section> => section !== null,
+    );
 
     const hero = (
       <>
@@ -1364,25 +1255,26 @@ export default function CityPage({
           ))}
         </div>
 
-        <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
-          {title ? (
-            <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">
-              {title}
+        <div className="relative min-h-[360px] overflow-hidden rounded-3xl bg-stone-900 shadow-2xl shadow-black/20 md:min-h-[480px]">
+          <Image
+            src={city?.heroImage?.asset?.url || "/porto-alegre-desktop-background.jpg"}
+            alt={city?.heroImage?.alt || `${cityName} skyline`}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
+          <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-8">
+            <h1 className="text-4xl font-normal tracking-tight md:text-6xl">
+              {cityName}
             </h1>
-          ) : null}
-          {introText ? (
-            <p className="max-w-2xl font-medium leading-relaxed text-stone-700">
-              {introText}
-            </p>
-          ) : null}
-          <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">
-            {experienceCopy.positioning}
-          </p>
-          {hostLine ? (
-            <p className="mt-4 max-w-2xl leading-relaxed text-stone-600">
-              {hostLine}
-            </p>
-          ) : null}
+            {headline ? (
+              <p className="mt-4 max-w-2xl text-base font-medium leading-7 text-white/90 md:text-lg">
+                {headline}
+              </p>
+            ) : null}
+          </div>
         </div>
       </>
     );
@@ -1457,8 +1349,8 @@ export default function CityPage({
               <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
             </div>
           }
-          navigationTitle={experienceCopy.navigationTitle}
-          navigationItems={experienceCopy.navigationItems}
+          navigationTitle={t.discoverTitle}
+          navigationItems={navigationItems}
           sections={sections}
         />
       </div>

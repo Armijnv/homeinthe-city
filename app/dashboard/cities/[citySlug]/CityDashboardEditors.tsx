@@ -13,6 +13,11 @@ import { useFormStatus } from "react-dom";
 import type { CityDashboardActionState } from "@/app/dashboard/cities/[citySlug]/actions";
 import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
 import {
+  portoAlegreExperienceDefaults,
+  type CityPageExperience,
+  type CityPageExperienceField,
+} from "@/app/lib/cityPageExperience";
+import {
   dashboardFileInputClass,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
@@ -84,6 +89,11 @@ export type CityDashboardEditorData = {
   introBlocks_en?: string[];
   introBlocks_pt?: string[];
   introBlocks_nl?: string[];
+  heroImage?: {
+    alt?: string;
+    asset?: { url?: string; _ref?: string };
+  };
+  cityPageExperience?: CityPageExperience;
   sidebarCards?: CityDashboardSidebarCard[];
   recommendationGuides?: CityDashboardRecommendation[];
   recommendations?: Array<{ _key?: string }>;
@@ -91,6 +101,7 @@ export type CityDashboardEditorData = {
 };
 
 type EditorProps = {
+  citySlug: string;
   city: CityDashboardEditorData;
   canManageLanguages: boolean;
   saveContentAction: (
@@ -353,6 +364,305 @@ function LanguageFields({
             </Field>
           </div>
         </div>
+      ))}
+    </div>
+  );
+}
+
+const discoveryFields: Array<{
+  title: string;
+  titleField: CityPageExperienceField;
+  descriptionField: CityPageExperienceField;
+}> = [
+  {
+    title: "About the City card",
+    titleField: "aboutCardTitle",
+    descriptionField: "aboutCardDescription",
+  },
+  {
+    title: "Living & Working card",
+    titleField: "livingCardTitle",
+    descriptionField: "livingCardDescription",
+  },
+  {
+    title: "Explore the City card",
+    titleField: "exploreCardTitle",
+    descriptionField: "exploreCardDescription",
+  },
+  {
+    title: "Host's Favorites card",
+    titleField: "favoritesCardTitle",
+    descriptionField: "favoritesCardDescription",
+  },
+];
+
+function experienceValue(
+  city: CityDashboardEditorData,
+  language: Lang,
+  field: CityPageExperienceField,
+) {
+  const experience = city.cityPageExperience || portoAlegreExperienceDefaults;
+  return experience[language]?.[field] || "";
+}
+
+function ExperienceInput({
+  city,
+  language,
+  field,
+  label,
+  multiline = false,
+  rows = 4,
+}: {
+  city: CityDashboardEditorData;
+  language: Lang;
+  field: CityPageExperienceField;
+  label: string;
+  multiline?: boolean;
+  rows?: number;
+}) {
+  const shared = {
+    name: `experience_${language}_${field}`,
+    defaultValue: experienceValue(city, language, field),
+  };
+
+  return (
+    <Field label={label}>
+      {multiline ? (
+        <textarea {...shared} className={textareaClass} rows={rows} />
+      ) : (
+        <input {...shared} className={inputClass} />
+      )}
+    </Field>
+  );
+}
+
+function PortoAlegreHeroImageField({
+  city,
+}: {
+  city: CityDashboardEditorData;
+}) {
+  const savedImageUrl = city.heroImage?.asset?.url;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!file) {
+      setPreviewUrl("");
+      setImageError("");
+      setImageSelected(false);
+      event.target.setCustomValidity("");
+      return;
+    }
+
+    const error = selectedDashboardImageError(file, "Hero image");
+    setPreviewUrl(error ? "" : URL.createObjectURL(file));
+    setImageError(error);
+    setImageSelected(true);
+    event.target.setCustomValidity(error);
+  }
+
+  const displayUrl =
+    previewUrl || savedImageUrl || "/porto-alegre-desktop-background.jpg";
+
+  return (
+    <fieldset className="rounded-xl border border-white/10 bg-black/10 p-4">
+      <legend className="px-2 text-sm font-medium uppercase tracking-widest text-white">
+        Hero image
+      </legend>
+      <div className="mt-2 grid gap-5 md:grid-cols-[minmax(0,280px)_1fr] md:items-start">
+        <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-black/20">
+          <Image
+            src={displayUrl}
+            alt={city.heroImage?.alt || "Current Porto Alegre hero"}
+            fill
+            unoptimized={displayUrl.startsWith("blob:")}
+            sizes="280px"
+            className="object-cover"
+          />
+        </div>
+        <div className="space-y-4">
+          <Field label={savedImageUrl ? "Replace image" : "Upload image"}>
+            <input
+              name="heroImage"
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+              className={dashboardFileInputClass}
+              onChange={handleImageChange}
+            />
+          </Field>
+          <input
+            type="hidden"
+            name="heroImageSelected"
+            value={imageSelected ? "1" : ""}
+          />
+          {imageError ? (
+            <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+              {imageError}
+            </p>
+          ) : null}
+          <Field label="Image alt text">
+            <input
+              name="heroImageAlt"
+              className={inputClass}
+              defaultValue={city.heroImage?.alt || "Porto Alegre skyline"}
+            />
+          </Field>
+          <p className="text-xs leading-5 text-stone-400">
+            JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
+function PortoAlegreExperienceFields({
+  city,
+}: {
+  city: CityDashboardEditorData;
+}) {
+  return (
+    <div className="space-y-5">
+      <PortoAlegreHeroImageField city={city} />
+      {languages.map((language) => (
+        <section
+          key={language.id}
+          className="rounded-xl border border-white/10 bg-black/10 p-4"
+        >
+          <div className="mb-5 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-medium uppercase tracking-widest text-white">
+              {language.label}
+            </h3>
+            <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-stone-300">
+              {language.hint}
+            </span>
+          </div>
+
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="City name">
+                <input
+                  name={`name_${language.id}`}
+                  className={inputClass}
+                  defaultValue={city[`name_${language.id}`] || ""}
+                />
+              </Field>
+              <Field label="Hero tagline">
+                <input
+                  name={`headline_${language.id}`}
+                  className={inputClass}
+                  defaultValue={city[`headline_${language.id}`] || ""}
+                />
+              </Field>
+            </div>
+
+            <fieldset className="rounded-xl border border-white/10 p-4">
+              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
+                Discovery cards
+              </legend>
+              <div className="mt-2 grid gap-4 lg:grid-cols-2">
+                {discoveryFields.map((card) => (
+                  <div
+                    key={card.titleField}
+                    className="space-y-4 rounded-lg bg-white/5 p-4"
+                  >
+                    <p className="text-sm font-medium text-white">{card.title}</p>
+                    <ExperienceInput
+                      city={city}
+                      language={language.id}
+                      field={card.titleField}
+                      label="Title"
+                    />
+                    <ExperienceInput
+                      city={city}
+                      language={language.id}
+                      field={card.descriptionField}
+                      label="Description"
+                      multiline
+                      rows={3}
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-xl border border-white/10 p-4">
+              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
+                About the City
+              </legend>
+              <div className="mt-2 grid gap-4">
+                <ExperienceInput city={city} language={language.id} field="aboutTitle" label="Section title" />
+                <Field label="Optional introduction">
+                  <textarea
+                    name={`intro_${language.id}`}
+                    className={textareaClass}
+                    rows={4}
+                    defaultValue={city[`intro_${language.id}`] || ""}
+                  />
+                </Field>
+                <Field label="Formatted body">
+                  <textarea
+                    name={`introBlocks_${language.id}`}
+                    className={`${textareaClass} min-h-48`}
+                    rows={10}
+                    defaultValue={(city[`introBlocks_${language.id}`] || []).join("\n\n")}
+                  />
+                </Field>
+                <p className="text-xs leading-5 text-stone-400">
+                  Use blank lines for paragraphs. Start consecutive lines with “- ” for a bullet list.
+                </p>
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-xl border border-white/10 p-4">
+              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
+                Living & Working
+              </legend>
+              <div className="mt-2 grid gap-4">
+                <ExperienceInput city={city} language={language.id} field="livingTitle" label="Section title" />
+                <ExperienceInput city={city} language={language.id} field="livingIntroduction" label="Introduction" multiline />
+                <ExperienceInput city={city} language={language.id} field="livingBody" label="Formatted body" multiline rows={10} />
+                <p className="text-xs leading-5 text-stone-400">
+                  Use blank lines for paragraphs. Start consecutive lines with “- ” for a bullet list.
+                </p>
+              </div>
+            </fieldset>
+
+            <div className="grid gap-4 lg:grid-cols-3">
+              <fieldset className="rounded-xl border border-white/10 p-4">
+                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Explore</legend>
+                <div className="mt-2 grid gap-4">
+                  <ExperienceInput city={city} language={language.id} field="exploreTitle" label="Section title" />
+                  <ExperienceInput city={city} language={language.id} field="exploreIntroduction" label="Introduction" multiline />
+                </div>
+              </fieldset>
+              <fieldset className="rounded-xl border border-white/10 p-4">
+                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Host&apos;s Favorites</legend>
+                <div className="mt-2 grid gap-4">
+                  <ExperienceInput city={city} language={language.id} field="favoritesTitle" label="Section title" />
+                  <ExperienceInput city={city} language={language.id} field="favoritesIntroduction" label="Introduction" multiline />
+                </div>
+              </fieldset>
+              <fieldset className="rounded-xl border border-white/10 p-4">
+                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Meet Your Host</legend>
+                <div className="mt-2 grid gap-4">
+                  <ExperienceInput city={city} language={language.id} field="meetHostTitle" label="Section title" />
+                  <ExperienceInput city={city} language={language.id} field="meetHostIntroduction" label="Introduction" multiline />
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </section>
       ))}
     </div>
   );
@@ -827,6 +1137,7 @@ function RecommendationEditor({
 }
 
 export default function CityDashboardEditors({
+  citySlug,
   city,
   canManageLanguages,
   saveContentAction,
@@ -852,16 +1163,29 @@ export default function CityDashboardEditors({
     }
   }, [recommendationState.status, recommendationState.submittedAt, router]);
 
+  useEffect(() => {
+    if (contentState.status === "success") {
+      router.refresh();
+    }
+  }, [contentState.status, contentState.submittedAt, router]);
+
   return (
     <div className="space-y-8">
-      <Panel eyebrow="City content" title="Public guide copy">
+      <Panel
+        eyebrow="City content"
+        title={citySlug === "porto-alegre" ? "Porto Alegre page content" : "Public guide copy"}
+      >
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
           <EnabledLanguageFields
             city={city}
             canManageLanguages={canManageLanguages}
           />
-          <LanguageFields city={city} />
+          {citySlug === "porto-alegre" ? (
+            <PortoAlegreExperienceFields city={city} />
+          ) : (
+            <LanguageFields city={city} />
+          )}
 
           <div className="space-y-4 border-t border-white/10 pt-6">
             <h3 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">

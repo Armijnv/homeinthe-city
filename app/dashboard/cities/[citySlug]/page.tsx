@@ -40,6 +40,12 @@ const cityDashboardQuery = `
     enabledLanguages,
     "hostLanguages": primaryHost->languages[].language,
     country,
+    heroImage{
+      alt,
+      asset->{
+        url
+      }
+    },
     headline_en,
     headline_pt,
     headline_nl,
@@ -49,6 +55,7 @@ const cityDashboardQuery = `
     introBlocks_en,
     introBlocks_pt,
     introBlocks_nl,
+    cityPageExperience,
     sidebarCards[]{
       _key,
       title_en,
@@ -163,6 +170,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
           )
           .join("|")}
         city={city}
+        citySlug={citySlug}
         canManageLanguages={context.isAdmin}
         saveContentAction={saveCityContentAction.bind(null, citySlug)}
         saveRecommendationsAction={saveCityRecommendationsAction.bind(null, citySlug)}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { CityPageExperience } from "@/app/lib/cityPageExperience";
 
 export type CityGuideLang = "en" | "pt" | "nl";
 export type CityGuideStatus = "live" | "comingSoon" | "hidden";
@@ -136,6 +137,7 @@ export type CityGuideContent = {
   longitude?: number;
   country?: string | null;
   primaryHost?: CityGuideProvider | null;
+  heroImage?: CityGuideImage & { alt?: string };
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -145,6 +147,7 @@ export type CityGuideContent = {
   introBlocks_en?: string[];
   introBlocks_pt?: string[];
   introBlocks_nl?: string[];
+  cityPageExperience?: CityPageExperience;
   mapPlaces?: CityGuideMapPlace[];
   recommendationGuides?: CityGuideRecommendationGuide[];
   recommendations?: CityGuideRecommendation[];
@@ -368,19 +371,10 @@ export function cityGuideGlobeCities(
 
 export function cityGuideDisplayContent(
   city: CityGuideContent | null,
-  citySlug: string,
+  _citySlug: string,
 ) {
-  if (!city || !isPortoAlegreGuide(citySlug)) return city;
-
-  return {
-    ...city,
-    headline_en: undefined,
-    headline_pt: undefined,
-    headline_nl: undefined,
-    intro_en: undefined,
-    intro_pt: undefined,
-    intro_nl: undefined,
-  };
+  void _citySlug;
+  return city;
 }
 
 const fallbackDescriptions: Record<CityGuideLang, (cityName: string) => string> = {

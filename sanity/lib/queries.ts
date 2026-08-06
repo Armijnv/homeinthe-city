@@ -14,6 +14,13 @@ const cityGuideProjection = `
     longitude,
     country,
 
+    heroImage{
+      alt,
+      asset->{
+        url
+      }
+    },
+
     primaryHost->{
       name,
       slug,
@@ -51,6 +58,7 @@ const cityGuideProjection = `
     introBlocks_en,
     introBlocks_pt,
     introBlocks_nl,
+    cityPageExperience,
 
     mapPlaces[]{
       _key,
