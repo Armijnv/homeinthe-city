@@ -12,6 +12,7 @@ export const metadata: Metadata = { title: "Admin Dashboard" };
 const adminLinks = [
   ["Activity", "Provider, city, property and approval activity", "/dashboard/admin/activity"],
   ["Providers", "Profiles, roles, ownership and city assignments", "/dashboard/admin/providers"],
+  ["Interpreter services", "General Brazil and city interpreter pages", "/dashboard/interpreter-services"],
   ["Cities", "Publication, city content and host assignments", "/dashboard/admin/cities"],
   ["Properties", "Listings, owners, status and recent changes", "/dashboard/admin/properties"],
   ["Provider approvals", "Historical Provider submissions", "/dashboard/admin/approvals"],
@@ -70,6 +71,7 @@ export default async function AdminDashboardPage() {
     ["Map places", "mapPlaces"],
     ["Recommendations", "recommendations"],
     ["Properties", "properties"],
+    ["Interpreter pages", "servicePages"],
   ] as const;
   const activityCounts = Object.fromEntries(
     activitySummary.map(([, key]) => [key, recentActivities.filter((activity) => adminActivitySummaryKey(activity) === key).length]),

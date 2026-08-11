@@ -14,22 +14,22 @@ import { servicePageQuery } from "@/sanity/lib/queries";
 type RouteInput = {
   citySlug: InterpreterCitySlug;
   lang: InterpreterLanguage;
-  cmsSlug?: string;
 };
 
-async function cmsPage(cmsSlug?: string) {
+export async function getInterpreterCmsPage(cmsSlug?: string) {
   if (!cmsSlug) return null;
   return client.fetch<InterpreterCmsPage | null>(servicePageQuery, { slug: cmsSlug });
 }
 
 export async function getInterpreterCityMetadata(input: RouteInput) {
-  const page = await cmsPage(input.cmsSlug);
-  return interpreterMetadata(interpreterCity(input.citySlug), input.lang, page);
+  const city = interpreterCity(input.citySlug);
+  const page = await getInterpreterCmsPage(city.servicePageSlug);
+  return interpreterMetadata(city, input.lang, page);
 }
 
 export default async function InterpreterCityRoute(input: RouteInput) {
   const city = interpreterCity(input.citySlug);
-  const page = await cmsPage(input.cmsSlug);
+  const page = await getInterpreterCmsPage(city.servicePageSlug);
 
   return (
     <>

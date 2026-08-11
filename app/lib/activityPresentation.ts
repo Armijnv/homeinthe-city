@@ -1,4 +1,5 @@
 import { providerChangeFieldLabel } from "@/app/lib/providerChangePresentation";
+import { servicePageFieldLabel } from "@/app/lib/servicePagePresentation";
 
 export type ActivityReference = { name: string; type?: string; imageUrl?: string };
 
@@ -41,6 +42,7 @@ const languageNames: Record<string, string> = { en: "English", pt: "Portuguese",
 
 export function activityFieldLabel(field?: string, kind?: string) {
   if (kind === "provider") return providerChangeFieldLabel(field);
+  if (kind === "service") return servicePageFieldLabel(field);
   return fieldLabels[field || ""] || providerChangeFieldLabel(field);
 }
 

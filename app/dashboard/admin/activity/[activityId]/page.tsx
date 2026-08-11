@@ -61,6 +61,24 @@ export default async function AdminActivityDetailPage({ params, searchParams }: 
         ) : null}
       </div>
     ) : null}
+    {activity.kind === "service" && activity.editorPath ? (
+      <div className="mb-5 flex flex-wrap gap-3">
+        <Link
+          href={activity.editorPath}
+          className="inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2 text-sm font-semibold text-[#1a1f2e]"
+        >
+          Edit interpreter page
+        </Link>
+        {activity.publicPath ? (
+          <Link
+            href={activity.publicPath}
+            className="inline-flex min-h-11 items-center rounded-lg border border-white/15 px-4 py-2 text-sm text-white"
+          >
+            View public page
+          </Link>
+        ) : null}
+      </div>
+    ) : null}
     {error ? <p className="mb-5 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">{error}</p> : null}
     <section className="mb-5 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5"><dl className="grid gap-4 text-sm sm:grid-cols-2">
       <div><dt className="text-stone-400">Who</dt><dd className="mt-1 text-white">{activity.actor}{activity.actorRole ? ` (${activity.actorRole})` : ""}</dd></div>

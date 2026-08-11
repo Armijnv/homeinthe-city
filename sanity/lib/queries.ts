@@ -284,6 +284,8 @@ export const cityNavigationQuery = `
 
 export const servicePageQuery = `
   *[_type == "servicePage" && slug.current == $slug][0]{
+    _id,
+    _rev,
     name,
     slug,
 
@@ -308,6 +310,7 @@ export const servicePageQuery = `
     intro_nl,
 
     sections[]{
+      _key,
       title_en,
       title_pt,
       title_nl,
@@ -321,6 +324,7 @@ export const servicePageQuery = `
     pricingTitle_nl,
 
     pricingItems[]{
+      _key,
       label_en,
       label_pt,
       label_nl,

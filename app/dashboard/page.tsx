@@ -91,7 +91,9 @@ export default async function DashboardPage() {
             <WorkspaceLink
               icon="🌍"
               title={workspace.interpreter ? "Interpreter" : "Provider profile"}
-              text="Edit your profile and review its public languages and city coverage."
+              text={workspace.interpreter
+                ? "Edit your profile and assigned city interpreter service pages."
+                : "Edit your profile and review its public languages and city coverage."}
               href="/dashboard/provider"
             />
           ) : null}

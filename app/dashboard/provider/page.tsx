@@ -7,6 +7,11 @@ import {
   DashboardShell,
 } from "@/app/dashboard/dashboard-ui";
 import { cityName, getDashboardContext } from "@/app/lib/dashboard";
+import {
+  interpreterServicePages,
+  interpreterServicePublicPath,
+} from "@/app/lib/interpreterServicePages";
+import { canEditInterpreterServicePage } from "@/app/lib/interpreterServicePolicy";
 
 export const metadata: Metadata = { title: "Provider Workspace" };
 
@@ -19,6 +24,15 @@ export default async function ProviderWorkspacePage() {
   const roles = new Set([provider.primaryRole, ...(provider.roles || [])]);
   const isInterpreter = roles.has("interpreter");
   const providerSlug = provider.slug?.current;
+  const assignedInterpreterPages = interpreterServicePages.filter(
+    (page) =>
+      page.citySlug &&
+      canEditInterpreterServicePage({
+        provider,
+        isAdmin: context.isAdmin,
+        citySlug: page.citySlug,
+      }),
+  );
 
   return (
     <DashboardShell
@@ -69,6 +83,37 @@ export default async function ProviderWorkspacePage() {
           ) : null}
         </DashboardPanel>
       </div>
+      {isInterpreter ? (
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <DashboardPanel title="Interpreter service pages" eyebrow="Assigned cities">
+            {assignedInterpreterPages.length ? (
+              assignedInterpreterPages.map((page) => (
+                <DashboardActionRow
+                  key={page.key}
+                  title={page.title}
+                  detail="Edit the city interpreter service page"
+                  href={`/dashboard/interpreter-services/${page.key}`}
+                />
+              ))
+            ) : (
+              <DashboardActionRow
+                title="No assigned interpreter page"
+                detail="An interpreter role and public city assignment are both required"
+              />
+            )}
+          </DashboardPanel>
+          <DashboardPanel title="Public interpreter pages" eyebrow="Preview">
+            {assignedInterpreterPages.map((page) => (
+              <DashboardActionRow
+                key={page.key}
+                title={page.detail}
+                detail={interpreterServicePublicPath(page)}
+                href={interpreterServicePublicPath(page)}
+              />
+            ))}
+          </DashboardPanel>
+        </div>
+      ) : null}
     </DashboardShell>
   );
 }

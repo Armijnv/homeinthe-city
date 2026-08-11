@@ -2,11 +2,10 @@ import Link from "next/link";
 import {
   homeInTheCityWhatsApp,
   interpreterCities,
-  interpreterHubStructuredData,
+  type InterpreterCmsPage,
   type InterpreterCitySlug,
   type InterpreterLanguage,
 } from "@/app/lib/interpreterPages";
-import { JsonLdScript } from "@/app/lib/structuredData";
 import ProviderProfileCard, {
   type ProviderListItem,
 } from "@/app/components/ProviderProfileCard";
@@ -73,7 +72,7 @@ const networkCopy = {
   },
 };
 
-const content = {
+export const interpreterHubContent = {
   en: {
     eyebrow: "Interpreter services across Brazil",
     title: "Business interpreter services in Brazil",
@@ -178,8 +177,32 @@ const content = {
   },
 };
 
-export default async function InterpreterHubPage({ lang }: { lang: InterpreterLanguage }) {
-  const t = content[lang];
+function hubCmsValue(
+  page: InterpreterCmsPage | null | undefined,
+  field: "eyebrow" | "title" | "intro" | "ctaTitle" | "ctaText" | "button",
+  lang: InterpreterLanguage,
+) {
+  return page?.[`${field}_${lang}`];
+}
+
+export default async function InterpreterHubPage({
+  lang,
+  page,
+}: {
+  lang: InterpreterLanguage;
+  page?: InterpreterCmsPage | null;
+}) {
+  const fallback = interpreterHubContent[lang];
+  const t = {
+    ...fallback,
+    eyebrow: hubCmsValue(page, "eyebrow", lang) || fallback.eyebrow,
+    title: hubCmsValue(page, "title", lang) || fallback.title,
+    intro: hubCmsValue(page, "intro", lang) || fallback.intro,
+    finalTitle: hubCmsValue(page, "ctaTitle", lang) || fallback.finalTitle,
+    finalText: hubCmsValue(page, "ctaText", lang) || fallback.finalText,
+    finalButton: hubCmsValue(page, "button", lang) || fallback.finalButton,
+    topCta: hubCmsValue(page, "button", lang) || fallback.topCta,
+  };
   const network = networkCopy[lang];
   const providers = await client.fetch<ProviderListItem[]>(providerListQuery);
   const interpreterProfiles = Object.values(interpreterCities).flatMap((city) => {
@@ -194,7 +217,6 @@ export default async function InterpreterHubPage({ lang }: { lang: InterpreterLa
 
   return (
     <>
-      <JsonLdScript data={interpreterHubStructuredData(lang)} />
       <main className="min-h-screen bg-stone-50 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32">
         <div className="mx-auto max-w-5xl">
           <section className="mb-8 max-w-3xl sm:mb-10">

@@ -32,10 +32,11 @@ export type InterpreterPageContent = {
   citiesTitle: string;
 };
 
-type InterpreterCity = {
+export type InterpreterCity = {
   slug: InterpreterCitySlug;
   city: string;
   region: string;
+  servicePageSlug: string;
   provider: string;
   providerSlug: string;
   languages: InterpreterLanguage[];
@@ -45,6 +46,10 @@ type InterpreterCity = {
 };
 
 export type InterpreterCmsPage = {
+  _id?: string;
+  _rev?: string;
+  name?: string;
+  slug?: { current?: string };
   seoTitle_en?: string;
   seoTitle_pt?: string;
   seoTitle_nl?: string;
@@ -61,6 +66,7 @@ export type InterpreterCmsPage = {
   intro_pt?: string;
   intro_nl?: string;
   sections?: {
+    _key?: string;
     title_en?: string;
     title_pt?: string;
     title_nl?: string;
@@ -72,6 +78,7 @@ export type InterpreterCmsPage = {
   pricingTitle_pt?: string;
   pricingTitle_nl?: string;
   pricingItems?: {
+    _key?: string;
     label_en?: string;
     label_pt?: string;
     label_nl?: string;
@@ -348,6 +355,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     slug: "porto-alegre",
     city: "Porto Alegre",
     region: "Rio Grande do Sul",
+    servicePageSlug: "interpreter-porto-alegre",
     provider: "Armijn van Dijk",
     providerSlug: "armijn",
     languages: ["en", "pt", "nl"],
@@ -363,6 +371,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     slug: "florianopolis",
     city: "Florianópolis",
     region: "Santa Catarina",
+    servicePageSlug: "interpreter-florianopolis",
     provider: "Jon",
     providerSlug: "jon",
     languages: ["en", "pt"],
@@ -378,6 +387,7 @@ export const interpreterCities: Record<InterpreterCitySlug, InterpreterCity> = {
     slug: "sao-paulo",
     city: "São Paulo",
     region: "São Paulo",
+    servicePageSlug: "interpreter-sao-paulo",
     provider: "Claudia",
     providerSlug: "claudia",
     languages: ["en", "pt"],
@@ -398,6 +408,8 @@ export const interpreterHubPaths: Record<InterpreterLanguage, string> = {
   pt: "/pt/interpretes-brasil",
   nl: "/nl/tolken-brazilie",
 };
+
+export const interpreterHubServicePageSlug = "interpreters-brazil";
 
 export const interpreterHubSeo: Record<
   InterpreterLanguage,
@@ -447,22 +459,27 @@ export function interpreterHubAlternates() {
   );
 }
 
-export function interpreterHubMetadata(lang: InterpreterLanguage): Metadata {
+export function interpreterHubMetadata(
+  lang: InterpreterLanguage,
+  cmsPage?: InterpreterCmsPage | null,
+): Metadata {
   const path = interpreterHubPaths[lang];
   const seo = interpreterHubSeo[lang];
   const url = `https://homeinthe.city${path}`;
+  const title = cleanMetadataTitle(cmsPage?.[`seoTitle_${lang}`]) || seo.title;
+  const description = cmsPage?.[`seoDescription_${lang}`] || seo.description;
 
   return {
-    title: seo.title,
-    description: seo.description,
+    title,
+    description,
     keywords: seo.keywords,
     alternates: {
       canonical: url,
       languages: interpreterHubAlternates(),
     },
     openGraph: {
-      title: seo.title,
-      description: seo.description,
+      title,
+      description,
       url,
       siteName: "Home in the City",
       locale: lang === "pt" ? "pt_BR" : lang === "nl" ? "nl_NL" : "en_US",

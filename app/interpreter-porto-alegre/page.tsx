@@ -5,7 +5,6 @@ import InterpreterCityRoute, {
 const route = {
   citySlug: "porto-alegre" as const,
   lang: "en" as const,
-  cmsSlug: "interpreter-porto-alegre",
 };
 
 export function generateMetadata() {

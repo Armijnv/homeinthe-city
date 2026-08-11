@@ -96,4 +96,7 @@ export const structure: StructureResolver = (S) =>
             ]),
         ),
       S.documentTypeListItem("servicePage").title("Service Pages"),
+      S.documentTypeListItem("servicePageChangeLog").title(
+        "Service Page Change Log",
+      ),
     ]);

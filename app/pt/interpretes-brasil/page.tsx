@@ -1,8 +1,11 @@
-import InterpreterHubPage from "@/app/components/InterpreterHubPage";
-import { interpreterHubMetadata } from "@/app/lib/interpreterPages";
+import InterpreterHubRoute, {
+  getInterpreterHubMetadata,
+} from "@/app/components/InterpreterHubRoute";
 
-export const metadata = interpreterHubMetadata("pt");
+export function generateMetadata() {
+  return getInterpreterHubMetadata("pt");
+}
 
 export default function Page() {
-  return <InterpreterHubPage lang="pt" />;
+  return <InterpreterHubRoute lang="pt" />;
 }

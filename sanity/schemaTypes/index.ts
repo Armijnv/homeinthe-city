@@ -7,6 +7,7 @@ import { providerSubmission } from "./providerSubmission";
 import { propertyListing } from "./propertyListing";
 import { propertyChangeLog } from "./propertyChangeLog";
 import { servicePage } from "./servicePage";
+import { servicePageChangeLog } from "./servicePageChangeLog";
 
 export const schemaTypes = [
   city,
@@ -18,4 +19,5 @@ export const schemaTypes = [
   propertyChangeLog,
   propertyListing,
   servicePage,
+  servicePageChangeLog,
 ];

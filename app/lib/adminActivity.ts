@@ -3,7 +3,7 @@ import "server-only";
 import { client } from "@/sanity/lib/client";
 import { activityValuesEqual } from "@/app/lib/activityChanges";
 
-export type ActivityKind = "provider" | "city" | "property" | "approval";
+export type ActivityKind = "provider" | "city" | "property" | "approval" | "service";
 
 export type ActivityChange = {
   field?: string;
@@ -28,6 +28,8 @@ export type AdminActivity = {
   actorUserId?: string;
   providerId?: string;
   providerSlug?: string;
+  editorPath?: string;
+  publicPath?: string;
   references?: Record<string, { name: string; type?: string; imageUrl?: string }>;
 };
 
@@ -52,6 +54,8 @@ type RawActivity = {
   providerCurrent?: Record<string, unknown>;
   providerId?: string;
   providerSlug?: string;
+  editorPath?: string;
+  publicPath?: string;
 };
 
 const activityQueries: Record<ActivityKind, string> = {
@@ -76,6 +80,13 @@ const activityQueries: Record<ActivityKind, string> = {
     _id, "occurredAt": coalesce(reviewedAt, submittedAt), status, reviewedBy, ownerEmail,
     "subjectName": coalesce(provider->name, ownerEmail), "subjectRole": coalesce(profileSnapshot.primaryRole, provider->primaryRole), profileSnapshot,
     "providerCurrent": provider->{name, slug, roles, primaryRole, cities, managedCities, languages, headline_en, headline_pt, headline_nl, intro_en, intro_pt, intro_nl, about_en, about_pt, about_nl, contactOptions, mainPhoto}
+  }`,
+  service: `*[_type == "servicePageChangeLog"] | order(changedAt desc){
+    _id, "occurredAt": changedAt, actorName, actorEmail, actorUserId, actorRole,
+    changeType, description, "subjectName": pageName,
+    "location": pageName, changes, changedFields,
+    "editorPath": "/dashboard/interpreter-services/" + pageKey,
+    publicPath
   }`,
 };
 
@@ -161,6 +172,13 @@ function approvalAction(raw: RawActivity) {
   return `submitted ${name}'s provider profile changes for review`;
 }
 
+function serviceAction(raw: RawActivity) {
+  const name = raw.subjectName || "an interpreter service page";
+  return raw.changeType === "servicePageCreated"
+    ? `created dashboard content for ${name}`
+    : `updated ${name}`;
+}
+
 function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
   const isReviewed = kind === "approval" && ["approved", "rejected"].includes(raw.status || "");
   const actor = isReviewed
@@ -169,6 +187,7 @@ function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
   const action = kind === "provider" ? providerAction(raw)
     : kind === "city" ? cityAction(raw)
     : kind === "property" ? propertyAction(raw)
+    : kind === "service" ? serviceAction(raw)
     : approvalAction(raw);
   const location = raw.location || raw.subjectName || (kind === "approval" ? "Provider approvals" : "Platform");
   const approvalChanges = kind === "approval" && raw.status !== "approved" && raw.profileSnapshot
@@ -203,6 +222,8 @@ function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
     actorUserId: raw.actorUserId,
     providerId: raw.providerId,
     providerSlug: raw.providerSlug,
+    editorPath: raw.editorPath,
+    publicPath: raw.publicPath,
   };
 }
 
@@ -240,7 +261,7 @@ async function activityReferences(activity: AdminActivity) {
 }
 
 export async function fetchAdminActivities({
-  kinds = ["provider", "city", "property", "approval"],
+  kinds = ["provider", "city", "property", "approval", "service"],
   since,
   limit = 100,
 }: {
