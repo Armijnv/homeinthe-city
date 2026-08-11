@@ -98,6 +98,23 @@ test("the prototype uses a compact editable header and existing section content 
   assert.doesNotMatch(cityPageSource, /id: "host-favorites"/);
 });
 
+test("Porto Alegre publishes recommendation guides as compact From Your Host stories", () => {
+  const exploreStart = cityPageSource.indexOf('id: "explore-city"');
+  const fromHostStart = cityPageSource.indexOf('id: "from-host"', exploreStart);
+  const sectionEnd = cityPageSource.indexOf("const cityPageBackground", fromHostStart);
+  const exploreSource = cityPageSource.slice(exploreStart, fromHostStart);
+  const fromHostSource = cityPageSource.slice(fromHostStart, sectionEnd);
+
+  assert.doesNotMatch(exploreSource, /recommendations=\{recommendationGuides\}/);
+  assert.match(fromHostSource, /recommendations=\{recommendationGuides\}/);
+  assert.match(fromHostSource, /intro: experienceCopy\.fromHostIntroduction/);
+  assert.match(fromHostSource, /presentation="host-story"/);
+  assert.match(cityPageSource, /hostStoriesTitle: "Host stories"/);
+  assert.match(cityPageSource, /readStory: "Read story"/);
+  assert.match(cityPageSource, /<details className="group/);
+  assert.match(cityPageSource, /featuredImage\?\.asset\?\.url/);
+});
+
 test("the Porto Alegre dashboard mirrors the public tabs and hides legacy controls", () => {
   assert.match(editorSource, /citySlug === "porto-alegre"/);
   assert.match(editorSource, /<PortoAlegreExperienceFields/);
@@ -135,6 +152,19 @@ test("the Porto Alegre dashboard mirrors the public tabs and hides legacy contro
   }
 });
 
+test("Porto Alegre manages host stories in From Your Host with one selected language", () => {
+  assert.match(editorSource, /activePortoSection !== "from-host"/);
+  assert.match(editorSource, /title=\{isPortoAlegre \? "Host stories"/);
+  assert.match(editorSource, /hostStories=\{isPortoAlegre\}/);
+  assert.match(editorSource, /Short introduction shown above your personal stories and recommendations\./);
+  assert.match(editorSource, /activeLanguage=\{isPortoAlegre \? activeLanguage : undefined\}/);
+  assert.match(editorSource, /languages\.filter\(\(language\) => language\.id === activeLanguage\)/);
+  assert.match(editorSource, /\{isEditing \? "Close" : "Edit"\}/);
+  assert.match(editorSource, /"Add host story"/);
+  assert.match(editorSource, /window\.confirm/);
+  assert.match(editorSource, /"Save host stories"/);
+});
+
 test("Porto Alegre saves through the existing audited city action only", () => {
   assert.match(actionSource, /if \(citySlug === "porto-alegre"\)/);
   assert.match(actionSource, /setValues\[`cta_\$\{lang\}`\]/);
@@ -147,6 +177,8 @@ test("Porto Alegre saves through the existing audited city action only", () => {
   assert.match(actionSource, /cityChangeLogDocument\(\{/);
   assert.match(actionSource, /activityFieldChanges\(comparableBefore, comparableAfter\)/);
   assert.match(actionSource, /if \(!changes\.length\)/);
+  assert.match(actionSource, /recommendation\.featuredImage\?\.alt \|\| fallbackAlt/);
+  assert.match(actionSource, /citySlug === "porto-alegre"[\s\S]*?"Host stories saved\."/);
 });
 
 test("the optional prototype schema is limited to Porto Alegre", () => {

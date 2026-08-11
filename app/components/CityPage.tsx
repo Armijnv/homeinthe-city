@@ -221,6 +221,8 @@ const fallbackGuideCopy = {
     recommendationGuidesIntro: (cityName: string) =>
       `Curated ${cityName} guides with local context and practical advice from people who know the city.`,
     readRecommendation: "Read Recommendation",
+    hostStoriesTitle: "Host stories",
+    readStory: "Read story",
     relatedPlaces: "Places mentioned in this guide",
     relatedHost: "Local contributor",
     relatedCity: "Related city guide",
@@ -233,6 +235,8 @@ const fallbackGuideCopy = {
     recommendationGuidesIntro: (cityName: string) =>
       `Guias selecionados de ${cityName}, com contexto local e conselhos práticos de quem conhece a cidade.`,
     readRecommendation: "Ler Recomendação",
+    hostStoriesTitle: "Histórias do anfitrião",
+    readStory: "Ler história",
     relatedPlaces: "Lugares mencionados neste guia",
     relatedHost: "Colaborador local",
     relatedCity: "Guia de cidade relacionado",
@@ -245,6 +249,8 @@ const fallbackGuideCopy = {
     recommendationGuidesIntro: (cityName: string) =>
       `Samengestelde gidsen voor ${cityName}, met lokale context en praktisch advies van mensen die de stad kennen.`,
     readRecommendation: "Lees Aanbeveling",
+    hostStoriesTitle: "Verhalen van uw host",
+    readStory: "Lees verhaal",
     relatedPlaces: "Plaatsen genoemd in deze gids",
     relatedHost: "Lokale bijdrager",
     relatedCity: "Gerelateerde stadsgids",
@@ -709,12 +715,14 @@ function ExperienceRecommendationGuides({
   lang,
   cityName,
   copy,
+  presentation = "guide",
 }: {
   recommendations: CityGuideRecommendationGuide[];
   places: MapPlace[];
   lang: Lang;
   cityName: string;
   copy: (typeof fallbackGuideCopy)[Lang];
+  presentation?: "guide" | "host-story";
 }) {
   if (!recommendations.length) return null;
 
@@ -745,7 +753,7 @@ function ExperienceRecommendationGuides({
         return (
           <article
             key={recommendation._key || `${title}-${index}`}
-            className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
+            className="min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm shadow-stone-900/5"
           >
             {recommendation.featuredImage?.asset?.url ? (
               <div className="relative aspect-[16/8] w-full bg-stone-200">
@@ -775,8 +783,10 @@ function ExperienceRecommendationGuides({
 
               {content ? (
                 <details className="group mt-5 border-t border-stone-200 pt-4">
-                  <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 [&::-webkit-details-marker]:hidden">
-                    {copy.readRecommendation}
+                  <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-[#b99455] focus:ring-offset-2 [&::-webkit-details-marker]:hidden">
+                    {presentation === "host-story"
+                      ? copy.readStory
+                      : copy.readRecommendation}
                   </summary>
                   <div className="mt-6 space-y-5">
                     <RecommendationGuideBody content={content} />
@@ -789,12 +799,18 @@ function ExperienceRecommendationGuides({
                         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                           {relatedPlaces.map((place) => (
                             <li key={place._key}>
-                              <a
-                                href={`#${mapPlaceAnchorId(place._key || "")}`}
-                                className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455]"
-                              >
-                                {localizedMapPlaceText(place, "name", lang)}
-                              </a>
+                              {presentation === "host-story" ? (
+                                <span className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800">
+                                  {localizedMapPlaceText(place, "name", lang)}
+                                </span>
+                              ) : (
+                                <a
+                                  href={`#${mapPlaceAnchorId(place._key || "")}`}
+                                  className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455]"
+                                >
+                                  {localizedMapPlaceText(place, "name", lang)}
+                                </a>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -1123,14 +1139,45 @@ export default function CityPage({
     );
     const hasExploreContent = Boolean(
       experienceCopy.exploreIntroduction ||
-        mapEntries.length ||
-        recommendationGuides.length,
+        mapEntries.length,
     );
     const hasFavoritesContent = Boolean(
       experienceCopy.favoritesIntroduction ||
         recommendationGroups.length ||
         favoritePlaces.length,
     );
+    const hostProfileCard = displayHost ? (
+      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 shadow-sm shadow-stone-900/5">
+        <h3 className="text-2xl font-medium text-stone-950">
+          {displayHost.name}
+        </h3>
+        <p className="mt-1 text-stone-600">{displayHost.role}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {displayHost.profileHref ? (
+            <Link
+              href={displayHost.profileHref}
+              className="inline-flex min-h-11 items-center rounded-full border border-stone-300 px-5 py-2.5 text-sm text-stone-800 hover:bg-stone-50"
+            >
+              {t.profile}
+            </Link>
+          ) : null}
+
+          {displayHost.actions.map((action, index) => (
+            <a
+              key={action.href}
+              href={action.href}
+              target={action.external ? "_blank" : undefined}
+              rel={action.external ? "noreferrer" : undefined}
+              className="inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+            >
+              {index === 0
+                ? localizedCityGuideText(city, "cta", lang) || t.cta
+                : action.label}
+            </a>
+          ))}
+        </div>
+      </div>
+    ) : null;
     const sections = [
       {
         id: "about-city",
@@ -1239,26 +1286,6 @@ export default function CityPage({
               />
             ) : null}
 
-            {recommendationGuides.length ? (
-              <div className="border-t border-stone-200 pt-8">
-                <h3 className="text-2xl font-medium text-stone-950">
-                  {fallbackCopy.recommendationGuidesTitle}
-                </h3>
-                <p className="mt-3 max-w-3xl leading-7 text-stone-600">
-                  {fallbackCopy.recommendationGuidesIntro(cityName)}
-                </p>
-                <div className="mt-6">
-                  <ExperienceRecommendationGuides
-                    recommendations={recommendationGuides}
-                    places={places}
-                    lang={lang}
-                    cityName={cityName}
-                    copy={fallbackCopy}
-                  />
-                </div>
-              </div>
-            ) : null}
-
             {hasFavoritesContent ? (
               <div className="border-t border-stone-200 pt-8">
                 {experienceCopy.favoritesTitle ? (
@@ -1288,40 +1315,26 @@ export default function CityPage({
         id: "from-host",
         title: tabLabels.host,
         intro: experienceCopy.fromHostIntroduction,
-        content: displayHost ? (
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
-            <div>
-              <h3 className="text-2xl font-medium text-stone-950">
-                {displayHost.name}
-              </h3>
-              <p className="mt-1 text-stone-600">{displayHost.role}</p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                {displayHost.profileHref ? (
-                  <Link
-                    href={displayHost.profileHref}
-                    className="inline-flex min-h-11 items-center rounded-full border border-stone-300 px-5 py-2.5 text-sm text-stone-800 hover:bg-stone-50"
-                  >
-                    {t.profile}
-                  </Link>
-                ) : null}
-
-                {displayHost.actions.map((action, index) => (
-                  <a
-                    key={action.href}
-                    href={action.href}
-                    target={action.external ? "_blank" : undefined}
-                    rel={action.external ? "noreferrer" : undefined}
-                    className="inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                  >
-                    {index === 0
-                      ? localizedCityGuideText(city, "cta", lang) || t.cta
-                      : action.label}
-                  </a>
-                ))}
-              </div>
+        content: recommendationGuides.length ? (
+          <div className="min-w-0">
+            <h3 className="text-2xl font-medium text-stone-950">
+              {fallbackCopy.hostStoriesTitle}
+            </h3>
+            <div className="mt-5">
+              <ExperienceRecommendationGuides
+                recommendations={recommendationGuides}
+                places={places}
+                lang={lang}
+                cityName={cityName}
+                copy={fallbackCopy}
+                presentation="host-story"
+              />
             </div>
           </div>
-        ) : null,
+        ) : hostProfileCard,
+        supportingContent: recommendationGuides.length
+          ? hostProfileCard
+          : null,
       },
     ];
 

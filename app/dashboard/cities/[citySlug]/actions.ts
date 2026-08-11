@@ -728,7 +728,7 @@ export async function saveCityRecommendationsAction(
           stringValue(
             formData,
             `featuredImageAlt-${recommendationKey}`,
-          ) || fallbackAlt;
+          ) || recommendation.featuredImage?.alt || fallbackAlt;
         const preservedImage = recommendation.featuredImage
           ? { ...recommendation.featuredImage, alt: imageAlt }
           : undefined;
@@ -757,7 +757,14 @@ export async function saveCityRecommendationsAction(
     });
     const logs = activityLogs.filter((log): log is NonNullable<typeof log> => Boolean(log));
     if (!logs.length) {
-      return { status: "success", message: "No recommendation changes to save.", submittedAt: Date.now() };
+      return {
+        status: "success",
+        message:
+          citySlug === "porto-alegre"
+            ? "No host story changes to save."
+            : "No recommendation changes to save.",
+        submittedAt: Date.now(),
+      };
     }
     let transaction = writeClient.transaction().patch(city._id, (patch) => patch.ifRevisionId(existing._rev).set({ recommendationGuides }));
     for (const log of logs) transaction = transaction.create(log);
@@ -766,7 +773,10 @@ export async function saveCityRecommendationsAction(
 
     return {
       status: "success",
-      message: "Recommendations saved.",
+      message:
+        citySlug === "porto-alegre"
+          ? "Host stories saved."
+          : "Recommendations saved.",
       submittedAt: Date.now(),
     };
   } catch (error) {

@@ -155,6 +155,25 @@ function itemTitle(item: CityDashboardRecommendation) {
   return item.title_en || item.title_pt || item.title_nl || "Untitled guide";
 }
 
+function localizedRecommendationEditorText(
+  item: CityDashboardRecommendation,
+  field: "title" | "introduction",
+  language?: Lang,
+) {
+  if (language) {
+    const localized = item[`${field}_${language}`];
+    if (localized?.trim()) return localized.trim();
+  }
+
+  if (field === "title") return itemTitle(item);
+  return (
+    item.introduction_en ||
+    item.introduction_pt ||
+    item.introduction_nl ||
+    ""
+  ).trim();
+}
+
 function RecommendationImageField({
   recommendation,
   cityName,
@@ -1044,7 +1063,7 @@ function PortoAlegreExperienceFields({
       >
         <h3 className="text-xl font-light text-white">From Your Host</h3>
         <p className="mt-2 text-sm leading-6 text-stone-300">
-          A minimal editorial introduction for personal observations or perspective on the city. This is separate from the host profile.
+          Short introduction shown above your personal stories and recommendations.
         </p>
         {languages.map((language) => (
           <div key={language.id} hidden={language.id !== activeLanguage} className="mt-5 space-y-4">
@@ -1285,6 +1304,7 @@ function RecommendationEditor({
   legacyRecommendationCount,
   cityName,
   activeLanguage,
+  hostStories = false,
 }: {
   recommendations: CityDashboardRecommendation[];
   setRecommendations: (recommendations: CityDashboardRecommendation[]) => void;
@@ -1292,7 +1312,9 @@ function RecommendationEditor({
   legacyRecommendationCount: number;
   cityName: string;
   activeLanguage?: Lang;
+  hostStories?: boolean;
 }) {
+  const [editingStoryKey, setEditingStoryKey] = useState<string | null>(null);
   const editingLanguages = activeLanguage
     ? languages.filter((language) => language.id === activeLanguage)
     : languages;
@@ -1311,19 +1333,32 @@ function RecommendationEditor({
   }
 
   function addRecommendation() {
+    const recommendationKey = newKey("recommendation");
     setRecommendations([
       ...recommendations,
       {
-        _key: newKey("recommendation"),
+        _key: recommendationKey,
         recommendationType: "localExperience",
       },
     ]);
+    if (hostStories) setEditingStoryKey(recommendationKey);
   }
 
   function deleteRecommendation(index: number) {
+    const recommendation = recommendations[index];
+    if (
+      hostStories &&
+      !window.confirm(
+        `Delete “${localizedRecommendationEditorText(recommendation, "title", activeLanguage)}”? This is applied when you save host stories.`,
+      )
+    ) {
+      return;
+    }
+
     setRecommendations(
       recommendations.filter((_, recommendationIndex) => recommendationIndex !== index),
     );
+    if (recommendation._key === editingStoryKey) setEditingStoryKey(null);
   }
 
   function moveRecommendation(index: number, direction: -1 | 1) {
@@ -1358,9 +1393,10 @@ function RecommendationEditor({
       />
 
       <div className="rounded-xl border border-white/10 bg-black/10 p-4 text-sm leading-6 text-stone-300">
-        Curated guides and previous Host&apos;s Favorites are both published inside
-        Explore the City. Write guides as useful local articles with practical context.
-        {legacyRecommendationCount ? (
+        {hostStories
+          ? "Personal stories and guides published in From Your Host. Add a title, short introduction and full story using the selected editing language."
+          : "Curated guides and previous Host's Favorites are both published inside Explore the City. Write guides as useful local articles with practical context."}
+        {!hostStories && legacyRecommendationCount ? (
           <p className="mt-3 border-t border-white/10 pt-3 text-amber-100">
             {legacyRecommendationCount} previous Host&apos;s Favorite
             {legacyRecommendationCount === 1 ? " is" : "s are"} already published in
@@ -1371,12 +1407,24 @@ function RecommendationEditor({
 
       {!recommendations.length ? (
         <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
-          No curated recommendation guides yet.
+          {hostStories ? "No host stories yet." : "No curated recommendation guides yet."}
         </div>
       ) : null}
 
       {recommendations.map((recommendation, index) => {
         const isCustom = recommendation.recommendationType === "custom";
+        const storyKey = recommendation._key || String(index);
+        const isEditing = !hostStories || editingStoryKey === storyKey;
+        const displayTitle = localizedRecommendationEditorText(
+          recommendation,
+          "title",
+          activeLanguage,
+        );
+        const displayIntroduction = localizedRecommendationEditorText(
+          recommendation,
+          "introduction",
+          activeLanguage,
+        );
 
         return (
           <div
@@ -1384,15 +1432,43 @@ function RecommendationEditor({
             className="space-y-5 rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="text-sm font-medium uppercase tracking-widest text-white">
-                  {index + 1}. {itemTitle(recommendation)}
+              <div className="min-w-0">
+                <h3
+                  className={
+                    hostStories
+                      ? "break-words text-base font-medium text-white"
+                      : "text-sm font-medium uppercase tracking-widest text-white"
+                  }
+                >
+                  {index + 1}. {displayTitle}
                 </h3>
-                <p className="mt-1 text-sm text-stone-400">
-                  Curated guide article
-                </p>
+                {hostStories ? (
+                  displayIntroduction ? (
+                    <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-6 text-stone-400">
+                      {displayIntroduction}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-sm text-stone-400">Host story</p>
+                  )
+                ) : (
+                  <p className="mt-1 text-sm text-stone-400">
+                    Curated guide article
+                  </p>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
+                {hostStories ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingStoryKey(isEditing ? null : storyKey)
+                    }
+                    aria-expanded={isEditing}
+                    className="rounded-lg border border-[#d6a85a]/50 px-3 py-2 text-sm text-[#f0cf95] transition hover:border-[#d6a85a] hover:text-white"
+                  >
+                    {isEditing ? "Close" : "Edit"}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   disabled={index === 0}
@@ -1419,62 +1495,68 @@ function RecommendationEditor({
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-3">
-              {editingLanguages.map((language) => (
-                <section
-                  key={language.id}
-                  className="space-y-4 rounded-xl border border-white/10 p-4"
+            {isEditing ? (
+              <div className="space-y-5 border-t border-white/10 pt-5">
+                <div
+                  className={
+                    hostStories ? "grid gap-4" : "grid gap-4 lg:grid-cols-3"
+                  }
                 >
-                  <h4 className="text-sm font-medium text-[#d6a85a]">
-                    {language.label}
-                  </h4>
-                  <Field label={`Title (${language.hint})`}>
-                  <input
-                    className={inputClass}
-                    value={recommendation[`title_${language.id}`] || ""}
-                    onChange={(event) =>
-                      updateRecommendation(
-                        index,
-                        `title_${language.id}`,
-                        event.target.value,
-                      )
-                    }
-                    placeholder="A Perfect Sunday in Porto Alegre"
-                  />
-                  </Field>
-                  <Field label={`Short introduction (${language.hint})`}>
-                    <textarea
-                      className={textareaClass}
-                      rows={3}
-                      value={recommendation[`introduction_${language.id}`] || ""}
-                      onChange={(event) =>
-                        updateRecommendation(
-                          index,
-                          `introduction_${language.id}`,
-                          event.target.value,
-                        )
-                      }
-                      placeholder="Summarize who this guide is for and what local insight it offers."
-                    />
-                  </Field>
-                  <Field label={`Full content (${language.hint})`}>
-                    <textarea
-                      className={`${textareaClass} min-h-64`}
-                      rows={10}
-                      value={recommendation[`content_${language.id}`] || ""}
-                      onChange={(event) =>
-                        updateRecommendation(
-                          index,
-                          `content_${language.id}`,
-                          event.target.value,
-                        )
-                      }
-                      placeholder={"Write practical local advice in paragraphs.\n\n- Use dashed lines for lists\n- Include timing, areas and local context"}
-                    />
-                  </Field>
-                </section>
-              ))}
-            </div>
+                  {editingLanguages.map((language) => (
+                    <section
+                      key={language.id}
+                      className="space-y-4 rounded-xl border border-white/10 p-4"
+                    >
+                      <h4 className="text-sm font-medium text-[#d6a85a]">
+                        {language.label}
+                      </h4>
+                      <Field label={`Title (${language.hint})`}>
+                        <input
+                          className={inputClass}
+                          value={recommendation[`title_${language.id}`] || ""}
+                          onChange={(event) =>
+                            updateRecommendation(
+                              index,
+                              `title_${language.id}`,
+                              event.target.value,
+                            )
+                          }
+                          placeholder="A Perfect Sunday in Porto Alegre"
+                        />
+                      </Field>
+                      <Field label={`Short introduction (${language.hint})`}>
+                        <textarea
+                          className={textareaClass}
+                          rows={3}
+                          value={recommendation[`introduction_${language.id}`] || ""}
+                          onChange={(event) =>
+                            updateRecommendation(
+                              index,
+                              `introduction_${language.id}`,
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Summarize who this guide is for and what local insight it offers."
+                        />
+                      </Field>
+                      <Field label={`Full content (${language.hint})`}>
+                        <textarea
+                          className={`${textareaClass} min-h-64`}
+                          rows={10}
+                          value={recommendation[`content_${language.id}`] || ""}
+                          onChange={(event) =>
+                            updateRecommendation(
+                              index,
+                              `content_${language.id}`,
+                              event.target.value,
+                            )
+                          }
+                          placeholder={"Write practical local advice in paragraphs.\n\n- Use dashed lines for lists\n- Include timing, areas and local context"}
+                        />
+                      </Field>
+                    </section>
+                  ))}
+                </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Recommendation type">
@@ -1496,8 +1578,9 @@ function RecommendationEditor({
                 </select>
               </Field>
               <div className="rounded-lg border border-white/10 px-4 py-3 text-sm leading-6 text-stone-400">
-                Optional provider and related city references remain available in
-                Sanity Studio. Featured images and map-place links can be managed here.
+                {hostStories
+                  ? "The featured image is shared across languages. Related places can be selected here."
+                  : "Optional provider and related city references remain available in Sanity Studio. Featured images and map-place links can be managed here."}
               </div>
             </div>
 
@@ -1553,6 +1636,8 @@ function RecommendationEditor({
                 </div>
               </fieldset>
             ) : null}
+              </div>
+            ) : null}
           </div>
         );
       })}
@@ -1562,7 +1647,7 @@ function RecommendationEditor({
         onClick={addRecommendation}
         className="w-full rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a] sm:w-auto"
       >
-        Create recommendation guide
+        {hostStories ? "Add host story" : "Create recommendation guide"}
       </button>
     </div>
   );
@@ -1707,10 +1792,10 @@ export default function CityDashboardEditors({
         </form>
       </Panel>
 
-      <div hidden={isPortoAlegre && activePortoSection !== "explore"}>
+      <div hidden={isPortoAlegre && activePortoSection !== "from-host"}>
         <Panel
-          eyebrow={isPortoAlegre ? "Explore the City" : "Recommendations"}
-          title="Curated local guides"
+          eyebrow={isPortoAlegre ? "From Your Host" : "Recommendations"}
+          title={isPortoAlegre ? "Host stories" : "Curated local guides"}
         >
           <form
             key={recommendationState.submittedAt || "recommendation-guides"}
@@ -1725,8 +1810,11 @@ export default function CityDashboardEditors({
               legacyRecommendationCount={city.recommendations?.length || 0}
               cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
               activeLanguage={isPortoAlegre ? activeLanguage : undefined}
+              hostStories={isPortoAlegre}
             />
-            <SaveButton label="Save recommendation guides" />
+            <SaveButton
+              label={isPortoAlegre ? "Save host stories" : "Save recommendation guides"}
+            />
           </form>
         </Panel>
       </div>
