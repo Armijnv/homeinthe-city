@@ -123,6 +123,55 @@ function cityExperienceLanguageField(
   });
 }
 
+function livingServicePresentationField(name: string, title: string) {
+  return defineField({
+    name,
+    title,
+    type: "object",
+    fields: [
+      ...(["en", "pt", "nl"] as const).map((language) =>
+        defineField({
+          name: language,
+          title:
+            language === "en"
+              ? "English"
+              : language === "pt"
+                ? "Portuguese"
+                : "Dutch",
+          type: "object",
+          fields: [
+            defineField({ name: "title", title: "Card title", type: "string" }),
+            defineField({
+              name: "description",
+              title: "Short description",
+              type: "text",
+              rows: 4,
+            }),
+            defineField({
+              name: "buttonLabel",
+              title: "Button label",
+              type: "string",
+            }),
+          ],
+        }),
+      ),
+      defineField({
+        name: "image",
+        title: "Shared card image",
+        type: "image",
+        options: { hotspot: true },
+        fields: [
+          defineField({
+            name: "alt",
+            title: "Alternative text",
+            type: "string",
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
 export const city = defineType({
   name: "city",
   title: "City",
@@ -324,6 +373,23 @@ export const city = defineType({
         cityExperienceLanguageField("en", "English"),
         cityExperienceLanguageField("pt", "Portuguese"),
         cityExperienceLanguageField("nl", "Dutch"),
+        defineField({
+          name: "livingServices",
+          title: "Living & Working automatic service presentation",
+          type: "object",
+          description:
+            "Optional presentation overrides. Service availability and destinations remain automatic.",
+          fields: [
+            livingServicePresentationField(
+              "interpreter",
+              "Interpreter service card",
+            ),
+            livingServicePresentationField(
+              "realEstate",
+              "Real-estate service card",
+            ),
+          ],
+        }),
       ],
     }),
 

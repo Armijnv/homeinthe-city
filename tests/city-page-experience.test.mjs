@@ -12,6 +12,8 @@ const [
   mapFormSource,
   mapActionsSource,
   mapDashboardSource,
+  cityServicesSource,
+  cityDashboardPageSource,
 ] = await Promise.all([
   readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
   readFile(
@@ -41,6 +43,14 @@ const [
   readFile(new URL("../app/dashboard/map-place-actions.ts", import.meta.url), "utf8"),
   readFile(
     new URL("../app/dashboard/cities/[citySlug]/map/page.tsx", import.meta.url),
+    "utf8",
+  ),
+  readFile(
+    new URL("../app/lib/cityServiceCards.ts", import.meta.url),
+    "utf8",
+  ),
+  readFile(
+    new URL("../app/dashboard/cities/[citySlug]/page.tsx", import.meta.url),
     "utf8",
   ),
 ]);
@@ -74,7 +84,7 @@ test("the prototype uses a compact editable header and existing section content 
   assert.match(cityPageSource, /\{headline \? \(/);
   assert.doesNotMatch(cityPageSource, /city\?\.heroImage\?\.asset\?\.url/);
   assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\}/);
-  assert.match(cityPageSource, /src=\{displayHost\.photoUrl\}/);
+  assert.match(cityPageSource, /src=\{host\.photoUrl\}/);
   assert.match(cityPageSource, /portoAlegreExperienceLocale/);
   assert.doesNotMatch(cityPageSource, /experienceCopy\.positioning/);
   assert.match(cityPageSource, /id: "explore-city",[\s\S]*?<CityMap/);
@@ -123,7 +133,7 @@ test("the Porto Alegre dashboard mirrors the public tabs and hides legacy contro
 test("Porto Alegre saves through the existing audited city action only", () => {
   assert.match(actionSource, /if \(citySlug === "porto-alegre"\)/);
   assert.match(actionSource, /setValues\[`cta_\$\{lang\}`\]/);
-  assert.match(actionSource, /setValues\.cityPageExperience = cityPageExperienceFromForm/);
+  assert.match(actionSource, /setValues\.cityPageExperience = await cityPageExperienceFromForm/);
   assert.match(actionSource, /existing\.cityPageExperience/);
   assert.match(actionSource, /if \(!formData\.has\(inputName\)\) continue/);
   assert.match(actionSource, /setValues\.heroImage = uploadedHeroImage/);
@@ -146,4 +156,52 @@ test("Porto Alegre Explore reuses the existing place workflow for host picks", (
   assert.match(mapFormSource, /name="favorite"/);
   assert.match(mapActionsSource, /const canUpdateFavorite = stringValue\(formData, "favoriteControl"\) === "1"/);
   assert.match(mapActionsSource, /\.\.\.\(canUpdateFavorite \? \{ \[`\$\{selector\}\.favorite`\]: favorite \} : \{\}\)/);
+});
+
+test("Porto Alegre Living separates automatic services from preserved optional cards", () => {
+  assert.match(cityServicesSource, /interpreterContent\.title/);
+  assert.match(cityServicesSource, /interpreterContent\.serviceIntro/);
+  assert.match(cityServicesSource, /kind: "real-estate"/);
+  assert.match(cityServicesSource, /sidebarCardAutomaticServiceOverlap/);
+  assert.match(cityPageSource, /automaticCityServiceCards/);
+  assert.match(cityPageSource, /sidebarCardAutomaticServiceOverlap/);
+  assert.match(editorSource, /Automatic city services/);
+  assert.match(editorSource, /Additional Living &amp; Working cards/);
+  assert.match(editorSource, /Preserved, but not shown publicly/);
+  assert.match(editorSource, /presentation fields and optional image are managed here/);
+  assert.match(cityDashboardPageSource, /"propertyListingStatuses": \*\[/);
+  assert.doesNotMatch(cityDashboardPageSource, /status in \["available", "reserved", "sold", "rented"\]/);
+  assert.match(cityServicesSource, /automaticRealEstateListingStatuses = \[[\s\S]*?"available",[\s\S]*?"reserved"/);
+  assert.match(cityPageSource, /isPortoAlegre[\s\S]*?hasAutomaticRealEstateService\(propertyListings\)[\s\S]*?: propertyListings\.length > 0/);
+  assert.match(cityPageSource, /includeRealEstate: includeAutomaticRealEstate/);
+  assert.match(editorSource, /qualifyingAutomaticRealEstateListingCount/);
+  assert.match(editorSource, /hasAutomaticRealEstateService/);
+});
+
+test("automatic Living service presentation is editable without controlling availability or destinations", () => {
+  assert.match(experienceSource, /livingServices\?: LivingServicePresentations/);
+  assert.match(schemaSource, /name: "livingServices"/);
+  assert.match(schemaSource, /livingServicePresentationField/);
+  assert.match(cityServicesSource, /custom\?\.title\?\.trim\(\) \|\| interpreterContent\.title/);
+  assert.match(cityServicesSource, /custom\?\.buttonLabel\?\.trim\(\)/);
+  assert.match(editorSource, /livingService_\$\{serviceKey\}_\$\{language\.id\}_title/);
+  assert.match(editorSource, /livingServiceImage-\$\{serviceKey\}/);
+  assert.match(actionSource, /uploadedLivingServiceImage/);
+  assert.match(actionSource, /removeLivingServiceImage-\$\{serviceKey\}/);
+  assert.match(cityPageSource, /presentation: city\?\.cityPageExperience\?\.livingServices/);
+  assert.match(cityPageSource, /card\.image\?\.asset\?\.url/);
+});
+
+test("the stationary Porto host photo exposes Provider-backed quick actions", () => {
+  assert.match(cityPageSource, /function HostPhotoActions/);
+  assert.match(cityPageSource, /aria-haspopup="menu"/);
+  assert.match(cityPageSource, /document\.addEventListener\("pointerdown"/);
+  assert.match(cityPageSource, /event\.key === "Escape"/);
+  assert.match(cityPageSource, /\["WhatsApp", "Email"\]\.includes/);
+  assert.match(cityPageSource, /host\.profileHref/);
+  const hostPhotoSource = cityPageSource.slice(
+    cityPageSource.indexOf("function HostPhotoActions"),
+    cityPageSource.indexOf("const fallbackGuideCopy"),
+  );
+  assert.doesNotMatch(hostPhotoSource, /className="[^"]*(?:fixed|sticky)/);
 });

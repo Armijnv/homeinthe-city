@@ -11,6 +11,7 @@ import { activityFieldChanges, keyedArrayActivityChanges } from "@/app/lib/activ
 import {
   cityPageExperienceFieldNames,
   type CityPageExperience,
+  type LivingServicePresentation,
 } from "@/app/lib/cityPageExperience";
 
 export type CityDashboardActionState = {
@@ -79,6 +80,8 @@ type CityContentRecord = Record<string, unknown> & {
 };
 
 const languages = ["en", "pt", "nl"] as const;
+const livingServiceKeys = ["interpreter", "realEstate"] as const;
+const livingServiceFields = ["title", "description", "buttonLabel"] as const;
 const supportedRecommendationTypes = new Set<string>(
   recommendationGuideCategories.map((category) => category.id),
 );
@@ -153,11 +156,52 @@ function introBlocksFromForm(
     .filter(Boolean);
 }
 
-function cityPageExperienceFromForm(
+async function uploadedLivingServiceImage(
+  formData: FormData,
+  serviceKey: (typeof livingServiceKeys)[number],
+) {
+  const entry = formData.get(`livingServiceImage-${serviceKey}`);
+  const selected =
+    stringValue(formData, `livingServiceImageSelected-${serviceKey}`) === "1";
+
+  if (!(entry instanceof File) || entry.size === 0) {
+    if (selected) {
+      throw new CityDashboardActionError(
+        "The service card image was not received. Please select it again.",
+      );
+    }
+    return undefined;
+  }
+
+  const fallbackAlt =
+    serviceKey === "interpreter"
+      ? "Interpreter services in Porto Alegre"
+      : "Real estate in Porto Alegre";
+
+  try {
+    return await uploadSanityImage(
+      entry,
+      stringValue(formData, `livingServiceImageAlt-${serviceKey}`) ||
+        fallbackAlt,
+    );
+  } catch (error) {
+    console.error("Living service image upload failed", error);
+    throw new CityDashboardActionError(
+      error instanceof Error
+        ? `The service card image could not be uploaded: ${error.message}`
+        : "The service card image could not be uploaded. Please try again.",
+    );
+  }
+}
+
+async function cityPageExperienceFromForm(
   formData: FormData,
   existingExperience?: CityPageExperience,
 ) {
-  const nextExperience: Record<string, unknown> = { _type: "object" };
+  const nextExperience: Record<string, unknown> = {
+    ...existingExperience,
+    _type: "object",
+  };
 
   for (const lang of languages) {
     const existingLocale = {
@@ -181,6 +225,73 @@ function cityPageExperienceFromForm(
     }
 
     nextExperience[lang] = nextLocale;
+  }
+
+  const existingServices = existingExperience?.livingServices || {};
+  const nextServices: Record<string, unknown> = {
+    _type: "object",
+    ...existingServices,
+  };
+
+  for (const serviceKey of livingServiceKeys) {
+    const existingService = existingServices[serviceKey];
+    const nextService: Record<string, unknown> = {
+      _type: "object",
+      ...existingService,
+    };
+
+    for (const lang of languages) {
+      const existingLocale = existingService?.[lang] || {};
+      const nextLocale: Record<string, unknown> = {
+        _type: "object",
+        ...existingLocale,
+      };
+
+      for (const field of livingServiceFields) {
+        const inputName = `livingService_${serviceKey}_${lang}_${field}`;
+        if (!formData.has(inputName)) continue;
+
+        const value = stringValue(formData, inputName);
+        if (value) nextLocale[field] = value;
+        else delete nextLocale[field];
+      }
+
+      if (Object.keys(nextLocale).some((key) => key !== "_type")) {
+        nextService[lang] = nextLocale;
+      } else {
+        delete nextService[lang];
+      }
+    }
+
+    const uploadedImage = await uploadedLivingServiceImage(formData, serviceKey);
+    const removeImage =
+      stringValue(formData, `removeLivingServiceImage-${serviceKey}`) === "on";
+    const existingImage = existingService?.image;
+
+    if (uploadedImage) {
+      nextService.image = uploadedImage;
+    } else if (removeImage) {
+      delete nextService.image;
+    } else if (existingImage?.asset?._ref) {
+      nextService.image = {
+        ...existingImage,
+        alt:
+          stringValue(formData, `livingServiceImageAlt-${serviceKey}`) ||
+          existingImage.alt,
+      };
+    }
+
+    if (Object.keys(nextService).some((key) => key !== "_type")) {
+      nextServices[serviceKey] = nextService as LivingServicePresentation;
+    } else {
+      delete nextServices[serviceKey];
+    }
+  }
+
+  if (Object.keys(nextServices).some((key) => key !== "_type")) {
+    nextExperience.livingServices = nextServices;
+  } else {
+    delete nextExperience.livingServices;
   }
 
   return nextExperience;
@@ -508,7 +619,7 @@ export async function saveCityContentAction(
     }
 
     if (citySlug === "porto-alegre") {
-      setValues.cityPageExperience = cityPageExperienceFromForm(
+      setValues.cityPageExperience = await cityPageExperienceFromForm(
         formData,
         existing.cityPageExperience,
       );

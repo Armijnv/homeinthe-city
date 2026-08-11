@@ -28,16 +28,16 @@ import {
 import { JsonLdScript } from "@/app/lib/structuredData";
 import type { CityLiveInfo } from "@/app/lib/cityLiveInfo";
 import {
-  cityInterpreterPath,
-  interpreterCityForSlug,
-  interpreterRoute,
-} from "@/app/lib/interpreterPages";
+  automaticCityServiceCards,
+  hasAutomaticRealEstateService,
+  sidebarCardAutomaticServiceOverlap,
+} from "@/app/lib/cityServiceCards";
 import CityLiveInfoWidget from "@/app/components/CityLiveInfoWidget";
 import CityExperienceLayout from "@/app/components/CityExperienceLayout";
 import type { PropertyListing } from "@/app/components/PropertyListingPage";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 const CityMap = dynamic(
@@ -53,13 +53,6 @@ const CityMap = dynamic(
 );
 
 type CityMapEntry = import("@/app/components/CityMap").CityMapEntry;
-
-type ServiceCard = {
-  title: string;
-  text?: string;
-  button: string;
-  href: string;
-};
 
 type RecommendationGroup = {
   id: string;
@@ -82,6 +75,114 @@ type DisplayHost = {
   actions: HostAction[];
 };
 
+function HostPhotoActions({
+  host,
+  profileLabel,
+}: {
+  host: DisplayHost;
+  profileLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const contactActions = host.actions.filter((action) =>
+    ["WhatsApp", "Email"].includes(action.label),
+  );
+  const hasActions = Boolean(host.profileHref || contactActions.length);
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !containerRef.current?.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const photo = (
+    <div className="relative h-16 w-16 overflow-hidden rounded-full bg-stone-700 ring-2 ring-white/80 md:h-24 md:w-24">
+      <Image
+        src={host.photoUrl}
+        alt={host.photoAlt}
+        fill
+        priority
+        sizes="(max-width: 768px) 64px, 96px"
+        className="object-cover"
+      />
+    </div>
+  );
+
+  if (!hasActions) return photo;
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        ref={buttonRef}
+        type="button"
+        aria-label={`Open contact options for ${host.name}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls="porto-host-photo-actions"
+        onClick={() => setOpen((current) => !current)}
+        className="block rounded-full focus:outline-none focus:ring-2 focus:ring-[#d6a85a] focus:ring-offset-2 focus:ring-offset-[#1a1f2e]"
+      >
+        {photo}
+      </button>
+
+      {open ? (
+        <div
+          id="porto-host-photo-actions"
+          role="menu"
+          aria-label={`Contact ${host.name}`}
+          className="absolute right-0 top-full z-30 mt-3 w-56 max-w-[calc(100vw-2rem)] rounded-2xl border border-stone-200 bg-white p-2 text-left text-stone-900 shadow-2xl shadow-black/25"
+        >
+          {host.profileHref ? (
+            <Link
+              href={host.profileHref}
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium hover:bg-stone-100 focus:bg-stone-100 focus:outline-none"
+            >
+              {profileLabel}
+            </Link>
+          ) : null}
+          {contactActions.map((action) => (
+            <a
+              key={action.label}
+              href={action.href}
+              role="menuitem"
+              target={action.external ? "_blank" : undefined}
+              rel={action.external ? "noreferrer" : undefined}
+              onClick={() => setOpen(false)}
+              className="flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium hover:bg-stone-100 focus:bg-stone-100 focus:outline-none"
+            >
+              {action.label}
+            </a>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 const fallbackGuideCopy = {
   en: {
     recommendationGuidesTitle: "Guides from local hosts",
@@ -94,8 +195,6 @@ const fallbackGuideCopy = {
     legacyRecommendationsTitle: "Earlier local picks",
     recommendationLink: "Open link",
     recommendationPick: "Home in the City pick",
-    realEstateTitle: (cityName: string) => `${cityName} real estate`,
-    realEstateButton: "View properties",
   },
   pt: {
     recommendationGuidesTitle: "Guias dos anfitriões locais",
@@ -108,8 +207,6 @@ const fallbackGuideCopy = {
     legacyRecommendationsTitle: "Indicações locais anteriores",
     recommendationLink: "Abrir link",
     recommendationPick: "Indicação Home in the City",
-    realEstateTitle: (cityName: string) => `Imóveis em ${cityName}`,
-    realEstateButton: "Ver imóveis",
   },
   nl: {
     recommendationGuidesTitle: "Gidsen van lokale hosts",
@@ -122,27 +219,8 @@ const fallbackGuideCopy = {
     legacyRecommendationsTitle: "Eerdere lokale tips",
     recommendationLink: "Open link",
     recommendationPick: "Home in the City tip",
-    realEstateTitle: (cityName: string) => `Vastgoed in ${cityName}`,
-    realEstateButton: "Bekijk woningen",
   },
 };
-
-function normalizeHref(href?: string) {
-  return href?.replace(/\/$/, "") || "";
-}
-
-function getLocalizedHref(card: SidebarCard, lang: Lang) {
-  return normalizeHref(card[`href_${lang}`]);
-}
-
-function isExactDuplicateSidebarCard(
-  card: SidebarCard,
-  lang: Lang,
-  serviceHrefs: Set<string>,
-) {
-  const href = getLocalizedHref(card, lang);
-  return Boolean(href && serviceHrefs.has(href));
-}
 
 function localizedField<T extends "title" | "text" | "button" | "href">(
   card: SidebarCard,
@@ -153,51 +231,6 @@ function localizedField<T extends "title" | "text" | "button" | "href">(
   const english = card[`${field}_en`];
 
   return (localized || english || "").trim();
-}
-
-function fallbackServiceCards({
-  lang,
-  citySlug,
-  cityName,
-  includeRealEstate,
-}: {
-  lang: Lang;
-  citySlug: string;
-  cityName: string;
-  includeRealEstate: boolean;
-}): ServiceCard[] {
-  const copy = fallbackGuideCopy[lang];
-  const realEstatePrefix =
-    lang === "pt" ? "/pt/imoveis" : lang === "nl" ? "/nl/vastgoed" : "/real-estate";
-
-  const cards: ServiceCard[] = [];
-  const interpreterCity = interpreterCityForSlug(citySlug);
-  const interpreterHref = cityInterpreterPath(citySlug, lang);
-  const interpreterContent = interpreterCity?.content[lang];
-
-  if (interpreterHref && interpreterContent) {
-    cards.push({
-      title: interpreterContent.title,
-      text: interpreterContent.serviceIntro,
-      button:
-        lang === "pt"
-          ? "Serviços de intérprete"
-          : lang === "nl"
-            ? "Tolkdiensten"
-            : "Interpreter services",
-      href: interpreterHref,
-    });
-  }
-
-  if (includeRealEstate) {
-    cards.push({
-      title: copy.realEstateTitle(cityName),
-      button: copy.realEstateButton,
-      href: `${realEstatePrefix}/${citySlug}`,
-    });
-  }
-
-  return cards;
 }
 
 const roleLabels: Record<Lang, Record<string, string>> = {
@@ -981,23 +1014,29 @@ export default function CityPage({
   const title = headline || localizedCityGuideText(city, "name", lang);
   const introText = intro;
   const hostLine = "";
-  const serviceCards = fallbackServiceCards({
+  const includeAutomaticRealEstate = isPortoAlegre
+    ? hasAutomaticRealEstateService(propertyListings)
+    : propertyListings.length > 0;
+  const serviceCards = automaticCityServiceCards({
     lang,
     citySlug,
     cityName,
-    includeRealEstate: propertyListings.length > 0,
+    includeRealEstate: includeAutomaticRealEstate,
+    presentation: city?.cityPageExperience?.livingServices,
   });
   const selectedHost = city?.primaryHost
     ? providerDisplayHost({ provider: city.primaryHost, lang })
     : null;
   const displayHost = selectedHost || (isPortoAlegre ? portoAlegreFallbackHost(lang) : null);
   const primaryHostAction = displayHost?.actions[0];
-  const serviceHrefs = new Set(serviceCards.map((card) => normalizeHref(card.href)));
-  const hasCityInterpreter = Boolean(cityInterpreterPath(citySlug, lang));
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
     (card) =>
-      !isExactDuplicateSidebarCard(card, lang, serviceHrefs) &&
-      !(hasCityInterpreter && interpreterRoute(getLocalizedHref(card, lang))),
+      !sidebarCardAutomaticServiceOverlap({
+        card,
+        lang,
+        citySlug,
+        automaticCards: serviceCards,
+      }),
   );
 
   if (isPortoAlegre) {
@@ -1088,31 +1127,35 @@ export default function CityPage({
                 {serviceCards.map((card) => (
                   <article
                     key={card.href}
-                    className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
+                    className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
                   >
-                    <h3 className="text-xl font-medium text-stone-950">
-                      {card.title}
-                    </h3>
-                    {card.text ? (
-                      <p className="mt-3 text-sm leading-6 text-stone-700">
-                        {card.text}
-                      </p>
+                    {card.image?.asset?.url ? (
+                      <div className="relative h-32 w-full bg-stone-200 md:h-36">
+                        <Image
+                          src={card.image.asset.url}
+                          alt={card.image.alt || card.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover"
+                        />
+                      </div>
                     ) : null}
-                    {card.href.startsWith("mailto:") ? (
-                      <a
-                        href={card.href}
-                        className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                      >
-                        {card.button}
-                      </a>
-                    ) : (
+                    <div className="p-6">
+                      <h3 className="text-xl font-medium text-stone-950">
+                        {card.title}
+                      </h3>
+                      {card.text ? (
+                        <p className="mt-3 text-sm leading-6 text-stone-700">
+                          {card.text}
+                        </p>
+                      ) : null}
                       <Link
                         href={card.href}
                         className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
                       >
                         {card.button}
                       </Link>
-                    )}
+                    </div>
                   </article>
                 ))}
 
@@ -1292,15 +1335,16 @@ export default function CityPage({
 
           {displayHost ? (
             <div className="shrink-0 text-center">
-              <div className="relative mx-auto h-16 w-16 overflow-hidden rounded-full bg-stone-700 md:h-24 md:w-24">
-                <Image
-                  src={displayHost.photoUrl}
-                  alt={displayHost.photoAlt}
-                  fill
-                  sizes="(max-width: 768px) 64px, 96px"
-                  className="object-cover ring-2 ring-white/80"
-                />
-              </div>
+              <HostPhotoActions
+                host={displayHost}
+                profileLabel={
+                  lang === "pt"
+                    ? "Ver perfil"
+                    : lang === "nl"
+                      ? "Bekijk profiel"
+                      : "View Profile"
+                }
+              />
               <p className="mt-2 hidden max-w-28 text-sm font-medium md:block">
                 {displayHost.name}
               </p>

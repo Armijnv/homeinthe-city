@@ -63,7 +63,41 @@ const cityDashboardQuery = `
     introBlocks_en,
     introBlocks_pt,
     introBlocks_nl,
-    cityPageExperience,
+    cityPageExperience{
+      ...,
+      livingServices{
+        ...,
+        interpreter{
+          ...,
+          image{
+            ...,
+            asset->{
+              "_type": "reference",
+              "_ref": _id,
+              url
+            }
+          }
+        },
+        realEstate{
+          ...,
+          image{
+            ...,
+            asset->{
+              "_type": "reference",
+              "_ref": _id,
+              url
+            }
+          }
+        }
+      }
+    },
+    "propertyListingStatuses": *[
+      _type == "propertyListing" &&
+      (
+        city->slug.current == ^.slug.current ||
+        cityName in [^.slug.current, ^.name_en, ^.name_pt, ^.name_nl]
+      )
+    ].status,
     sidebarCards[]{
       _key,
       title_en,

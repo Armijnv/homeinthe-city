@@ -17,7 +17,15 @@ import {
   portoAlegreExperienceDefaults,
   type CityPageExperience,
   type CityPageExperienceField,
+  type LivingServicePresentation,
 } from "@/app/lib/cityPageExperience";
+import {
+  automaticCityServiceCards,
+  hasAutomaticRealEstateService,
+  qualifyingAutomaticRealEstateListingCount,
+  sidebarCardAutomaticServiceOverlap,
+  type AutomaticCityServiceCard,
+} from "@/app/lib/cityServiceCards";
 import {
   dashboardFileInputClass,
   selectedDashboardImageError,
@@ -103,6 +111,7 @@ export type CityDashboardEditorData = {
     primaryRole?: string;
   } | null;
   cityPageExperience?: CityPageExperience;
+  propertyListingStatuses?: Array<string | null>;
   sidebarCards?: CityDashboardSidebarCard[];
   recommendationGuides?: CityDashboardRecommendation[];
   recommendations?: Array<{ _key?: string }>;
@@ -427,6 +436,267 @@ const portoEditorSections: Array<{ id: PortoEditorSection; label: string }> = [
   { id: "from-host", label: "From Your Host" },
 ];
 
+type LivingServiceKey = "interpreter" | "realEstate";
+
+function LivingServiceImageField({
+  serviceKey,
+  presentation,
+  fallbackAlt,
+}: {
+  serviceKey: LivingServiceKey;
+  presentation?: LivingServicePresentation;
+  fallbackAlt: string;
+}) {
+  const savedImageUrl = presentation?.image?.asset?.url;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!file) {
+      setPreviewUrl("");
+      setImageError("");
+      setImageSelected(false);
+      event.target.setCustomValidity("");
+      return;
+    }
+
+    const error = selectedDashboardImageError(file, "Service card image");
+    setPreviewUrl(error ? "" : URL.createObjectURL(file));
+    setImageError(error);
+    setImageSelected(true);
+    event.target.setCustomValidity(error);
+  }
+
+  const displayUrl = previewUrl || savedImageUrl;
+
+  return (
+    <fieldset className="rounded-xl border border-white/10 p-4">
+      <legend className="px-2 text-xs uppercase tracking-widest text-stone-400">
+        Optional shared image
+      </legend>
+      <div className="mt-2 grid gap-4 md:grid-cols-[180px_1fr] md:items-start">
+        {displayUrl ? (
+          <div className="space-y-3">
+            <div className="relative h-28 overflow-hidden rounded-xl border border-white/10 bg-black/20">
+              <Image
+                src={displayUrl}
+                alt={presentation?.image?.alt || fallbackAlt}
+                fill
+                unoptimized={displayUrl.startsWith("blob:")}
+                sizes="180px"
+                className="object-cover"
+              />
+            </div>
+            {savedImageUrl ? (
+              <label className="flex items-center gap-2 text-sm text-stone-300">
+                <input
+                  type="checkbox"
+                  name={`removeLivingServiceImage-${serviceKey}`}
+                  className="size-4 accent-[#d6a85a]"
+                />
+                Remove saved image
+              </label>
+            ) : null}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
+            No image. The public card will use its compact text-only layout.
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <Field label={savedImageUrl ? "Replace image" : "Upload image"}>
+            <input
+              name={`livingServiceImage-${serviceKey}`}
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+              className={dashboardFileInputClass}
+              onChange={handleImageChange}
+            />
+          </Field>
+          <input
+            type="hidden"
+            name={`livingServiceImageSelected-${serviceKey}`}
+            value={imageSelected ? "1" : ""}
+          />
+          {imageError ? (
+            <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+              {imageError}
+            </p>
+          ) : null}
+          <Field label="Image alt text">
+            <input
+              name={`livingServiceImageAlt-${serviceKey}`}
+              className={inputClass}
+              defaultValue={presentation?.image?.alt || ""}
+              placeholder={fallbackAlt}
+            />
+          </Field>
+          <p className="text-xs leading-5 text-stone-400">
+            One restrained image is shared by all three language versions. JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
+function AutomaticLivingServices({
+  city,
+  citySlug,
+  activeLanguage,
+}: {
+  city: CityDashboardEditorData;
+  citySlug: string;
+  activeLanguage: Lang;
+}) {
+  const cityName =
+    city[`name_${activeLanguage}`] || city.name_en || "Porto Alegre";
+  const listingCount = qualifyingAutomaticRealEstateListingCount(
+    city.propertyListingStatuses || [],
+  );
+  const presentation = city.cityPageExperience?.livingServices;
+  const serviceDefinitions = automaticCityServiceCards({
+    lang: activeLanguage,
+    citySlug,
+    cityName,
+    includeRealEstate: true,
+    presentation,
+  });
+
+  return (
+    <div className="mt-6 border-t border-white/10 pt-6">
+      <h4 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
+        Automatic city services
+      </h4>
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-300">
+        The site decides whether each service appears and keeps its destination correct. You control the public title, description, image and button label below.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        {serviceDefinitions.map((card) => {
+          const appearsPublicly =
+            card.kind === "interpreter" || listingCount > 0;
+          const serviceKey: LivingServiceKey =
+            card.kind === "interpreter" ? "interpreter" : "realEstate";
+          const savedPresentation = presentation?.[serviceKey];
+
+          return (
+            <article
+              key={card.kind}
+              className="min-w-0 rounded-xl border border-sky-300/20 bg-sky-950/20 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-xs uppercase tracking-widest text-sky-200">
+                    {card.kind === "interpreter"
+                      ? "Interpreter service"
+                      : "Property listings"}
+                  </p>
+                  <h5 className="mt-2 text-lg font-medium text-white">
+                    {card.title}
+                  </h5>
+                </div>
+                <span className={`rounded-full border px-2.5 py-1 text-xs ${
+                  appearsPublicly
+                    ? "border-emerald-300/30 bg-emerald-300/10 text-emerald-100"
+                    : "border-white/15 bg-white/5 text-stone-300"
+                }`}>
+                  {appearsPublicly
+                    ? "Appears automatically"
+                    : "Not currently shown"}
+                </span>
+              </div>
+
+              <div className="mt-5 space-y-4 border-t border-white/10 pt-5">
+                {languages.map((language) => {
+                  const languageFallback = automaticCityServiceCards({
+                    lang: language.id,
+                    citySlug,
+                    cityName:
+                      city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+                    includeRealEstate: true,
+                  }).find((item) => item.kind === card.kind);
+                  const locale = savedPresentation?.[language.id];
+
+                  return (
+                    <div
+                      key={language.id}
+                      hidden={language.id !== activeLanguage}
+                      className="grid gap-4"
+                    >
+                      <Field label="Card title">
+                        <input
+                          name={`livingService_${serviceKey}_${language.id}_title`}
+                          className={inputClass}
+                          defaultValue={locale?.title || ""}
+                          placeholder={languageFallback?.title || ""}
+                        />
+                      </Field>
+                      <Field label="Short description">
+                        <textarea
+                          name={`livingService_${serviceKey}_${language.id}_description`}
+                          className={textareaClass}
+                          rows={4}
+                          defaultValue={locale?.description || ""}
+                          placeholder={
+                            languageFallback?.text ||
+                            "Optional short description"
+                          }
+                        />
+                      </Field>
+                      <Field label="Button label">
+                        <input
+                          name={`livingService_${serviceKey}_${language.id}_buttonLabel`}
+                          className={inputClass}
+                          defaultValue={locale?.buttonLabel || ""}
+                          placeholder={languageFallback?.button || ""}
+                        />
+                      </Field>
+                    </div>
+                  );
+                })}
+
+                <LivingServiceImageField
+                  serviceKey={serviceKey}
+                  presentation={savedPresentation}
+                  fallbackAlt={card.title}
+                />
+              </div>
+
+              <p className="mt-4 border-t border-white/10 pt-4 text-xs leading-5 text-stone-400">
+                {card.kind === "interpreter"
+                  ? "Service availability and the destination come from Porto Alegre’s interpreter service. The presentation fields and optional image are managed here."
+                  : appearsPublicly
+                    ? `This card is generated because ${listingCount} eligible Porto Alegre property ${listingCount === 1 ? "listing matches" : "listings match"} the public-page query. Listings are managed in the Property Listings workspace.`
+                    : "This card appears only when an eligible Porto Alegre property listing exists. Listings are managed in the Property Listings workspace."}
+              </p>
+              <Link
+                href={card.href}
+                className="mt-3 inline-flex min-h-11 items-center rounded-lg border border-white/15 px-3 py-2 text-sm text-sky-100 hover:border-sky-200"
+              >
+                {card.kind === "interpreter"
+                  ? "Open interpreter services page"
+                  : "Open Porto Alegre real-estate page"}
+              </Link>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function PortoAlegreExperienceFields({
   city,
   citySlug,
@@ -550,21 +820,37 @@ function PortoAlegreExperienceFields({
             <ExperienceInput city={city} language={language.id} field="livingIntroduction" label="Introduction" multiline />
             <ExperienceInput city={city} language={language.id} field="livingBody" label="Main formatted content" multiline rows={10} />
             <p className="text-xs leading-5 text-stone-400">
-              Interpreter and available-property links are added automatically. Use blank lines for paragraphs and “- ” for lists.
+              Use blank lines for paragraphs and “- ” for lists.
             </p>
           </div>
         ))}
+        <AutomaticLivingServices
+          city={city}
+          citySlug={citySlug}
+          activeLanguage={activeLanguage}
+        />
         <div className="mt-6 border-t border-white/10 pt-6">
           <h4 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
             Additional Living &amp; Working cards
           </h4>
           <p className="mb-4 mt-2 text-sm leading-6 text-stone-400">
-            Optional cards displayed alongside the automatically generated service links.
+            Optional city-specific cards you manage here. Cards that overlap an automatic service are preserved but suppressed on the public page to prevent duplicates.
           </p>
           <SidebarCardEditor
             cards={sidebarCards}
             setCards={setSidebarCards}
             activeLanguage={activeLanguage}
+            citySlug={citySlug}
+            automaticServiceCards={automaticCityServiceCards({
+              lang: activeLanguage,
+              citySlug,
+              cityName:
+                city[`name_${activeLanguage}`] || city.name_en || "Porto Alegre",
+              includeRealEstate: hasAutomaticRealEstateService(
+                city.propertyListingStatuses || [],
+              ),
+              presentation: city.cityPageExperience?.livingServices,
+            })}
           />
         </div>
       </section>
@@ -713,10 +999,14 @@ function SidebarCardEditor({
   cards,
   setCards,
   activeLanguage,
+  citySlug,
+  automaticServiceCards,
 }: {
   cards: CityDashboardSidebarCard[];
   setCards: (cards: CityDashboardSidebarCard[]) => void;
   activeLanguage?: Lang;
+  citySlug?: string;
+  automaticServiceCards?: AutomaticCityServiceCard[];
 }) {
   const editingLanguages = activeLanguage
     ? languages.filter((language) => language.id === activeLanguage)
@@ -755,23 +1045,47 @@ function SidebarCardEditor({
       <input type="hidden" name="sidebarCardsJson" value={JSON.stringify(cards)} />
 
       {cards.length ? (
-        cards.map((card, index) => (
-          <div
-            key={card._key || index}
-            className="space-y-4 rounded-xl border border-white/10 bg-black/10 p-4"
-          >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-sm font-medium uppercase tracking-widest text-white">
-                Sidebar card {index + 1}
-              </h3>
-              <button
-                type="button"
-                onClick={() => deleteCard(index)}
-                className="rounded-lg border border-red-300/40 px-3 py-2 text-sm text-red-100 transition hover:border-red-200 hover:text-white"
-              >
-                Delete card
-              </button>
-            </div>
+        cards.map((card, index) => {
+          const overlap =
+            activeLanguage && citySlug && automaticServiceCards
+              ? sidebarCardAutomaticServiceOverlap({
+                  card,
+                  lang: activeLanguage,
+                  citySlug,
+                  automaticCards: automaticServiceCards,
+                })
+              : null;
+
+          return (
+            <div
+              key={card._key || index}
+              className="space-y-4 rounded-xl border border-white/10 bg-black/10 p-4"
+            >
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h3 className="text-sm font-medium uppercase tracking-widest text-white">
+                  {automaticServiceCards ? "Additional card" : "Sidebar card"} {index + 1}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => deleteCard(index)}
+                  className="rounded-lg border border-red-300/40 px-3 py-2 text-sm text-red-100 transition hover:border-red-200 hover:text-white"
+                >
+                  Delete card
+                </button>
+              </div>
+
+            {overlap ? (
+              <div className="rounded-lg border border-amber-300/30 bg-amber-300/10 p-3 text-sm leading-6 text-amber-50">
+                <p className="font-medium">Preserved, but not shown publicly</p>
+                <p className="mt-1 text-amber-100/80">
+                  This card points to an automatic interpreter service. The public page suppresses it to prevent a duplicate or conflicting card. Its stored content has not been removed.
+                </p>
+              </div>
+            ) : automaticServiceCards ? (
+              <p className="text-xs leading-5 text-emerald-200">
+                This optional card can appear publicly alongside the automatic services.
+              </p>
+            ) : null}
 
             {editingLanguages.map((language) => (
               <div key={language.id} className="grid gap-3 md:grid-cols-2">
@@ -814,8 +1128,9 @@ function SidebarCardEditor({
                 </Field>
               </div>
             ))}
-          </div>
-        ))
+            </div>
+          );
+        })
       ) : (
         <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
           No sidebar cards yet.
@@ -827,7 +1142,7 @@ function SidebarCardEditor({
         onClick={addCard}
         className="w-full rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a] sm:w-auto"
       >
-        Add sidebar card
+        {automaticServiceCards ? "Add additional card" : "Add sidebar card"}
       </button>
     </div>
   );
