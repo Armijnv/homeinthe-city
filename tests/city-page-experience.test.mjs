@@ -14,6 +14,7 @@ const [
   mapDashboardSource,
   cityServicesSource,
   cityDashboardPageSource,
+  ...portoAlegrePageSources
 ] = await Promise.all([
   readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
   readFile(
@@ -53,6 +54,11 @@ const [
     new URL("../app/dashboard/cities/[citySlug]/page.tsx", import.meta.url),
     "utf8",
   ),
+  ...[
+    "../app/brazil/porto-alegre/page.tsx",
+    "../app/pt/brasil/porto-alegre/page.tsx",
+    "../app/nl/brazilie/porto-alegre/page.tsx",
+  ].map((path) => readFile(new URL(path, import.meta.url), "utf8")),
 ]);
 
 test("the new city experience is gated to Porto Alegre", () => {
@@ -113,6 +119,12 @@ test("Porto Alegre publishes recommendation guides as compact From Your Host sto
   assert.match(cityPageSource, /readStory: "Read story"/);
   assert.match(cityPageSource, /<details className="group/);
   assert.match(cityPageSource, /featuredImage\?\.asset\?\.url/);
+});
+
+test("Porto Alegre public routes periodically refresh externally updated Sanity content", () => {
+  for (const pageSource of portoAlegrePageSources) {
+    assert.match(pageSource, /export const revalidate = 60;/);
+  }
 });
 
 test("the Porto Alegre dashboard mirrors the public tabs and hides legacy controls", () => {

@@ -14,6 +14,8 @@ const pageUrl = "https://homeinthe.city/pt/brasil/porto-alegre";
 const pageDescription =
   "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas, moradia e contatos confiáveis.";
 
+export const revalidate = 60;
+
 const structuredData = cityGuideJsonLd({
   url: pageUrl,
   name: "Guia Local de Porto Alegre",

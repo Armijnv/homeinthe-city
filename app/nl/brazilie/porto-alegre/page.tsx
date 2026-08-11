@@ -14,6 +14,8 @@ const pageUrl = "https://homeinthe.city/nl/brazilie/porto-alegre";
 const pageDescription =
   "Een lokale gids voor Porto Alegre met restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie, verblijf en vertrouwde contacten.";
 
+export const revalidate = 60;
+
 const structuredData = cityGuideJsonLd({
   url: pageUrl,
   name: "Porto Alegre Lokale Gids",

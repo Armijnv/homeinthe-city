@@ -14,6 +14,8 @@ const pageUrl = "https://homeinthe.city/brazil/porto-alegre";
 const pageDescription =
   "A hosted Porto Alegre city guide with restaurants, business locations, cultural venues, walks, practical information, housing and trusted local contacts.";
 
+export const revalidate = 60;
+
 const structuredData = cityGuideJsonLd({
   url: pageUrl,
   name: "Porto Alegre City Guide",
