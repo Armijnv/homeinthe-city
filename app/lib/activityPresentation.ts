@@ -25,6 +25,8 @@ const fieldLabels: Record<string, string> = {
   description_nl: "Dutch description",
   mainImage: "Main image",
   heroImage: "City page background",
+  cityPageBackgroundMode: "City page background mode",
+  informationCards: "Supporting information cards",
   gallery: "Property photos",
   mapCoordinates: "Map coordinates",
   mapPlaces: "Map places",

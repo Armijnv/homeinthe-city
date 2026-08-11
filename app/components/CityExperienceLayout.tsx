@@ -13,6 +13,7 @@ export type CityExperienceSection = {
   intro?: string;
   content?: ReactNode;
   supportingContent?: ReactNode;
+  supportingLayout?: "sidebar" | "below";
 };
 
 export default function CityExperienceLayout({
@@ -99,16 +100,18 @@ export default function CityExperienceLayout({
           role="tabpanel"
           aria-labelledby={`${activeSection.id}-tab`}
           tabIndex={0}
-          className="mt-4 rounded-2xl bg-white/97 p-4 shadow-xl shadow-black/10 backdrop-blur-md focus:outline-none md:mt-6 md:rounded-3xl md:p-8"
+          className="mt-4 focus:outline-none md:mt-6"
         >
           <div
             className={
               activeSection.supportingContent
-                ? "grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(19rem,0.9fr)] lg:items-start"
-                : undefined
+                ? activeSection.supportingLayout === "below"
+                  ? "grid min-w-0 gap-5 md:gap-6"
+                  : "grid min-w-0 gap-5 md:gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(19rem,0.9fr)] lg:items-start"
+                : "min-w-0"
             }
           >
-            <div className="min-w-0">
+            <article className="min-w-0 rounded-2xl bg-white/97 p-4 shadow-xl shadow-black/10 backdrop-blur-md md:rounded-3xl md:p-8">
               <h2 className="text-2xl font-normal tracking-tight text-stone-950 md:text-4xl">
                 {activeSection.title}
               </h2>
@@ -122,12 +125,16 @@ export default function CityExperienceLayout({
               {activeSection.content ? (
                 <div className="mt-5 md:mt-6">{activeSection.content}</div>
               ) : null}
-            </div>
+            </article>
 
             {activeSection.supportingContent ? (
               <aside
                 aria-label={`${activeSection.title} supporting services`}
-                className="min-w-0 space-y-5 border-t border-stone-200 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0"
+                className={
+                  activeSection.supportingLayout === "below"
+                    ? "grid min-w-0 gap-5 sm:grid-cols-2 xl:grid-cols-3"
+                    : "min-w-0 space-y-5"
+                }
               >
                 {activeSection.supportingContent}
               </aside>

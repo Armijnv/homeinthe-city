@@ -304,6 +304,25 @@ export const city = defineType({
     }),
 
     defineField({
+      name: "cityPageBackgroundMode",
+      title: "Porto Alegre Page Background",
+      type: "string",
+      description:
+        "Chooses the default image, the uploaded image, or a neutral background on the Porto Alegre city page.",
+      hidden: ({ document }) =>
+        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
+        "porto-alegre",
+      options: {
+        list: [
+          { title: "Default Porto Alegre image", value: "default" },
+          { title: "Custom uploaded image", value: "custom" },
+          { title: "No background image", value: "none" },
+        ],
+        layout: "radio",
+      },
+    }),
+
+    defineField({
       name: "headline_en",
       title: "Headline (English)",
       type: "string",
@@ -834,6 +853,69 @@ export const city = defineType({
             { name: "href_pt", title: "Link (Portuguese)", type: "string" },
             { name: "href_nl", title: "Link (Dutch)", type: "string" },
           ],
+        },
+      ],
+    }),
+
+    defineField({
+      name: "informationCards",
+      title: "Porto Alegre Supporting Information Cards",
+      type: "array",
+      description:
+        "Optional localized cards shown with About, Explore, or From Your Host.",
+      hidden: ({ document }) =>
+        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
+        "porto-alegre",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({
+              name: "section",
+              title: "Section",
+              type: "string",
+              validation: (rule) => rule.required(),
+              options: {
+                list: [
+                  { title: "About the City", value: "about" },
+                  { title: "Explore the City", value: "explore" },
+                  { title: "From Your Host", value: "fromHost" },
+                ],
+              },
+            }),
+            { name: "title_en", title: "Title (English)", type: "string" },
+            { name: "title_pt", title: "Title (Portuguese)", type: "string" },
+            { name: "title_nl", title: "Title (Dutch)", type: "string" },
+            { name: "text_en", title: "Text (English)", type: "text" },
+            { name: "text_pt", title: "Text (Portuguese)", type: "text" },
+            { name: "text_nl", title: "Text (Dutch)", type: "text" },
+            { name: "button_en", title: "Button (English)", type: "string" },
+            { name: "button_pt", title: "Button (Portuguese)", type: "string" },
+            { name: "button_nl", title: "Button (Dutch)", type: "string" },
+            { name: "href_en", title: "Link (English)", type: "string" },
+            { name: "href_pt", title: "Link (Portuguese)", type: "string" },
+            { name: "href_nl", title: "Link (Dutch)", type: "string" },
+            defineField({
+              name: "image",
+              title: "Shared image",
+              type: "image",
+              options: { hotspot: true },
+              fields: [
+                defineField({
+                  name: "alt",
+                  title: "Alternative text",
+                  type: "string",
+                }),
+              ],
+            }),
+          ],
+          preview: {
+            select: {
+              title: "title_en",
+              subtitle: "section",
+              media: "image",
+            },
+          },
         },
       ],
     }),

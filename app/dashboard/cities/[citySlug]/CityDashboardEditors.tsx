@@ -30,6 +30,11 @@ import {
   dashboardFileInputClass,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
+import {
+  type CityInformationCard,
+  type CityInformationCardSection,
+} from "@/app/lib/cityInformationCards";
+import type { CityPageBackgroundMode } from "@/app/lib/cityGuides";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -48,6 +53,8 @@ export type CityDashboardSidebarCard = {
   href_pt?: string;
   href_nl?: string;
 };
+
+export type CityDashboardInformationCard = CityInformationCard;
 
 export type CityDashboardRecommendation = {
   _key?: string;
@@ -105,6 +112,7 @@ export type CityDashboardEditorData = {
     alt?: string;
     asset?: { url?: string; _ref?: string };
   };
+  cityPageBackgroundMode?: CityPageBackgroundMode;
   primaryHost?: {
     name?: string;
     status?: string;
@@ -113,6 +121,7 @@ export type CityDashboardEditorData = {
   cityPageExperience?: CityPageExperience;
   propertyListingStatuses?: Array<string | null>;
   sidebarCards?: CityDashboardSidebarCard[];
+  informationCards?: CityDashboardInformationCard[];
   recommendationGuides?: CityDashboardRecommendation[];
   recommendations?: Array<{ _key?: string }>;
   mapPlaces?: CityDashboardMapPlace[];
@@ -460,11 +469,19 @@ type LivingServiceKey = "interpreter" | "realEstate";
 
 function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
   const savedImageUrl = city.heroImage?.asset?.url;
+  const initialMode: CityPageBackgroundMode =
+    city.cityPageBackgroundMode || (savedImageUrl ? "custom" : "default");
+  const [backgroundMode, setBackgroundMode] =
+    useState<CityPageBackgroundMode>(initialMode);
   const [previewUrl, setPreviewUrl] = useState("");
   const [imageError, setImageError] = useState("");
   const [imageSelected, setImageSelected] = useState(false);
-  const displayUrl =
-    previewUrl || savedImageUrl || "/porto-alegre-desktop-background.jpg";
+  const displayUrl = previewUrl ||
+    (backgroundMode === "custom"
+      ? savedImageUrl
+      : backgroundMode === "default"
+        ? "/porto-alegre-desktop-background.jpg"
+        : undefined);
 
   useEffect(() => {
     return () => {
@@ -488,6 +505,7 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
     setPreviewUrl(error ? "" : URL.createObjectURL(file));
     setImageError(error);
     setImageSelected(true);
+    if (!error) setBackgroundMode("custom");
     event.target.setCustomValidity(error);
   }
 
@@ -499,24 +517,54 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
       <div className="mt-2 grid min-w-0 gap-4 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:items-start">
         <div className="space-y-3">
           <div className="relative aspect-[16/9] min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/20">
-            <Image
-              src={displayUrl}
-              alt="Current city page background preview"
-              fill
-              unoptimized={displayUrl.startsWith("blob:")}
-              sizes="(max-width: 768px) 100vw, 288px"
-              className="object-cover"
-            />
+            {displayUrl ? (
+              <Image
+                src={displayUrl}
+                alt="Current city page background preview"
+                fill
+                unoptimized={displayUrl.startsWith("blob:")}
+                sizes="(max-width: 768px) 100vw, 288px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center bg-stone-100 px-5 text-center text-sm text-stone-600">
+                Neutral page background — no photograph
+              </div>
+            )}
           </div>
           <p className="text-xs leading-5 text-stone-400">
-            {savedImageUrl
-              ? "Current uploaded background"
-              : "Current default Porto Alegre background"}
+            {backgroundMode === "custom"
+              ? savedImageUrl || previewUrl
+                ? "Custom uploaded background"
+                : "Choose an image below"
+              : backgroundMode === "none"
+                ? "No background image"
+                : "Default Porto Alegre background"}
           </p>
         </div>
 
         <div className="min-w-0 space-y-4">
-          <Field label={savedImageUrl ? "Replace background" : "Upload a new background"}>
+          <fieldset className="space-y-2">
+            <legend className="mb-2 text-sm font-medium text-white">Background</legend>
+            {([
+              ["default", "Default Porto Alegre image"],
+              ["custom", "Custom image"],
+              ["none", "No background image"],
+            ] as const).map(([value, label]) => (
+              <label key={value} className="flex min-h-11 items-center gap-3 rounded-lg border border-white/10 px-3 text-sm text-stone-200">
+                <input
+                  type="radio"
+                  name="cityPageBackgroundMode"
+                  value={value}
+                  checked={backgroundMode === value}
+                  onChange={() => setBackgroundMode(value)}
+                  className="size-4 accent-[#d6a85a]"
+                />
+                {label}
+              </label>
+            ))}
+          </fieldset>
+          <Field label={savedImageUrl ? "Replace custom image" : "Upload a custom image"}>
             <input
               name="heroImage"
               type="file"
@@ -535,18 +583,8 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
               {imageError}
             </p>
           ) : null}
-          {savedImageUrl ? (
-            <label className="flex min-h-11 items-center gap-2 text-sm text-stone-300">
-              <input
-                type="checkbox"
-                name="removeHeroImage"
-                className="size-4 accent-[#d6a85a]"
-              />
-              Use the default Porto Alegre background
-            </label>
-          ) : null}
           <p className="text-xs leading-5 text-stone-400">
-            This decorative image sits behind the city header, tabs and page sections on larger screens. JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
+            The default image remains available when a custom image is saved. No background uses a clean neutral page. JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
           </p>
         </div>
       </div>
@@ -820,6 +858,8 @@ function PortoAlegreExperienceFields({
   activeSection,
   sidebarCards,
   setSidebarCards,
+  informationCards,
+  setInformationCards,
   isAdministrator,
 }: {
   city: CityDashboardEditorData;
@@ -828,6 +868,8 @@ function PortoAlegreExperienceFields({
   activeSection: PortoEditorSection;
   sidebarCards: CityDashboardSidebarCard[];
   setSidebarCards: (cards: CityDashboardSidebarCard[]) => void;
+  informationCards: CityDashboardInformationCard[];
+  setInformationCards: (cards: CityDashboardInformationCard[]) => void;
   isAdministrator: boolean;
 }) {
   const includeRealEstate = hasAutomaticRealEstateService(
@@ -948,6 +990,12 @@ function PortoAlegreExperienceFields({
             </p>
           </div>
         ))}
+        <InformationCardEditor
+          cards={informationCards}
+          setCards={setInformationCards}
+          section="about"
+          activeLanguage={activeLanguage}
+        />
       </section>
 
       <section
@@ -1052,6 +1100,12 @@ function PortoAlegreExperienceFields({
             Manage Explore places
           </Link>
         </div>
+        <InformationCardEditor
+          cards={informationCards}
+          setCards={setInformationCards}
+          section="explore"
+          activeLanguage={activeLanguage}
+        />
       </section>
 
       <section
@@ -1087,6 +1141,12 @@ function PortoAlegreExperienceFields({
         <p className="mt-4 text-xs leading-5 text-stone-400">
           Host name, photo and contact details continue to come from the Provider profile and are not part of this editorial area.
         </p>
+        <InformationCardEditor
+          cards={informationCards}
+          setCards={setInformationCards}
+          section="fromHost"
+          activeLanguage={activeLanguage}
+        />
       </section>
     </div>
   );
@@ -1293,6 +1353,238 @@ function SidebarCardEditor({
       >
         {automaticServiceCards ? "Add additional card" : "Add sidebar card"}
       </button>
+    </div>
+  );
+}
+
+function InformationCardImageField({
+  card,
+}: {
+  card: CityDashboardInformationCard;
+}) {
+  const cardKey = card._key || "information-card";
+  const savedImageUrl = card.image?.asset?.url;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [imageSelected, setImageSelected] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!file) {
+      setPreviewUrl("");
+      setImageError("");
+      setImageSelected(false);
+      event.target.setCustomValidity("");
+      return;
+    }
+
+    const error = selectedDashboardImageError(file, "Information card image");
+    setPreviewUrl(error ? "" : URL.createObjectURL(file));
+    setImageError(error);
+    setImageSelected(true);
+    event.target.setCustomValidity(error);
+  }
+
+  return (
+    <div className="grid min-w-0 gap-4 border-t border-white/10 pt-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-black/20">
+        {previewUrl || savedImageUrl ? (
+          <Image
+            src={previewUrl || savedImageUrl || ""}
+            alt="Information card preview"
+            fill
+            unoptimized={Boolean(previewUrl)}
+            sizes="128px"
+            className="object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center px-3 text-center text-xs text-stone-500">
+            Optional image
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 space-y-3">
+        <Field label={savedImageUrl ? "Replace image" : "Add image"}>
+          <input
+            name={`informationCardImage-${cardKey}`}
+            type="file"
+            accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+            className={dashboardFileInputClass}
+            onChange={handleImageChange}
+          />
+        </Field>
+        <input
+          type="hidden"
+          name={`informationCardImageSelected-${cardKey}`}
+          value={imageSelected ? "1" : ""}
+        />
+        <Field label="Image description">
+          <input
+            name={`informationCardImageAlt-${cardKey}`}
+            className={inputClass}
+            defaultValue={card.image?.alt || ""}
+          />
+        </Field>
+        {savedImageUrl ? (
+          <label className="flex min-h-11 items-center gap-2 text-sm text-stone-300">
+            <input
+              type="checkbox"
+              name={`removeInformationCardImage-${cardKey}`}
+              className="size-4 accent-[#d6a85a]"
+            />
+            Remove image
+          </label>
+        ) : null}
+        {imageError ? (
+          <p className="text-sm text-red-200">{imageError}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function InformationCardEditor({
+  cards,
+  setCards,
+  section,
+  activeLanguage,
+}: {
+  cards: CityDashboardInformationCard[];
+  setCards: (cards: CityDashboardInformationCard[]) => void;
+  section: CityInformationCardSection;
+  activeLanguage: Lang;
+}) {
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const sectionCards = cards
+    .map((card, index) => ({ card, index }))
+    .filter(({ card }) => card.section === section);
+
+  function updateCard(
+    index: number,
+    field: keyof CityDashboardInformationCard,
+    value: string,
+  ) {
+    setCards(
+      cards.map((card, cardIndex) =>
+        cardIndex === index ? { ...card, [field]: value } : card,
+      ),
+    );
+  }
+
+  function addCard() {
+    const key = newKey("information");
+    setCards([...cards, { _key: key, section }]);
+    setEditingKey(key);
+  }
+
+  function moveCard(sectionIndex: number, direction: -1 | 1) {
+    const destination = sectionIndex + direction;
+    if (destination < 0 || destination >= sectionCards.length) return;
+    const sourceIndex = sectionCards[sectionIndex].index;
+    const destinationIndex = sectionCards[destination].index;
+    const reordered = [...cards];
+    [reordered[sourceIndex], reordered[destinationIndex]] = [
+      reordered[destinationIndex],
+      reordered[sourceIndex],
+    ];
+    setCards(reordered);
+  }
+
+  function deleteCard(index: number) {
+    const card = cards[index];
+    const title =
+      card[`title_${activeLanguage}`] ||
+      card.title_en ||
+      card.title_pt ||
+      card.title_nl ||
+      "this information card";
+    if (!window.confirm(`Delete “${title}”? This is applied when you save city content.`)) {
+      return;
+    }
+    setCards(cards.filter((_, cardIndex) => cardIndex !== index));
+    if (editingKey === card._key) setEditingKey(null);
+  }
+
+  return (
+    <div className="mt-6 border-t border-white/10 pt-6">
+      <h4 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
+        Supporting information cards
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-stone-400">
+        Optional information cards shown beside this section on larger screens and underneath it on mobile.
+      </p>
+
+      <div className="mt-4 space-y-4">
+        {sectionCards.length ? (
+          sectionCards.map(({ card, index }, sectionIndex) => {
+            const title =
+              card[`title_${activeLanguage}`] ||
+              card.title_en ||
+              card.title_pt ||
+              card.title_nl ||
+              `Information card ${sectionIndex + 1}`;
+            const isEditing = editingKey === card._key;
+
+            return (
+              <article key={card._key || index} className="min-w-0 rounded-xl border border-white/10 bg-black/10 p-4">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="min-w-0 truncate font-medium text-white">{title}</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => moveCard(sectionIndex, -1)} disabled={sectionIndex === 0} className="rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-200 disabled:opacity-40">
+                      Move up
+                    </button>
+                    <button type="button" onClick={() => moveCard(sectionIndex, 1)} disabled={sectionIndex === sectionCards.length - 1} className="rounded-lg border border-white/15 px-3 py-2 text-sm text-stone-200 disabled:opacity-40">
+                      Move down
+                    </button>
+                    <button type="button" onClick={() => setEditingKey(isEditing ? null : card._key || null)} className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white">
+                      {isEditing ? "Close" : "Edit"}
+                    </button>
+                    <button type="button" onClick={() => deleteCard(index)} className="rounded-lg border border-red-300/40 px-3 py-2 text-sm text-red-100">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+
+                {isEditing ? (
+                  <div className="mt-4 grid min-w-0 gap-4">
+                    <div className="grid min-w-0 gap-3 md:grid-cols-2">
+                      <Field label="Title">
+                        <input className={inputClass} value={card[`title_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `title_${activeLanguage}`, event.target.value)} />
+                      </Field>
+                      <Field label="Button label">
+                        <input className={inputClass} value={card[`button_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `button_${activeLanguage}`, event.target.value)} />
+                      </Field>
+                      <Field label="Short text">
+                        <textarea className={textareaClass} rows={4} value={card[`text_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `text_${activeLanguage}`, event.target.value)} />
+                      </Field>
+                      <Field label="Destination">
+                        <input className={inputClass} value={card[`href_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `href_${activeLanguage}`, event.target.value)} />
+                      </Field>
+                    </div>
+                    <InformationCardImageField card={card} />
+                  </div>
+                ) : null}
+              </article>
+            );
+          })
+        ) : (
+          <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
+            No information cards yet.
+          </div>
+        )}
+
+        <button type="button" onClick={addCard} className="w-full rounded-lg border border-white/15 px-4 py-3 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a] sm:w-auto">
+          Add information card
+        </button>
+      </div>
     </div>
   );
 }
@@ -1671,6 +1963,9 @@ export default function CityDashboardEditors({
     initialActionState,
   );
   const [sidebarCards, setSidebarCards] = useState(city.sidebarCards || []);
+  const [informationCards, setInformationCards] = useState(
+    city.informationCards || [],
+  );
   const [recommendations, setRecommendations] = useState(
     city.recommendationGuides || [],
   );
@@ -1761,6 +2056,13 @@ export default function CityDashboardEditors({
 
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
+          {isPortoAlegre ? (
+            <input
+              type="hidden"
+              name="informationCardsJson"
+              value={JSON.stringify(informationCards)}
+            />
+          ) : null}
           <EnabledLanguageFields
             city={city}
             canManageLanguages={canManageLanguages}
@@ -1773,6 +2075,8 @@ export default function CityDashboardEditors({
               activeSection={activePortoSection}
               sidebarCards={sidebarCards}
               setSidebarCards={setSidebarCards}
+              informationCards={informationCards}
+              setInformationCards={setInformationCards}
               isAdministrator={isAdministrator}
             />
           ) : (

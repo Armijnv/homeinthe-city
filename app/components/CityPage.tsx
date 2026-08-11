@@ -25,6 +25,11 @@ import {
   mapPlaceAnchorId,
   recommendationCategoryLabel,
 } from "@/app/lib/recommendationGuides";
+import {
+  localizedInformationCardField,
+  type CityInformationCard,
+  type CityInformationCardSection,
+} from "@/app/lib/cityInformationCards";
 import { JsonLdScript } from "@/app/lib/structuredData";
 import type { CityLiveInfo } from "@/app/lib/cityLiveInfo";
 import {
@@ -848,6 +853,60 @@ function ExperienceRecommendationGuides({
   );
 }
 
+function SupportingInformationCards({
+  cards,
+  lang,
+}: {
+  cards: CityInformationCard[];
+  lang: Lang;
+}) {
+  return cards.map((card, index) => {
+    const title = localizedInformationCardField(card, "title", lang);
+    const text = localizedInformationCardField(card, "text", lang);
+    const button = localizedInformationCardField(card, "button", lang);
+    const href = localizedInformationCardField(card, "href", lang);
+    const imageUrl = card.image?.asset?.url;
+    if (!title && !text && !imageUrl) return null;
+
+    return (
+      <article
+        key={card._key || `${card.section}-${index}`}
+        className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-xl shadow-black/10"
+      >
+        {imageUrl ? (
+          <div className="relative aspect-[16/8] w-full bg-stone-200">
+            <Image
+              src={imageUrl}
+              alt={card.image?.alt || title}
+              fill
+              sizes="(max-width: 1023px) 100vw, 360px"
+              className="object-cover"
+            />
+          </div>
+        ) : null}
+        <div className="p-5">
+          {title ? (
+            <h3 className="text-xl font-medium text-stone-950">{title}</h3>
+          ) : null}
+          {text ? (
+            <p className={`${title ? "mt-3" : ""} text-sm leading-6 text-stone-700`}>
+              {text}
+            </p>
+          ) : null}
+          {href && button ? (
+            <a
+              href={href}
+              className="mt-5 inline-flex min-h-11 max-w-full items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+            >
+              {button}
+            </a>
+          ) : null}
+        </div>
+      </article>
+    );
+  });
+}
+
 function ExperienceRecommendations({
   groups,
   favoritePlaces,
@@ -1131,6 +1190,19 @@ export default function CityPage({
       },
     ];
     const favoritePlaces = places.filter((place) => place.favorite);
+    const informationCardsFor = (section: CityInformationCardSection) =>
+      (city?.informationCards || []).filter(
+        (card) =>
+          card.section === section &&
+          Boolean(
+            localizedInformationCardField(card, "title", lang) ||
+              localizedInformationCardField(card, "text", lang) ||
+              card.image?.asset?.url,
+          ),
+      );
+    const aboutInformationCards = informationCardsFor("about");
+    const exploreInformationCards = informationCardsFor("explore");
+    const fromHostInformationCards = informationCardsFor("fromHost");
     const hasLivingContent = Boolean(
       experienceCopy.livingIntroduction ||
         experienceCopy.livingBody ||
@@ -1147,7 +1219,7 @@ export default function CityPage({
         favoritePlaces.length,
     );
     const hostProfileCard = displayHost ? (
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5 shadow-sm shadow-stone-900/5">
+      <div className="rounded-2xl bg-white p-5 shadow-xl shadow-black/10">
         <h3 className="text-2xl font-medium text-stone-950">
           {displayHost.name}
         </h3>
@@ -1188,6 +1260,9 @@ export default function CityPage({
             <RecommendationGuideBody content={introBlocks.join("\n\n")} />
           </div>
         ) : null,
+        supportingContent: aboutInformationCards.length ? (
+          <SupportingInformationCards cards={aboutInformationCards} lang={lang} />
+        ) : null,
       },
       {
         id: "living-working",
@@ -1202,7 +1277,7 @@ export default function CityPage({
               {serviceCards.map((card) => (
                 <article
                   key={card.href}
-                  className="min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
+                  className="min-w-0 overflow-hidden rounded-2xl bg-white shadow-xl shadow-black/10"
                 >
                   {card.image?.asset?.url ? (
                     <div className="relative h-32 w-full bg-stone-200 md:h-36">
@@ -1243,7 +1318,7 @@ export default function CityPage({
                 return cardTitle ? (
                   <article
                     key={`${cardHref}-${index}`}
-                    className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-5"
+                    className="min-w-0 rounded-2xl bg-white p-5 shadow-xl shadow-black/10"
                   >
                     <h3 className="text-xl font-medium text-stone-950">
                       {cardTitle}
@@ -1310,6 +1385,10 @@ export default function CityPage({
             ) : null}
           </div>
         ),
+        supportingContent: exploreInformationCards.length ? (
+          <SupportingInformationCards cards={exploreInformationCards} lang={lang} />
+        ) : null,
+        supportingLayout: "below" as const,
       },
       {
         id: "from-host",
@@ -1331,15 +1410,29 @@ export default function CityPage({
               />
             </div>
           </div>
-        ) : hostProfileCard,
-        supportingContent: recommendationGuides.length
-          ? hostProfileCard
-          : null,
+        ) : null,
+        supportingContent:
+          hostProfileCard || fromHostInformationCards.length ? (
+            <>
+              {hostProfileCard}
+              <SupportingInformationCards
+                cards={fromHostInformationCards}
+                lang={lang}
+              />
+            </>
+          ) : null,
       },
     ];
 
+    const cityPageBackgroundMode =
+      city?.cityPageBackgroundMode ||
+      (city?.heroImage?.asset?.url ? "custom" : "default");
     const cityPageBackground =
-      city?.heroImage?.asset?.url || "/porto-alegre-desktop-background.jpg";
+      cityPageBackgroundMode === "none"
+        ? null
+        : cityPageBackgroundMode === "custom"
+          ? city?.heroImage?.asset?.url || null
+          : "/porto-alegre-desktop-background.jpg";
     const hero = (
       <header className="overflow-hidden rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl shadow-black/15 md:rounded-3xl md:p-7">
         <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(28rem,0.95fr)] lg:items-center lg:gap-7">
@@ -1393,7 +1486,7 @@ export default function CityPage({
     );
 
     return (
-      <div className="relative z-10 min-h-screen overflow-x-clip bg-stone-50 px-3 pb-14 pt-24 md:bg-transparent md:px-6 md:pt-28">
+      <div className="relative z-10 min-h-screen overflow-x-clip bg-stone-100 px-3 pb-14 pt-24 md:px-6 md:pt-28">
         {recommendationGuides.length ? (
           <JsonLdScript
             data={recommendationGuideJsonLd({
@@ -1404,18 +1497,20 @@ export default function CityPage({
             })}
           />
         ) : null}
-        <div className="pointer-events-none fixed inset-0 z-0 hidden md:block">
-          <Image
-            src={cityPageBackground}
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            sizes="(min-width: 768px) 100vw, 1px"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-white/25" />
-        </div>
+        {cityPageBackground ? (
+          <div className="pointer-events-none fixed inset-0 z-0 hidden md:block">
+            <Image
+              src={cityPageBackground}
+              alt=""
+              aria-hidden="true"
+              fill
+              priority
+              sizes="(min-width: 768px) 100vw, 1px"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-white/25" />
+          </div>
+        ) : null}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
         <CityExperienceLayout

@@ -51,6 +51,7 @@ const cityDashboardQuery = `
         url
       }
     },
+    cityPageBackgroundMode,
     headline_en,
     headline_pt,
     headline_nl,
@@ -112,6 +113,30 @@ const cityDashboardQuery = `
       href_en,
       href_pt,
       href_nl
+    },
+    informationCards[]{
+      _key,
+      section,
+      title_en,
+      title_pt,
+      title_nl,
+      text_en,
+      text_pt,
+      text_nl,
+      button_en,
+      button_pt,
+      button_nl,
+      href_en,
+      href_pt,
+      href_nl,
+      image{
+        ...,
+        asset->{
+          "_type": "reference",
+          "_ref": _id,
+          url
+        }
+      }
     },
     mapPlaces[]{
       _key,

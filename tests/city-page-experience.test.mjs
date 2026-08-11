@@ -14,6 +14,7 @@ const [
   mapDashboardSource,
   cityServicesSource,
   cityDashboardPageSource,
+  informationCardsSource,
   ...portoAlegrePageSources
 ] = await Promise.all([
   readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
@@ -54,6 +55,7 @@ const [
     new URL("../app/dashboard/cities/[citySlug]/page.tsx", import.meta.url),
     "utf8",
   ),
+  readFile(new URL("../app/lib/cityInformationCards.ts", import.meta.url), "utf8"),
   ...[
     "../app/brazil/porto-alegre/page.tsx",
     "../app/pt/brasil/porto-alegre/page.tsx",
@@ -88,7 +90,8 @@ test("Porto Alegre uses four in-place tabs without scroll navigation", () => {
 
 test("the prototype uses a compact editable header and existing section content sources", () => {
   assert.match(cityPageSource, /\{headline \? \(/);
-  assert.match(cityPageSource, /city\?\.heroImage\?\.asset\?\.url \|\| "\/porto-alegre-desktop-background\.jpg"/);
+  assert.match(cityPageSource, /cityPageBackgroundMode === "none"/);
+  assert.match(cityPageSource, /"\/porto-alegre-desktop-background\.jpg"/);
   assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\}/);
   assert.match(cityPageSource, /lg:grid-cols-\[minmax\(0,1\.15fr\)_minmax\(28rem,0\.95fr\)\]/);
   assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\} lang=\{lang\} compact \/>/);
@@ -138,7 +141,11 @@ test("the Porto Alegre dashboard mirrors the public tabs and hides legacy contro
   assert.match(editorSource, /name=\{`cta_\$\{language\.id\}`\}/);
   assert.match(editorSource, /City page background/);
   assert.match(editorSource, /name="heroImage"/);
-  assert.match(editorSource, /name="removeHeroImage"/);
+  assert.match(editorSource, /name="cityPageBackgroundMode"/);
+  assert.match(editorSource, /Default Porto Alegre image/);
+  assert.match(editorSource, /Custom image/);
+  assert.match(editorSource, /No background image/);
+  assert.doesNotMatch(editorSource, /name="removeHeroImage"/);
   assert.doesNotMatch(editorSource, /name="heroImageAlt"/);
   assert.doesNotMatch(editorSource, /field="aboutCardTitle"/);
   assert.doesNotMatch(editorSource, /field="favoritesCardTitle"/);
@@ -184,8 +191,8 @@ test("Porto Alegre saves through the existing audited city action only", () => {
   assert.match(actionSource, /existing\.cityPageExperience/);
   assert.match(actionSource, /if \(!formData\.has\(inputName\)\) continue/);
   assert.match(actionSource, /setValues\.heroImage = uploadedHeroImage/);
-  assert.match(actionSource, /stringValue\(formData, "removeHeroImage"\) === "on"/);
-  assert.match(actionSource, /setValues\.heroImage = undefined/);
+  assert.match(actionSource, /setValues\.cityPageBackgroundMode = "custom"/);
+  assert.match(actionSource, /setValues\.cityPageBackgroundMode = backgroundMode/);
   assert.match(actionSource, /cityChangeLogDocument\(\{/);
   assert.match(actionSource, /activityFieldChanges\(comparableBefore, comparableAfter\)/);
   assert.match(actionSource, /if \(!changes\.length\)/);
@@ -199,6 +206,47 @@ test("the optional prototype schema is limited to Porto Alegre", () => {
   assert.match(schemaSource, /cityExperienceLanguageField\("en", "English"\)/);
   assert.match(schemaSource, /cityExperienceLanguageField\("pt", "Portuguese"\)/);
   assert.match(schemaSource, /cityExperienceLanguageField\("nl", "Dutch"\)/);
+  assert.match(schemaSource, /name: "informationCards"/);
+  assert.match(schemaSource, /name: "cityPageBackgroundMode"/);
+});
+
+test("Porto Alegre reuses one optional information-card system across three tabs", () => {
+  assert.match(informationCardsSource, /cityInformationCardSections = \[/);
+  assert.match(informationCardsSource, /"about"/);
+  assert.match(informationCardsSource, /"explore"/);
+  assert.match(informationCardsSource, /"fromHost"/);
+  assert.match(schemaSource, /name: "informationCards"[\s\S]*?name: "image"/);
+  assert.match(editorSource, /Supporting information cards/);
+  assert.match(editorSource, /No information cards yet\./);
+  assert.match(editorSource, /Add information card/);
+  assert.match(editorSource, /Move up/);
+  assert.match(editorSource, /Move down/);
+  assert.match(editorSource, /informationCardImage-/);
+  assert.match(actionSource, /informationCardsFromForm/);
+  assert.match(actionSource, /setValues\.informationCards/);
+  assert.match(cityPageSource, /function SupportingInformationCards/);
+  assert.match(cityPageSource, /informationCardsFor\("about"\)/);
+  assert.match(cityPageSource, /informationCardsFor\("explore"\)/);
+  assert.match(cityPageSource, /informationCardsFor\("fromHost"\)/);
+});
+
+test("Porto Alegre content and supporting cards render as separate floating objects", () => {
+  assert.match(layoutSource, /<article className="min-w-0 rounded-2xl bg-white\/97/);
+  assert.match(layoutSource, /supportingLayout === "below"/);
+  assert.match(layoutSource, /sm:grid-cols-2 xl:grid-cols-3/);
+  assert.match(cityPageSource, /supportingLayout: "below" as const/);
+  assert.match(cityPageSource, /bg-white shadow-xl shadow-black\/10/);
+});
+
+test("Porto Alegre stores three reversible background states without deleting the custom image", () => {
+  assert.match(schemaSource, /value: "default"/);
+  assert.match(schemaSource, /value: "custom"/);
+  assert.match(schemaSource, /value: "none"/);
+  assert.match(cityDashboardPageSource, /cityPageBackgroundMode/);
+  assert.match(actionSource, /existing\.heroImage\?\.asset\?\._ref \? "custom" : "default"/);
+  assert.doesNotMatch(actionSource, /setValues\.heroImage = undefined/);
+  assert.match(cityPageSource, /cityPageBackgroundMode === "custom"/);
+  assert.match(cityPageSource, /cityPageBackground \? \(/);
 });
 
 test("Porto Alegre Explore reuses the existing place workflow for host picks", () => {

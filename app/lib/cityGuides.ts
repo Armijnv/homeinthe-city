@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import type { CityPageExperience } from "@/app/lib/cityPageExperience";
+import type { CityInformationCard } from "@/app/lib/cityInformationCards";
 
 export type CityGuideLang = "en" | "pt" | "nl";
 export type CityGuideStatus = "live" | "comingSoon" | "hidden";
+export type CityPageBackgroundMode = "default" | "custom" | "none";
 
 export type CityGuideImage = {
   alt?: string;
@@ -138,6 +140,7 @@ export type CityGuideContent = {
   country?: string | null;
   primaryHost?: CityGuideProvider | null;
   heroImage?: CityGuideImage & { alt?: string };
+  cityPageBackgroundMode?: CityPageBackgroundMode;
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
@@ -152,6 +155,7 @@ export type CityGuideContent = {
   recommendationGuides?: CityGuideRecommendationGuide[];
   recommendations?: CityGuideRecommendation[];
   sidebarCards?: CityGuideSidebarCard[];
+  informationCards?: CityInformationCard[];
   cta_en?: string;
   cta_pt?: string;
   cta_nl?: string;

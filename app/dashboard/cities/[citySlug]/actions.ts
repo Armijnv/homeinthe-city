@@ -13,6 +13,12 @@ import {
   type CityPageExperience,
   type LivingServicePresentation,
 } from "@/app/lib/cityPageExperience";
+import {
+  cityInformationCardSections,
+  type CityInformationCard,
+  type CityInformationCardSection,
+} from "@/app/lib/cityInformationCards";
+import type { CityPageBackgroundMode } from "@/app/lib/cityGuides";
 
 export type CityDashboardActionState = {
   status: "idle" | "success" | "error";
@@ -74,7 +80,9 @@ type CityContentRecord = Record<string, unknown> & {
     crop?: { top?: number; bottom?: number; left?: number; right?: number };
     hotspot?: { x?: number; y?: number; height?: number; width?: number };
   };
+  cityPageBackgroundMode?: CityPageBackgroundMode;
   sidebarCards?: SidebarCardInput[];
+  informationCards?: CityInformationCard[];
   recommendationGuides?: RecommendationGuideInput[];
   cityPageExperience?: CityPageExperience;
 };
@@ -350,6 +358,101 @@ function sanitizeSidebarCards(rawCards: SidebarCardInput[]) {
   });
 }
 
+function cleanInformationCardImage(image: CityInformationCard["image"]) {
+  const ref = cleanText(image?.asset?._ref);
+  if (!ref) return undefined;
+
+  return {
+    _type: "image",
+    asset: { _type: "reference", _ref: ref },
+    alt: cleanText(image?.alt) || undefined,
+    crop: image?.crop,
+    hotspot: image?.hotspot,
+  };
+}
+
+async function informationCardsFromForm(formData: FormData) {
+  const rawCards = safeArrayFromJson<CityInformationCard>(
+    stringValue(formData, "informationCardsJson"),
+    "Information cards could not be read. Please reload and try again.",
+  );
+
+  const cards = await Promise.all(
+    rawCards.map(async (card, index) => {
+      const section = cleanText(card.section) as CityInformationCardSection;
+      if (!cityInformationCardSections.includes(section)) return undefined;
+
+      const titleEn = cleanText(card.title_en);
+      const titlePt = cleanText(card.title_pt);
+      const titleNl = cleanText(card.title_nl);
+      const textEn = cleanText(card.text_en);
+      const textPt = cleanText(card.text_pt);
+      const textNl = cleanText(card.text_nl);
+      const buttonEn = cleanText(card.button_en);
+      const buttonPt = cleanText(card.button_pt);
+      const buttonNl = cleanText(card.button_nl);
+      const hrefEn = cleanUrl(cleanText(card.href_en));
+      const hrefPt = cleanUrl(cleanText(card.href_pt));
+      const hrefNl = cleanUrl(cleanText(card.href_nl));
+      const fallbackTitle = titleEn || titlePt || titleNl || "Supporting information";
+      const cardKey = preserveOrCreateKey(
+        card._key,
+        "information",
+        fallbackTitle,
+        index,
+      );
+      const uploadedImage = await uploadedInformationCardImage(
+        formData,
+        cardKey,
+        `${fallbackTitle} in Porto Alegre`,
+      );
+      const removeImage =
+        stringValue(formData, `removeInformationCardImage-${cardKey}`) === "on";
+      const preservedImageValue = cleanInformationCardImage(card.image);
+      const preservedImage = preservedImageValue
+        ? {
+            ...preservedImageValue,
+            alt:
+              stringValue(formData, `informationCardImageAlt-${cardKey}`) ||
+              preservedImageValue.alt,
+          }
+        : undefined;
+      const image = uploadedImage || (removeImage ? undefined : preservedImage);
+
+      if (
+        !titleEn && !titlePt && !titleNl &&
+        !textEn && !textPt && !textNl &&
+        !buttonEn && !buttonPt && !buttonNl &&
+        !hrefEn && !hrefPt && !hrefNl &&
+        !image
+      ) {
+        return undefined;
+      }
+
+      return {
+        _type: "object",
+        _key: cardKey,
+        section,
+        title_en: titleEn || undefined,
+        title_pt: titlePt || undefined,
+        title_nl: titleNl || undefined,
+        text_en: textEn || undefined,
+        text_pt: textPt || undefined,
+        text_nl: textNl || undefined,
+        button_en: buttonEn || undefined,
+        button_pt: buttonPt || undefined,
+        button_nl: buttonNl || undefined,
+        href_en: hrefEn || undefined,
+        href_pt: hrefPt || undefined,
+        href_nl: hrefNl || undefined,
+        image,
+      };
+    }),
+  );
+
+  return cards.filter((card): card is NonNullable<typeof card> => Boolean(card));
+}
+
 function cleanReference(value: RecommendationGuideInput["relatedProvider"]) {
   const ref = cleanText(value?._ref);
   return ref ? { _type: "reference", _ref: ref } : undefined;
@@ -430,6 +533,40 @@ async function uploadedCityHeroImage(formData: FormData) {
       error instanceof Error
         ? `The city page background could not be uploaded: ${error.message}`
         : "The city page background could not be uploaded. Please try again.",
+    );
+  }
+}
+
+async function uploadedInformationCardImage(
+  formData: FormData,
+  cardKey: string,
+  fallbackAlt: string,
+) {
+  const entry = formData.get(`informationCardImage-${cardKey}`);
+  const selected =
+    stringValue(formData, `informationCardImageSelected-${cardKey}`) === "1";
+
+  if (!(entry instanceof File) || entry.size === 0) {
+    if (selected) {
+      throw new CityDashboardActionError(
+        `The image for “${fallbackAlt}” was not received. Please select it again.`,
+      );
+    }
+    return undefined;
+  }
+
+  try {
+    return await uploadSanityImage(
+      entry,
+      stringValue(formData, `informationCardImageAlt-${cardKey}`) ||
+        fallbackAlt,
+    );
+  } catch (error) {
+    console.error("Information card image upload failed", error);
+    throw new CityDashboardActionError(
+      error instanceof Error
+        ? `The information card image could not be uploaded: ${error.message}`
+        : "The information card image could not be uploaded. Please try again.",
     );
   }
 }
@@ -561,11 +698,11 @@ export async function saveCityContentAction(
     }
     const existing = await client.fetch<CityContentRecord | null>(
       `*[_type == "city" && _id == $cityId][0]{
-        _rev, name_en, name_pt, name_nl, heroImage,
+        _rev, name_en, name_pt, name_nl, heroImage, cityPageBackgroundMode,
         headline_en, headline_pt, headline_nl,
         intro_en, intro_pt, intro_nl,
         introBlocks_en, introBlocks_pt, introBlocks_nl,
-        cityPageExperience, sidebarCards, enabledLanguages
+        cityPageExperience, sidebarCards, informationCards, enabledLanguages
       }`,
       { cityId: city._id },
     );
@@ -619,15 +756,32 @@ export async function saveCityContentAction(
     }
 
     if (citySlug === "porto-alegre") {
+      setValues.informationCards = await informationCardsFromForm(formData);
       setValues.cityPageExperience = await cityPageExperienceFromForm(
         formData,
         existing.cityPageExperience,
       );
       const uploadedHeroImage = await uploadedCityHeroImage(formData);
+      const selectedBackgroundMode = stringValue(
+        formData,
+        "cityPageBackgroundMode",
+      ) as CityPageBackgroundMode;
+      const backgroundMode = (["default", "custom", "none"] as const).includes(
+        selectedBackgroundMode,
+      )
+        ? selectedBackgroundMode
+        : existing.cityPageBackgroundMode ||
+          (existing.heroImage?.asset?._ref ? "custom" : "default");
       if (uploadedHeroImage) {
         setValues.heroImage = uploadedHeroImage;
-      } else if (stringValue(formData, "removeHeroImage") === "on") {
-        setValues.heroImage = undefined;
+        setValues.cityPageBackgroundMode = "custom";
+      } else {
+        if (backgroundMode === "custom" && !existing.heroImage?.asset?._ref) {
+          throw new CityDashboardActionError(
+            "Upload a custom background before selecting Custom image.",
+          );
+        }
+        setValues.cityPageBackgroundMode = backgroundMode;
       }
     }
 
@@ -640,10 +794,10 @@ export async function saveCityContentAction(
     const comparableBefore: Record<string, unknown> = {};
     const comparableAfter: Record<string, unknown> = {};
     for (const field of Object.keys(setValues)) {
-      comparableBefore[field] = field === "sidebarCards" || field.startsWith("introBlocks_")
+      comparableBefore[field] = field === "sidebarCards" || field === "informationCards" || field.startsWith("introBlocks_")
         ? existing?.[field] || []
         : existing?.[field];
-      comparableAfter[field] = field === "sidebarCards" || field.startsWith("introBlocks_")
+      comparableAfter[field] = field === "sidebarCards" || field === "informationCards" || field.startsWith("introBlocks_")
         ? setValues[field] || []
         : setValues[field];
     }

@@ -20,6 +20,7 @@ const cityGuideProjection = `
         url
       }
     },
+    cityPageBackgroundMode,
 
     primaryHost->{
       name,
@@ -202,6 +203,27 @@ const cityGuideProjection = `
       href_nl
     },
 
+    informationCards[]{
+      _key,
+      section,
+      title_en,
+      title_pt,
+      title_nl,
+      text_en,
+      text_pt,
+      text_nl,
+      button_en,
+      button_pt,
+      button_nl,
+      href_en,
+      href_pt,
+      href_nl,
+      image{
+        alt,
+        asset->{url}
+      }
+    },
+
     cta_en,
     cta_pt,
     cta_nl
@@ -248,6 +270,7 @@ export const cityNavigationQuery = `
     recommendationGuides[]{_key},
     recommendations[]{_key},
     sidebarCards[]{_key},
+    informationCards[]{_key},
     primaryHost->{
       status,
       languages[]{language}
