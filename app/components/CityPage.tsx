@@ -1486,7 +1486,11 @@ export default function CityPage({
     );
 
     return (
-      <div className="relative z-10 min-h-screen overflow-x-clip bg-stone-100 px-3 pb-14 pt-24 md:px-6 md:pt-28">
+      <div
+        className={`relative z-10 min-h-screen overflow-x-clip px-3 pb-14 pt-24 md:px-6 md:pt-28 ${
+          cityPageBackgroundMode === "none" ? "bg-[#1a1f2e]" : "bg-stone-100"
+        }`}
+      >
         {recommendationGuides.length ? (
           <JsonLdScript
             data={recommendationGuideJsonLd({

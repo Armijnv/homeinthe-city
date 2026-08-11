@@ -247,6 +247,7 @@ test("Porto Alegre stores three reversible background states without deleting th
   assert.doesNotMatch(actionSource, /setValues\.heroImage = undefined/);
   assert.match(cityPageSource, /cityPageBackgroundMode === "custom"/);
   assert.match(cityPageSource, /cityPageBackground \? \(/);
+  assert.match(cityPageSource, /cityPageBackgroundMode === "none" \? "bg-\[#1a1f2e\]" : "bg-stone-100"/);
 });
 
 test("Porto Alegre Explore reuses the existing place workflow for host picks", () => {
