@@ -101,6 +101,7 @@ type InfoItemData = {
   icon: string;
   mobile?: boolean;
   desktop?: boolean;
+  compactMobile?: boolean;
 };
 
 function InfoItem({
@@ -109,11 +110,14 @@ function InfoItem({
   icon,
   mobile = false,
   desktop = true,
-}: InfoItemData) {
+  compactMobile = false,
+  compact = false,
+}: InfoItemData & { compact?: boolean }) {
+  const visibleOnMobile = mobile || (compact && compactMobile);
   const visibilityClass =
-    mobile && desktop
+    visibleOnMobile && desktop
       ? "flex md:block"
-      : mobile
+      : visibleOnMobile
         ? "flex md:hidden"
         : "hidden md:block";
 
@@ -137,9 +141,11 @@ function InfoItem({
 export default function CityLiveInfoWidget({
   info,
   lang,
+  compact = false,
 }: {
   info?: CityLiveInfo | null;
   lang: Lang;
+  compact?: boolean;
 }) {
   if (!info) return null;
 
@@ -176,13 +182,13 @@ export default function CityLiveInfoWidget({
     sunrise ? { label: t.sunrise, value: sunrise, icon: "☀↑" } : null,
     sunset ? { label: t.sunset, value: sunset, icon: "☀↓" } : null,
     typeof info.rainChancePercent === "number"
-      ? { label: t.rain, value: `${Math.round(info.rainChancePercent)}%`, icon: "%" }
+      ? { label: t.rain, value: `${Math.round(info.rainChancePercent)}%`, icon: "%", compactMobile: true }
       : null,
     typeof info.uvIndex === "number"
-      ? { label: t.uv, value: String(Math.round(info.uvIndex)), icon: "UV" }
+      ? { label: t.uv, value: String(Math.round(info.uvIndex)), icon: "UV", compactMobile: true }
       : null,
     typeof info.windSpeedKmh === "number"
-      ? { label: t.wind, value: `${Math.round(info.windSpeedKmh)} km/h`, icon: "~" }
+      ? { label: t.wind, value: `${Math.round(info.windSpeedKmh)} km/h`, icon: "~", compactMobile: true }
       : null,
   ];
   const items = rawItems.filter((item): item is InfoItemData => Boolean(item));
@@ -197,9 +203,9 @@ export default function CityLiveInfoWidget({
       <h2 className="sr-only md:not-sr-only md:mb-2 md:block md:text-[0.68rem] md:font-medium md:uppercase md:tracking-[0.14em] md:text-stone-600">
         {t.title}
       </h2>
-      <dl className="flex max-w-full flex-wrap items-center justify-start gap-1.5 overflow-hidden md:grid md:grid-cols-2 md:gap-x-3 md:gap-y-2 lg:grid-cols-3">
+      <dl className={`flex max-w-full flex-wrap items-center justify-start gap-1.5 overflow-hidden md:grid md:grid-cols-2 md:gap-x-3 md:gap-y-2 ${compact ? "" : "lg:grid-cols-3"}`}>
         {items.map((item) => (
-          <InfoItem key={`${item.label}-${item.value}`} {...item} />
+          <InfoItem key={`${item.label}-${item.value}`} {...item} compact={compact} />
         ))}
       </dl>
     </aside>

@@ -85,13 +85,24 @@ function HostPhotoActions({
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const actionRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const contactActions = host.actions.filter((action) =>
     ["WhatsApp", "Email"].includes(action.label),
   );
-  const hasActions = Boolean(host.profileHref || contactActions.length);
+  const actions = [
+    ...(host.profileHref
+      ? [{ label: profileLabel, href: host.profileHref, external: false }]
+      : []),
+    ...contactActions,
+  ];
+  const hasActions = actions.length > 0;
 
   useEffect(() => {
     if (!open) return;
+
+    const focusTimer = window.requestAnimationFrame(() => {
+      actionRefs.current[0]?.focus();
+    });
 
     function handlePointerDown(event: PointerEvent) {
       if (
@@ -112,28 +123,34 @@ function HostPhotoActions({
     document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
     return () => {
+      window.cancelAnimationFrame(focusTimer);
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open]);
 
   const photo = (
-    <div className="relative h-16 w-16 overflow-hidden rounded-full bg-stone-700 ring-2 ring-white/80 md:h-24 md:w-24">
+    <div className="relative h-16 w-16 overflow-hidden rounded-full bg-stone-700 ring-2 ring-white/80 md:h-20 md:w-20">
       <Image
         src={host.photoUrl}
         alt={host.photoAlt}
         fill
         priority
-        sizes="(max-width: 768px) 64px, 96px"
+        sizes="(max-width: 768px) 64px, 80px"
         className="object-cover"
       />
     </div>
   );
 
-  if (!hasActions) return photo;
+  if (!hasActions) {
+    return <div className="flex min-h-24 items-center justify-center">{photo}</div>;
+  }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div
+      ref={containerRef}
+      className="relative h-32 w-full min-w-0 md:h-36 md:w-56"
+    >
       <button
         ref={buttonRef}
         type="button"
@@ -142,7 +159,7 @@ function HostPhotoActions({
         aria-expanded={open}
         aria-controls="porto-host-photo-actions"
         onClick={() => setOpen((current) => !current)}
-        className="block rounded-full focus:outline-none focus:ring-2 focus:ring-[#d6a85a] focus:ring-offset-2 focus:ring-offset-[#1a1f2e]"
+        className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full focus:outline-none focus:ring-2 focus:ring-[#d6a85a] focus:ring-offset-2 focus:ring-offset-[#1a1f2e] md:left-auto md:right-3"
       >
         {photo}
       </button>
@@ -152,31 +169,46 @@ function HostPhotoActions({
           id="porto-host-photo-actions"
           role="menu"
           aria-label={`Contact ${host.name}`}
-          className="absolute right-0 top-full z-30 mt-3 w-56 max-w-[calc(100vw-2rem)] rounded-2xl border border-stone-200 bg-white p-2 text-left text-stone-900 shadow-2xl shadow-black/25"
+          className="contents"
         >
-          {host.profileHref ? (
-            <Link
-              href={host.profileHref}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium hover:bg-stone-100 focus:bg-stone-100 focus:outline-none"
-            >
-              {profileLabel}
-            </Link>
-          ) : null}
-          {contactActions.map((action) => (
-            <a
-              key={action.label}
-              href={action.href}
-              role="menuitem"
-              target={action.external ? "_blank" : undefined}
-              rel={action.external ? "noreferrer" : undefined}
-              onClick={() => setOpen(false)}
-              className="flex min-h-11 items-center rounded-xl px-4 py-2 text-sm font-medium hover:bg-stone-100 focus:bg-stone-100 focus:outline-none"
-            >
-              {action.label}
-            </a>
-          ))}
+          {actions.map((action, index) => {
+            const positionClass = [
+              "left-24 top-0 md:left-auto md:right-24",
+              "left-28 top-11 md:left-auto md:right-28",
+              "bottom-0 left-24 md:left-auto md:right-24",
+            ][index];
+            const className = `absolute z-30 inline-flex min-h-11 max-w-[calc(100%-7rem)] items-center rounded-full border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-900 shadow-xl shadow-black/20 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#d6a85a] ${positionClass}`;
+
+            return action.href.startsWith("/") ? (
+              <Link
+                key={action.href}
+                ref={(element) => {
+                  actionRefs.current[index] = element;
+                }}
+                href={action.href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className={className}
+              >
+                {action.label}
+              </Link>
+            ) : (
+              <a
+                key={action.href}
+                ref={(element) => {
+                  actionRefs.current[index] = element;
+                }}
+                href={action.href}
+                role="menuitem"
+                target={action.external ? "_blank" : undefined}
+                rel={action.external ? "noreferrer" : undefined}
+                onClick={() => setOpen(false)}
+                className={className}
+              >
+                {action.label}
+              </a>
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -1114,85 +1146,79 @@ export default function CityPage({
         id: "living-working",
         title: experienceCopy.livingTitle || tabLabels.living,
         intro: hasLivingContent ? experienceCopy.livingIntroduction : undefined,
-        content: (
-          <div className="space-y-6">
-            {experienceCopy.livingBody ? (
-              <div className="max-w-4xl">
-                <RecommendationGuideBody content={experienceCopy.livingBody} />
-              </div>
-            ) : null}
-
-            {serviceCards.length || sidebarCards.length ? (
-              <div className="grid gap-5 md:grid-cols-2">
-                {serviceCards.map((card) => (
-                  <article
-                    key={card.href}
-                    className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
-                  >
-                    {card.image?.asset?.url ? (
-                      <div className="relative h-32 w-full bg-stone-200 md:h-36">
-                        <Image
-                          src={card.image.asset.url}
-                          alt={card.image.alt || card.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          className="object-cover"
-                        />
-                      </div>
+        content: experienceCopy.livingBody ? (
+          <RecommendationGuideBody content={experienceCopy.livingBody} />
+        ) : null,
+        supportingContent:
+          serviceCards.length || sidebarCards.length ? (
+            <>
+              {serviceCards.map((card) => (
+                <article
+                  key={card.href}
+                  className="min-w-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
+                >
+                  {card.image?.asset?.url ? (
+                    <div className="relative h-32 w-full bg-stone-200 md:h-36">
+                      <Image
+                        src={card.image.asset.url}
+                        alt={card.image.alt || card.title}
+                        fill
+                        sizes="(max-width: 1023px) 100vw, 360px"
+                        className="object-cover"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-5">
+                    <h3 className="text-xl font-medium text-stone-950">
+                      {card.title}
+                    </h3>
+                    {card.text ? (
+                      <p className="mt-3 text-sm leading-6 text-stone-700">
+                        {card.text}
+                      </p>
                     ) : null}
-                    <div className="p-6">
-                      <h3 className="text-xl font-medium text-stone-950">
-                        {card.title}
-                      </h3>
-                      {card.text ? (
-                        <p className="mt-3 text-sm leading-6 text-stone-700">
-                          {card.text}
-                        </p>
-                      ) : null}
-                      <Link
-                        href={card.href}
+                    <Link
+                      href={card.href}
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                    >
+                      {card.button}
+                    </Link>
+                  </div>
+                </article>
+              ))}
+
+              {sidebarCards.map((card, index) => {
+                const cardTitle = localizedField(card, "title", lang);
+                const cardText = localizedField(card, "text", lang);
+                const cardHref = localizedField(card, "href", lang);
+                const cardButton = localizedField(card, "button", lang);
+
+                return cardTitle ? (
+                  <article
+                    key={`${cardHref}-${index}`}
+                    className="min-w-0 rounded-2xl border border-stone-200 bg-stone-50 p-5"
+                  >
+                    <h3 className="text-xl font-medium text-stone-950">
+                      {cardTitle}
+                    </h3>
+                    {cardText ? (
+                      <p className="mt-3 text-sm leading-6 text-stone-700">
+                        {cardText}
+                      </p>
+                    ) : null}
+                    {cardHref && cardButton ? (
+                      <a
+                        href={cardHref}
                         className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
                       >
-                        {card.button}
-                      </Link>
-                    </div>
+                        {cardButton}
+                      </a>
+                    ) : null}
                   </article>
-                ))}
-
-                {sidebarCards.map((card, index) => {
-                  const cardTitle = localizedField(card, "title", lang);
-                  const cardText = localizedField(card, "text", lang);
-                  const cardHref = localizedField(card, "href", lang);
-                  const cardButton = localizedField(card, "button", lang);
-
-                  return cardTitle ? (
-                    <article
-                      key={`${cardHref}-${index}`}
-                      className="rounded-2xl border border-stone-200 bg-stone-50 p-6"
-                    >
-                      <h3 className="text-xl font-medium text-stone-950">
-                        {cardTitle}
-                      </h3>
-                      {cardText ? (
-                        <p className="mt-3 text-sm leading-6 text-stone-700">
-                          {cardText}
-                        </p>
-                      ) : null}
-                      {cardHref && cardButton ? (
-                        <a
-                          href={cardHref}
-                          className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                        >
-                          {cardButton}
-                        </a>
-                      ) : null}
-                    </article>
-                  ) : null;
-                })}
-              </div>
-            ) : null}
-          </div>
-        ),
+                ) : null;
+              })}
+            </>
+          ) : null,
       },
       {
         id: "explore-city",
@@ -1299,10 +1325,12 @@ export default function CityPage({
       },
     ];
 
+    const cityPageBackground =
+      city?.heroImage?.asset?.url || "/porto-alegre-desktop-background.jpg";
     const hero = (
-      <header className="overflow-hidden rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl shadow-black/15 md:rounded-3xl md:p-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
+      <header className="overflow-hidden rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl shadow-black/15 md:rounded-3xl md:p-7">
+        <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(28rem,0.95fr)] lg:items-center lg:gap-7">
+          <div className="min-w-0 md:py-2">
             <div className="flex gap-3 text-xl" aria-label="City guide languages">
               {cityGuideEnabledLanguages(city).map((language) => (
                 <a
@@ -1333,28 +1361,20 @@ export default function CityPage({
             ) : null}
           </div>
 
-          {displayHost ? (
-            <div className="shrink-0 text-center">
-              <HostPhotoActions
-                host={displayHost}
-                profileLabel={
-                  lang === "pt"
-                    ? "Ver perfil"
-                    : lang === "nl"
-                      ? "Bekijk profiel"
-                      : "View Profile"
-                }
-              />
-              <p className="mt-2 hidden max-w-28 text-sm font-medium md:block">
-                {displayHost.name}
-              </p>
-              <p className="hidden text-xs text-white/65 md:block">{displayHost.role}</p>
+          <div className="min-w-0 border-t border-white/15 pt-5 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
+            <div className={`grid min-w-0 gap-4 ${displayHost ? "sm:grid-cols-[minmax(13rem,0.9fr)_minmax(0,1.1fr)] sm:items-center" : ""}`}>
+              {displayHost ? (
+                <div className="min-w-0">
+                  <HostPhotoActions host={displayHost} profileLabel={t.profile} />
+                  <div className="-mt-1 text-center md:mt-0">
+                    <p className="truncate text-sm font-medium">{displayHost.name}</p>
+                    <p className="truncate text-xs text-white/65">{displayHost.role}</p>
+                  </div>
+                </div>
+              ) : null}
+              <CityLiveInfoWidget info={initialLiveInfo} lang={lang} compact />
             </div>
-          ) : null}
-        </div>
-
-        <div className="mt-5 border-t border-white/15 pt-4 md:mt-6 md:pt-5">
-          <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
+          </div>
         </div>
       </header>
     );
@@ -1371,6 +1391,18 @@ export default function CityPage({
             })}
           />
         ) : null}
+        <div className="pointer-events-none fixed inset-0 z-0 hidden md:block">
+          <Image
+            src={cityPageBackground}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            sizes="(min-width: 768px) 100vw, 1px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-white/25" />
+        </div>
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
 
         <CityExperienceLayout

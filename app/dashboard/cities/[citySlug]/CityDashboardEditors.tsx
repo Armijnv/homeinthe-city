@@ -122,6 +122,7 @@ type EditorProps = {
   citySlug: string;
   city: CityDashboardEditorData;
   canManageLanguages: boolean;
+  isAdministrator: boolean;
   saveContentAction: (
     previousState: CityDashboardActionState,
     formData: FormData,
@@ -438,6 +439,102 @@ const portoEditorSections: Array<{ id: PortoEditorSection; label: string }> = [
 
 type LivingServiceKey = "interpreter" | "realEstate";
 
+function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
+  const savedImageUrl = city.heroImage?.asset?.url;
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [imageError, setImageError] = useState("");
+  const [imageSelected, setImageSelected] = useState(false);
+  const displayUrl =
+    previewUrl || savedImageUrl || "/porto-alegre-desktop-background.jpg";
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+
+    if (!file) {
+      setPreviewUrl("");
+      setImageError("");
+      setImageSelected(false);
+      event.target.setCustomValidity("");
+      return;
+    }
+
+    const error = selectedDashboardImageError(file, "City page background");
+    setPreviewUrl(error ? "" : URL.createObjectURL(file));
+    setImageError(error);
+    setImageSelected(true);
+    event.target.setCustomValidity(error);
+  }
+
+  return (
+    <fieldset className="mt-5 rounded-xl border border-white/10 p-4">
+      <legend className="px-2 text-xs uppercase tracking-widest text-stone-400">
+        City page background
+      </legend>
+      <div className="mt-2 grid min-w-0 gap-4 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:items-start">
+        <div className="space-y-3">
+          <div className="relative aspect-[16/9] min-w-0 overflow-hidden rounded-xl border border-white/10 bg-black/20">
+            <Image
+              src={displayUrl}
+              alt="Current city page background preview"
+              fill
+              unoptimized={displayUrl.startsWith("blob:")}
+              sizes="(max-width: 768px) 100vw, 288px"
+              className="object-cover"
+            />
+          </div>
+          <p className="text-xs leading-5 text-stone-400">
+            {savedImageUrl
+              ? "Current uploaded background"
+              : "Current default Porto Alegre background"}
+          </p>
+        </div>
+
+        <div className="min-w-0 space-y-4">
+          <Field label={savedImageUrl ? "Replace background" : "Upload a new background"}>
+            <input
+              name="heroImage"
+              type="file"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
+              className={dashboardFileInputClass}
+              onChange={handleImageChange}
+            />
+          </Field>
+          <input
+            type="hidden"
+            name="heroImageSelected"
+            value={imageSelected ? "1" : ""}
+          />
+          {imageError ? (
+            <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+              {imageError}
+            </p>
+          ) : null}
+          {savedImageUrl ? (
+            <label className="flex min-h-11 items-center gap-2 text-sm text-stone-300">
+              <input
+                type="checkbox"
+                name="removeHeroImage"
+                className="size-4 accent-[#d6a85a]"
+              />
+              Use the default Porto Alegre background
+            </label>
+          ) : null}
+          <p className="text-xs leading-5 text-stone-400">
+            This decorative image sits behind the city header, tabs and page sections on larger screens. JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
+          </p>
+        </div>
+      </div>
+    </fieldset>
+  );
+}
+
 function LivingServiceImageField({
   serviceKey,
   presentation,
@@ -704,6 +801,7 @@ function PortoAlegreExperienceFields({
   activeSection,
   sidebarCards,
   setSidebarCards,
+  isAdministrator,
 }: {
   city: CityDashboardEditorData;
   citySlug: string;
@@ -711,7 +809,35 @@ function PortoAlegreExperienceFields({
   activeSection: PortoEditorSection;
   sidebarCards: CityDashboardSidebarCard[];
   setSidebarCards: (cards: CityDashboardSidebarCard[]) => void;
+  isAdministrator: boolean;
 }) {
+  const includeRealEstate = hasAutomaticRealEstateService(
+    city.propertyListingStatuses || [],
+  );
+  const automaticCardsByLanguage = Object.fromEntries(
+    languages.map((language) => [
+      language.id,
+      automaticCityServiceCards({
+        lang: language.id,
+        citySlug,
+        cityName:
+          city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+        includeRealEstate,
+        presentation: city.cityPageExperience?.livingServices,
+      }),
+    ]),
+  ) as Record<Lang, AutomaticCityServiceCard[]>;
+  const isLegacyAutomaticCard = (card: CityDashboardSidebarCard) =>
+    languages.some((language) =>
+      sidebarCardAutomaticServiceOverlap({
+        card,
+        lang: language.id,
+        citySlug,
+        automaticCards: automaticCardsByLanguage[language.id],
+      }),
+    );
+  const legacyAutomaticCards = sidebarCards.filter(isLegacyAutomaticCard);
+
   return (
     <div className="space-y-6">
       <section className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5">
@@ -747,6 +873,8 @@ function PortoAlegreExperienceFields({
             </Field>
           </div>
         ))}
+
+        <CityPageBackgroundField city={city} />
 
         <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
           <p className="text-xs uppercase tracking-widest text-stone-400">
@@ -834,24 +962,38 @@ function PortoAlegreExperienceFields({
             Additional Living &amp; Working cards
           </h4>
           <p className="mb-4 mt-2 text-sm leading-6 text-stone-400">
-            Optional city-specific cards you manage here. Cards that overlap an automatic service are preserved but suppressed on the public page to prevent duplicates.
+            Optional city-specific cards you manage here.
           </p>
           <SidebarCardEditor
             cards={sidebarCards}
             setCards={setSidebarCards}
             activeLanguage={activeLanguage}
-            citySlug={citySlug}
-            automaticServiceCards={automaticCityServiceCards({
-              lang: activeLanguage,
-              citySlug,
-              cityName:
-                city[`name_${activeLanguage}`] || city.name_en || "Porto Alegre",
-              includeRealEstate: hasAutomaticRealEstateService(
-                city.propertyListingStatuses || [],
-              ),
-              presentation: city.cityPageExperience?.livingServices,
-            })}
+            automaticServiceCards={automaticCardsByLanguage[activeLanguage]}
+            isCardHidden={isLegacyAutomaticCard}
+            emptyLabel="No additional cards yet."
           />
+          {isAdministrator && legacyAutomaticCards.length ? (
+            <details className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-stone-300">
+              <summary className="cursor-pointer font-medium text-white">
+                Administrator: legacy stored cards ({legacyAutomaticCards.length})
+              </summary>
+              <p className="mt-3 leading-6 text-stone-400">
+                These read-only records remain stored for deliberate administrative cleanup and are not shown in the city-host editor or on the public page.
+              </p>
+              <ul className="mt-3 space-y-2">
+                {legacyAutomaticCards.map((card, index) => (
+                  <li key={card._key || index} className="rounded-lg bg-black/20 p-3">
+                    <p className="font-medium text-white">
+                      {card.title_en || card.title_pt || card.title_nl || "Untitled legacy card"}
+                    </p>
+                    <p className="mt-1 break-all text-xs text-stone-400">
+                      {card.href_en || card.href_pt || card.href_nl || "No link"}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
         </div>
       </section>
 
@@ -999,18 +1141,23 @@ function SidebarCardEditor({
   cards,
   setCards,
   activeLanguage,
-  citySlug,
   automaticServiceCards,
+  isCardHidden,
+  emptyLabel,
 }: {
   cards: CityDashboardSidebarCard[];
   setCards: (cards: CityDashboardSidebarCard[]) => void;
   activeLanguage?: Lang;
-  citySlug?: string;
   automaticServiceCards?: AutomaticCityServiceCard[];
+  isCardHidden?: (card: CityDashboardSidebarCard) => boolean;
+  emptyLabel?: string;
 }) {
   const editingLanguages = activeLanguage
     ? languages.filter((language) => language.id === activeLanguage)
     : languages;
+  const visibleCards = cards
+    .map((card, index) => ({ card, index }))
+    .filter(({ card }) => !isCardHidden?.(card));
   function updateCard(
     index: number,
     field: keyof CityDashboardSidebarCard,
@@ -1044,18 +1191,8 @@ function SidebarCardEditor({
     <div className="space-y-4">
       <input type="hidden" name="sidebarCardsJson" value={JSON.stringify(cards)} />
 
-      {cards.length ? (
-        cards.map((card, index) => {
-          const overlap =
-            activeLanguage && citySlug && automaticServiceCards
-              ? sidebarCardAutomaticServiceOverlap({
-                  card,
-                  lang: activeLanguage,
-                  citySlug,
-                  automaticCards: automaticServiceCards,
-                })
-              : null;
-
+      {visibleCards.length ? (
+        visibleCards.map(({ card, index }, visibleIndex) => {
           return (
             <div
               key={card._key || index}
@@ -1063,7 +1200,7 @@ function SidebarCardEditor({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="text-sm font-medium uppercase tracking-widest text-white">
-                  {automaticServiceCards ? "Additional card" : "Sidebar card"} {index + 1}
+                  {automaticServiceCards ? "Additional card" : "Sidebar card"} {visibleIndex + 1}
                 </h3>
                 <button
                   type="button"
@@ -1074,14 +1211,7 @@ function SidebarCardEditor({
                 </button>
               </div>
 
-            {overlap ? (
-              <div className="rounded-lg border border-amber-300/30 bg-amber-300/10 p-3 text-sm leading-6 text-amber-50">
-                <p className="font-medium">Preserved, but not shown publicly</p>
-                <p className="mt-1 text-amber-100/80">
-                  This card points to an automatic interpreter service. The public page suppresses it to prevent a duplicate or conflicting card. Its stored content has not been removed.
-                </p>
-              </div>
-            ) : automaticServiceCards ? (
+            {automaticServiceCards ? (
               <p className="text-xs leading-5 text-emerald-200">
                 This optional card can appear publicly alongside the automatic services.
               </p>
@@ -1133,7 +1263,7 @@ function SidebarCardEditor({
         })
       ) : (
         <div className="rounded-xl border border-dashed border-white/15 p-4 text-sm text-stone-400">
-          No sidebar cards yet.
+          {emptyLabel || "No sidebar cards yet."}
         </div>
       )}
 
@@ -1442,6 +1572,7 @@ export default function CityDashboardEditors({
   citySlug,
   city,
   canManageLanguages,
+  isAdministrator,
   saveContentAction,
   saveRecommendationsAction,
 }: EditorProps) {
@@ -1557,6 +1688,7 @@ export default function CityDashboardEditors({
               activeSection={activePortoSection}
               sidebarCards={sidebarCards}
               setSidebarCards={setSidebarCards}
+              isAdministrator={isAdministrator}
             />
           ) : (
             <LanguageFields city={city} />

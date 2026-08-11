@@ -12,6 +12,7 @@ export type CityExperienceSection = {
   title: string;
   intro?: string;
   content?: ReactNode;
+  supportingContent?: ReactNode;
 };
 
 export default function CityExperienceLayout({
@@ -100,19 +101,38 @@ export default function CityExperienceLayout({
           tabIndex={0}
           className="mt-4 rounded-2xl bg-white/97 p-4 shadow-xl shadow-black/10 backdrop-blur-md focus:outline-none md:mt-6 md:rounded-3xl md:p-8"
         >
-          <h2 className="text-2xl font-normal tracking-tight text-stone-950 md:text-4xl">
-            {activeSection.title}
-          </h2>
+          <div
+            className={
+              activeSection.supportingContent
+                ? "grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(19rem,0.9fr)] lg:items-start"
+                : undefined
+            }
+          >
+            <div className="min-w-0">
+              <h2 className="text-2xl font-normal tracking-tight text-stone-950 md:text-4xl">
+                {activeSection.title}
+              </h2>
 
-          {activeSection.intro ? (
-            <p className="mt-3 max-w-3xl leading-7 text-stone-600 md:mt-4">
-              {activeSection.intro}
-            </p>
-          ) : null}
+              {activeSection.intro ? (
+                <p className="mt-3 max-w-3xl leading-7 text-stone-600 md:mt-4">
+                  {activeSection.intro}
+                </p>
+              ) : null}
 
-          {activeSection.content ? (
-            <div className="mt-5 md:mt-6">{activeSection.content}</div>
-          ) : null}
+              {activeSection.content ? (
+                <div className="mt-5 md:mt-6">{activeSection.content}</div>
+              ) : null}
+            </div>
+
+            {activeSection.supportingContent ? (
+              <aside
+                aria-label={`${activeSection.title} supporting services`}
+                className="min-w-0 space-y-5 border-t border-stone-200 pt-6 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0"
+              >
+                {activeSection.supportingContent}
+              </aside>
+            ) : null}
+          </div>
         </section>
       ) : null}
     </div>

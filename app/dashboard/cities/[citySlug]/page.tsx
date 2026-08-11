@@ -214,6 +214,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
         city={city}
         citySlug={citySlug}
         canManageLanguages={context.isAdmin}
+        isAdministrator={context.isAdmin}
         saveContentAction={saveCityContentAction.bind(null, citySlug)}
         saveRecommendationsAction={saveCityRecommendationsAction.bind(null, citySlug)}
       />

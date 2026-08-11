@@ -413,7 +413,7 @@ async function uploadedCityHeroImage(formData: FormData) {
   if (!(entry instanceof File) || entry.size === 0) {
     if (selected) {
       throw new CityDashboardActionError(
-        "The hero image was not received. Please select it again.",
+        "The city page background was not received. Please select it again.",
       );
     }
     return undefined;
@@ -422,14 +422,14 @@ async function uploadedCityHeroImage(formData: FormData) {
   try {
     return await uploadSanityImage(
       entry,
-      stringValue(formData, "heroImageAlt") || "Porto Alegre skyline",
+      "Porto Alegre city page background",
     );
   } catch (error) {
-    console.error("City hero image upload failed", error);
+    console.error("City page background upload failed", error);
     throw new CityDashboardActionError(
       error instanceof Error
-        ? `The hero image could not be uploaded: ${error.message}`
-        : "The hero image could not be uploaded. Please try again.",
+        ? `The city page background could not be uploaded: ${error.message}`
+        : "The city page background could not be uploaded. Please try again.",
     );
   }
 }
@@ -626,14 +626,8 @@ export async function saveCityContentAction(
       const uploadedHeroImage = await uploadedCityHeroImage(formData);
       if (uploadedHeroImage) {
         setValues.heroImage = uploadedHeroImage;
-      } else if (existing.heroImage?.asset?._ref) {
-        setValues.heroImage = {
-          ...existing.heroImage,
-          alt:
-            stringValue(formData, "heroImageAlt") ||
-            existing.heroImage.alt ||
-            "Porto Alegre skyline",
-        };
+      } else if (stringValue(formData, "removeHeroImage") === "on") {
+        setValues.heroImage = undefined;
       }
     }
 

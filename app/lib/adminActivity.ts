@@ -125,7 +125,8 @@ function cityAction(raw: RawActivity) {
     const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
     return `updated the ${language} city introduction`;
   }
-  if (fields.length === 1 && ["heroImage", "mainImage"].includes(fields[0] || "")) return "changed the city hero image";
+  if (fields.length === 1 && fields[0] === "heroImage") return "changed the city page background";
+  if (fields.length === 1 && fields[0] === "mainImage") return "changed the city hero image";
   return "updated city content";
 }
 

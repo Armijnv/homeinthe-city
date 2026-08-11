@@ -82,8 +82,10 @@ test("Porto Alegre uses four in-place tabs without scroll navigation", () => {
 
 test("the prototype uses a compact editable header and existing section content sources", () => {
   assert.match(cityPageSource, /\{headline \? \(/);
-  assert.doesNotMatch(cityPageSource, /city\?\.heroImage\?\.asset\?\.url/);
+  assert.match(cityPageSource, /city\?\.heroImage\?\.asset\?\.url \|\| "\/porto-alegre-desktop-background\.jpg"/);
   assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\}/);
+  assert.match(cityPageSource, /lg:grid-cols-\[minmax\(0,1\.15fr\)_minmax\(28rem,0\.95fr\)\]/);
+  assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\} lang=\{lang\} compact \/>/);
   assert.match(cityPageSource, /src=\{host\.photoUrl\}/);
   assert.match(cityPageSource, /portoAlegreExperienceLocale/);
   assert.doesNotMatch(cityPageSource, /experienceCopy\.positioning/);
@@ -105,7 +107,10 @@ test("the Porto Alegre dashboard mirrors the public tabs and hides legacy contro
   assert.match(editorSource, /name=\{`name_\$\{language\.id\}`\}/);
   assert.match(editorSource, /name=\{`headline_\$\{language\.id\}`\}/);
   assert.match(editorSource, /name=\{`cta_\$\{language\.id\}`\}/);
-  assert.doesNotMatch(editorSource, /name="heroImage"/);
+  assert.match(editorSource, /City page background/);
+  assert.match(editorSource, /name="heroImage"/);
+  assert.match(editorSource, /name="removeHeroImage"/);
+  assert.doesNotMatch(editorSource, /name="heroImageAlt"/);
   assert.doesNotMatch(editorSource, /field="aboutCardTitle"/);
   assert.doesNotMatch(editorSource, /field="favoritesCardTitle"/);
   assert.doesNotMatch(editorSource, /field="meetHostIntroduction"/);
@@ -137,6 +142,8 @@ test("Porto Alegre saves through the existing audited city action only", () => {
   assert.match(actionSource, /existing\.cityPageExperience/);
   assert.match(actionSource, /if \(!formData\.has\(inputName\)\) continue/);
   assert.match(actionSource, /setValues\.heroImage = uploadedHeroImage/);
+  assert.match(actionSource, /stringValue\(formData, "removeHeroImage"\) === "on"/);
+  assert.match(actionSource, /setValues\.heroImage = undefined/);
   assert.match(actionSource, /cityChangeLogDocument\(\{/);
   assert.match(actionSource, /activityFieldChanges\(comparableBefore, comparableAfter\)/);
   assert.match(actionSource, /if \(!changes\.length\)/);
@@ -167,8 +174,13 @@ test("Porto Alegre Living separates automatic services from preserved optional c
   assert.match(cityPageSource, /sidebarCardAutomaticServiceOverlap/);
   assert.match(editorSource, /Automatic city services/);
   assert.match(editorSource, /Additional Living &amp; Working cards/);
-  assert.match(editorSource, /Preserved, but not shown publicly/);
+  assert.match(editorSource, /isCardHidden=\{isLegacyAutomaticCard\}/);
+  assert.match(editorSource, /Administrator: legacy stored cards/);
+  assert.match(editorSource, /No additional cards yet\./);
+  assert.doesNotMatch(editorSource, /Preserved, but not shown publicly/);
   assert.match(editorSource, /presentation fields and optional image are managed here/);
+  assert.match(layoutSource, /supportingContent\?: ReactNode/);
+  assert.match(layoutSource, /lg:grid-cols-\[minmax\(0,1\.7fr\)_minmax\(19rem,0\.9fr\)\]/);
   assert.match(cityDashboardPageSource, /"propertyListingStatuses": \*\[/);
   assert.doesNotMatch(cityDashboardPageSource, /status in \["available", "reserved", "sold", "rented"\]/);
   assert.match(cityServicesSource, /automaticRealEstateListingStatuses = \[[\s\S]*?"available",[\s\S]*?"reserved"/);

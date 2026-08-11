@@ -24,7 +24,7 @@ const fieldLabels: Record<string, string> = {
   description_pt: "Portuguese description",
   description_nl: "Dutch description",
   mainImage: "Main image",
-  heroImage: "Hero image",
+  heroImage: "City page background",
   gallery: "Property photos",
   mapCoordinates: "Map coordinates",
   mapPlaces: "Map places",
