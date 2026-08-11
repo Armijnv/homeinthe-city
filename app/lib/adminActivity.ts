@@ -26,6 +26,8 @@ export type AdminActivity = {
   status?: string;
   actorEmail?: string;
   actorUserId?: string;
+  providerId?: string;
+  providerSlug?: string;
   references?: Record<string, { name: string; type?: string; imageUrl?: string }>;
 };
 
@@ -48,13 +50,16 @@ type RawActivity = {
   ownerEmail?: string;
   profileSnapshot?: Record<string, unknown>;
   providerCurrent?: Record<string, unknown>;
+  providerId?: string;
+  providerSlug?: string;
 };
 
 const activityQueries: Record<ActivityKind, string> = {
   provider: `*[_type == "providerChangeLog"] | order(changedAt desc){
     _id, "occurredAt": changedAt, actorName, actorEmail, actorUserId, actorRole, changeType,
     description, "subjectName": coalesce(providerName, provider->name),
-    "subjectRole": provider->primaryRole, changes, changedFields
+    "subjectRole": provider->primaryRole, "providerId": provider._ref,
+    "providerSlug": coalesce(providerSlug, provider->slug.current), changes, changedFields
   }`,
   city: `*[_type == "cityChangeLog"] | order(changedAt desc){
     _id, "occurredAt": changedAt, actorName, actorEmail, actorUserId, actorRole, changeType,
@@ -196,6 +201,8 @@ function toActivity(kind: ActivityKind, raw: RawActivity): AdminActivity {
     status: raw.status,
     actorEmail: raw.actorEmail,
     actorUserId: raw.actorUserId,
+    providerId: raw.providerId,
+    providerSlug: raw.providerSlug,
   };
 }
 

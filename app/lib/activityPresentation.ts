@@ -39,7 +39,8 @@ const fieldLabels: Record<string, string> = {
 
 const languageNames: Record<string, string> = { en: "English", pt: "Portuguese", nl: "Dutch", es: "Spanish", de: "German", fr: "French" };
 
-export function activityFieldLabel(field?: string) {
+export function activityFieldLabel(field?: string, kind?: string) {
+  if (kind === "provider") return providerChangeFieldLabel(field);
   return fieldLabels[field || ""] || providerChangeFieldLabel(field);
 }
 

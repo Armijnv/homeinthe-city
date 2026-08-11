@@ -275,6 +275,7 @@ function revalidateProviderPublishing(slug?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/account/profile/edit");
   revalidatePath("/dashboard/admin/providers");
+  revalidatePath("/dashboard/admin/providers/[providerId]", "page");
   revalidatePath("/dashboard/admin/provider-changes");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/admin/activity");

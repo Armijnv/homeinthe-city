@@ -9,6 +9,10 @@ import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 import { publishedId } from "@/sanity/lib/providerSubmissionApproval";
 import { activityFieldChanges } from "@/app/lib/activityChanges";
 import { providerSelfEditableFields } from "@/app/lib/clerkIdentityPolicy";
+import {
+  SanityImageUploadError,
+  uploadSanityImage,
+} from "@/app/lib/sanityImageUpload";
 
 type ManagedCityReference = {
   _key?: string;
@@ -27,12 +31,38 @@ type ProviderForAction = {
   roles?: string[];
   primaryRole?: string;
   languages?: Array<Record<string, unknown>>;
+  headline_en?: string;
+  headline_pt?: string;
+  headline_nl?: string;
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
+  about_en?: string;
+  about_pt?: string;
+  about_nl?: string;
+  servicesTitle_en?: string;
+  servicesTitle_pt?: string;
+  servicesTitle_nl?: string;
+  services?: Array<Record<string, unknown>>;
+  mainPhoto?: {
+    _type?: "image";
+    alt?: string;
+    asset?: { _type?: "reference"; _ref?: string };
+    crop?: Record<string, number>;
+    hotspot?: Record<string, number>;
+  };
   ownership?: {
     contactEmail?: string;
     selfEditEnabled?: boolean;
     selfEditableFields?: string[];
   };
-  contactOptions?: { email?: string; whatsapp?: string; preferredContact?: string };
+  contactOptions?: {
+    email?: string;
+    phone?: string;
+    whatsapp?: string;
+    website?: string;
+    preferredContact?: string;
+  };
 };
 
 type CityForAction = {
@@ -74,6 +104,8 @@ const allowedVerificationStatuses = new Set([
   "rejected",
 ]);
 const allowedSelfEditableFields = new Set<string>(providerSelfEditableFields);
+const allowedPreferredContacts = new Set(["email", "phone", "whatsapp", "website"]);
+const editorialLanguages = ["en", "pt", "nl"] as const;
 
 function formString(formData: FormData, key: string) {
   return String(formData.get(key) || "").trim();
@@ -114,6 +146,17 @@ function cleanEmail(value: string) {
   return email;
 }
 
+function cleanUrl(value: string, label: string) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if (!new Set(["http:", "https:"]).has(url.protocol)) throw new Error();
+    return url.toString();
+  } catch {
+    throw new ProviderAdminError(`Enter a valid ${label} URL.`);
+  }
+}
+
 function cleanWhatsApp(value: string) {
   if (!value) return "";
 
@@ -130,6 +173,113 @@ function cleanWhatsApp(value: string) {
     throw new ProviderAdminError("Enter a valid WhatsApp URL or phone number.");
   }
   return `https://wa.me/${digits}`;
+}
+
+function providerServices(formData: FormData) {
+  const source = formString(formData, "servicesJson");
+  if (!source) return [];
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(source);
+  } catch {
+    throw new ProviderAdminError("Provider service cards could not be read.");
+  }
+  if (!Array.isArray(parsed) || parsed.length > 20) {
+    throw new ProviderAdminError("Provider service cards are invalid.");
+  }
+
+  return parsed.flatMap((entry, index) => {
+    if (!entry || typeof entry !== "object") return [];
+    const raw = entry as Record<string, unknown>;
+    const roleValues = Array.isArray(raw.roles)
+      ? Array.from(
+          new Set(
+            raw.roles.filter(
+              (role): role is string =>
+                typeof role === "string" && allowedRoles.has(role),
+            ),
+          ),
+        )
+      : [];
+    const localized = Object.fromEntries(
+      editorialLanguages.flatMap((language) =>
+        (["title", "description"] as const).map((field) => {
+          const value = raw[`${field}_${language}`];
+          return [
+            `${field}_${language}`,
+            typeof value === "string" ? value.trim() : "",
+          ];
+        }),
+      ),
+    );
+    const hasContent = Object.values(localized).some(Boolean);
+    if (!hasContent && !roleValues.length) return [];
+    if (!roleValues.length) {
+      throw new ProviderAdminError(
+        `Choose at least one applicable role for service card ${index + 1}.`,
+      );
+    }
+    const requestedKey = typeof raw._key === "string" ? raw._key : "";
+    const key =
+      requestedKey.replace(/[^A-Za-z0-9_-]+/g, "-") ||
+      `service-${Date.now()}-${index}`;
+
+    return [
+      {
+        _key: key,
+        _type: "object",
+        roles: roleValues,
+        ...localized,
+      },
+    ];
+  });
+}
+
+function localizedProviderCopy(formData: FormData) {
+  return Object.fromEntries(
+    editorialLanguages.flatMap((language) =>
+      (["headline", "intro", "about", "servicesTitle"] as const).map(
+        (field) => [`${field}_${language}`, formString(formData, `${field}_${language}`)],
+      ),
+    ),
+  );
+}
+
+async function adminMainPhoto(
+  provider: ProviderForAction | null,
+  providerName: string,
+  formData: FormData,
+) {
+  const entry = formData.get("mainPhotoFile");
+  const alt = formString(formData, "mainPhotoAlt");
+  const remove = formString(formData, "removeMainPhoto") === "true";
+
+  if (entry instanceof File && entry.size > 0) {
+    return {
+      value: await uploadSanityImage(
+        entry,
+        alt || `${providerName} profile photo`,
+      ),
+      remove: false,
+    };
+  }
+  if (remove) return { value: undefined, remove: true };
+  if (!provider?.mainPhoto?.asset?._ref) return { value: undefined, remove: false };
+
+  return {
+    value: {
+      _type: "image" as const,
+      ...(alt ? { alt } : {}),
+      asset: {
+        _type: "reference" as const,
+        _ref: provider.mainPhoto.asset._ref,
+      },
+      ...(provider.mainPhoto.crop ? { crop: provider.mainPhoto.crop } : {}),
+      ...(provider.mainPhoto.hotspot ? { hotspot: provider.mainPhoto.hotspot } : {}),
+    },
+    remove: false,
+  };
 }
 
 function referenceKey(prefix: string, documentId: string, index: number) {
@@ -216,7 +366,11 @@ async function providerInput(formData: FormData, providerId?: string) {
     allowedRoles.has(role),
   );
   const contactEmail = cleanEmail(formString(formData, "contactEmail"));
+  const publicEmail = cleanEmail(formString(formData, "publicEmail"));
   const whatsapp = cleanWhatsApp(formString(formData, "whatsapp"));
+  const phone = formString(formData, "phone");
+  const website = cleanUrl(formString(formData, "website"), "website");
+  const preferredContact = formString(formData, "preferredContact");
   const selfEditEnabled = formString(formData, "selfEditEnabled") === "true";
   const selfEditableFields = selectedStrings(formData, "selfEditableFields");
 
@@ -235,6 +389,20 @@ async function providerInput(formData: FormData, providerId?: string) {
   if (!roles.length) throw new ProviderAdminError("Choose at least one role.");
   if (selfEditableFields.some((field) => !allowedSelfEditableFields.has(field))) {
     throw new ProviderAdminError("Choose only supported self-editable profile sections.");
+  }
+  if (preferredContact && !allowedPreferredContacts.has(preferredContact)) {
+    throw new ProviderAdminError("Choose a valid preferred contact method.");
+  }
+  const availableContactValues: Record<string, string> = {
+    email: publicEmail,
+    phone,
+    whatsapp,
+    website,
+  };
+  if (preferredContact && !availableContactValues[preferredContact]) {
+    throw new ProviderAdminError(
+      "Add the selected preferred contact method before saving.",
+    );
   }
   if (providerId && selfEditEnabled && !selfEditableFields.length) {
     throw new ProviderAdminError("Choose at least one self-editable profile section before enabling self-editing.");
@@ -272,12 +440,18 @@ async function providerInput(formData: FormData, providerId?: string) {
     primaryRole,
     roles,
     contactEmail,
+    publicEmail,
     whatsapp,
+    phone,
+    website,
+    preferredContact,
     selfEditEnabled,
     selfEditableFields,
     languages: providerLanguages(formData),
     cities: references(cityIds.cities, "served"),
     managedCities: references(cityIds.managedCities, "managed"),
+    localizedCopy: localizedProviderCopy(formData),
+    services: providerServices(formData),
   };
 }
 
@@ -293,10 +467,24 @@ async function providerForAction(providerId: string) {
       roles,
       primaryRole,
       languages,
+      headline_en,
+      headline_pt,
+      headline_nl,
+      intro_en,
+      intro_pt,
+      intro_nl,
+      about_en,
+      about_pt,
+      about_nl,
+      servicesTitle_en,
+      servicesTitle_pt,
+      servicesTitle_nl,
+      services,
       cities[]{_key, _ref},
       managedCities[]{_key, _ref},
       ownership{contactEmail, selfEditEnabled, selfEditableFields},
-      contactOptions{email, whatsapp, preferredContact}
+      contactOptions{email, phone, whatsapp, website, preferredContact},
+      mainPhoto{_type, alt, asset, crop, hotspot}
     }`,
     { providerId },
   );
@@ -311,6 +499,7 @@ async function cityForAction(cityId: string) {
 
 function providerErrorMessage(error: unknown) {
   if (error instanceof ProviderAdminError) return error.message;
+  if (error instanceof SanityImageUploadError) return error.message;
   if (error instanceof Error && error.message.includes("SANITY_API_WRITE_TOKEN")) {
     return "Provider saving is not configured. Check the Sanity write token.";
   }
@@ -323,6 +512,7 @@ function revalidateProviderManagement(...slugs: Array<string | undefined>) {
   revalidatePath("/dashboard/admin/provider-changes");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/admin/activity");
+  revalidatePath("/dashboard/admin/providers/[providerId]", "page");
   revalidatePath("/providers");
   revalidatePath("/pt/profissionais");
   revalidatePath("/nl/professionals");
@@ -348,6 +538,7 @@ export async function createProviderAction(formData: FormData) {
       { providerId },
     );
     if (existingId) throw new ProviderAdminError("That provider already exists.");
+    const mainPhoto = await adminMainPhoto(null, input.name, formData);
 
     const providerDocument = {
       _id: providerId,
@@ -360,6 +551,8 @@ export async function createProviderAction(formData: FormData) {
       languages: input.languages,
       cities: input.cities,
       managedCities: input.managedCities,
+      ...input.localizedCopy,
+      services: input.services,
       ownership: {
         _type: "object",
         ...(input.contactEmail ? { contactEmail: input.contactEmail } : {}),
@@ -368,14 +561,15 @@ export async function createProviderAction(formData: FormData) {
       },
       contactOptions: {
         _type: "object",
-        ...(input.contactEmail ? { email: input.contactEmail } : {}),
+        ...(input.publicEmail ? { email: input.publicEmail } : {}),
+        ...(input.phone ? { phone: input.phone } : {}),
         ...(input.whatsapp ? { whatsapp: input.whatsapp } : {}),
-        ...(input.whatsapp
-          ? { preferredContact: "whatsapp" }
-          : input.contactEmail
-            ? { preferredContact: "email" }
-            : {}),
+        ...(input.website ? { website: input.website } : {}),
+        ...(input.preferredContact
+          ? { preferredContact: input.preferredContact }
+          : {}),
       },
+      ...(mainPhoto.value ? { mainPhoto: mainPhoto.value } : {}),
       verificationStatus: input.verificationStatus,
     };
     const changeLog = providerChangeLogDocument({
@@ -411,6 +605,7 @@ export async function updateProviderAction(formData: FormData) {
     const existing = await providerForAction(providerId);
     if (!existing) throw new ProviderAdminError("Provider not found.");
     const input = await providerInput(formData, providerId);
+    const mainPhoto = await adminMainPhoto(existing, input.name, formData);
     nextSlug = input.slug;
     previousSlug = existing.slug?.current || "";
     const setValues: Record<string, unknown> = {
@@ -423,37 +618,42 @@ export async function updateProviderAction(formData: FormData) {
       languages: input.languages,
       cities: input.cities,
       managedCities: input.managedCities,
+      ...input.localizedCopy,
+      services: input.services,
       ...(input.contactEmail
         ? {
             "ownership.contactEmail": input.contactEmail,
-            "contactOptions.email": input.contactEmail,
           }
         : {}),
+      ...(input.publicEmail ? { "contactOptions.email": input.publicEmail } : {}),
+      ...(input.phone ? { "contactOptions.phone": input.phone } : {}),
       "ownership.selfEditEnabled": input.selfEditEnabled,
       "ownership.selfEditableFields": input.selfEditableFields,
       ...(input.whatsapp ? { "contactOptions.whatsapp": input.whatsapp } : {}),
-      ...(input.whatsapp
-        ? { "contactOptions.preferredContact": "whatsapp" }
-        : input.contactEmail
-          ? { "contactOptions.preferredContact": "email" }
-          : {}),
+      ...(input.website ? { "contactOptions.website": input.website } : {}),
+      ...(input.preferredContact
+        ? { "contactOptions.preferredContact": input.preferredContact }
+        : {}),
+      ...(mainPhoto.value ? { mainPhoto: mainPhoto.value } : {}),
     };
     const unsetPaths = [
-      ...(!input.contactEmail
-        ? ["ownership.contactEmail", "contactOptions.email"]
-        : []),
+      ...(!input.contactEmail ? ["ownership.contactEmail"] : []),
+      ...(!input.publicEmail ? ["contactOptions.email"] : []),
+      ...(!input.phone ? ["contactOptions.phone"] : []),
       ...(!input.whatsapp ? ["contactOptions.whatsapp"] : []),
-      ...(!input.contactEmail && !input.whatsapp
-        ? ["contactOptions.preferredContact"]
-        : []),
+      ...(!input.website ? ["contactOptions.website"] : []),
+      ...(!input.preferredContact ? ["contactOptions.preferredContact"] : []),
+      ...(mainPhoto.remove ? ["mainPhoto"] : []),
     ];
     const afterContactEmail = input.contactEmail || undefined;
+    const afterPublicEmail = input.publicEmail || undefined;
+    const afterPhone = input.phone || undefined;
     const afterWhatsapp = input.whatsapp || undefined;
-    const afterPreferredContact = input.whatsapp
-      ? "whatsapp"
-      : input.contactEmail
-        ? "email"
-        : undefined;
+    const afterWebsite = input.website || undefined;
+    const afterPreferredContact = input.preferredContact || undefined;
+    const afterMainPhoto = mainPhoto.remove
+      ? undefined
+      : mainPhoto.value || existing.mainPhoto;
     const changes = activityFieldChanges(
       {
         name: existing.name,
@@ -465,11 +665,27 @@ export async function updateProviderAction(formData: FormData) {
         languages: existing.languages || [],
         cities: existing.cities || [],
         managedCities: existing.managedCities || [],
+        headline_en: existing.headline_en,
+        headline_pt: existing.headline_pt,
+        headline_nl: existing.headline_nl,
+        intro_en: existing.intro_en,
+        intro_pt: existing.intro_pt,
+        intro_nl: existing.intro_nl,
+        about_en: existing.about_en,
+        about_pt: existing.about_pt,
+        about_nl: existing.about_nl,
+        servicesTitle_en: existing.servicesTitle_en,
+        servicesTitle_pt: existing.servicesTitle_pt,
+        servicesTitle_nl: existing.servicesTitle_nl,
+        services: existing.services || [],
+        mainPhoto: existing.mainPhoto,
         "ownership.contactEmail": existing.ownership?.contactEmail,
         "ownership.selfEditEnabled": existing.ownership?.selfEditEnabled === true,
         "ownership.selfEditableFields": existing.ownership?.selfEditableFields || [],
         "contactOptions.email": existing.contactOptions?.email,
+        "contactOptions.phone": existing.contactOptions?.phone,
         "contactOptions.whatsapp": existing.contactOptions?.whatsapp,
+        "contactOptions.website": existing.contactOptions?.website,
         "contactOptions.preferredContact": existing.contactOptions?.preferredContact,
       },
       {
@@ -482,11 +698,16 @@ export async function updateProviderAction(formData: FormData) {
         languages: input.languages,
         cities: input.cities,
         managedCities: input.managedCities,
+        ...input.localizedCopy,
+        services: input.services,
+        mainPhoto: afterMainPhoto,
         "ownership.contactEmail": afterContactEmail,
         "ownership.selfEditEnabled": input.selfEditEnabled,
         "ownership.selfEditableFields": input.selfEditableFields,
-        "contactOptions.email": afterContactEmail,
+        "contactOptions.email": afterPublicEmail,
+        "contactOptions.phone": afterPhone,
         "contactOptions.whatsapp": afterWhatsapp,
+        "contactOptions.website": afterWebsite,
         "contactOptions.preferredContact": afterPreferredContact,
       },
       ["_type", "_key"],

@@ -5,6 +5,12 @@ const directLabels: Record<string, string> = {
   languages: "Languages",
   mainPhoto: "Profile photo",
   contactOptions: "Contact options",
+  "contactOptions.email": "Public email",
+  "contactOptions.phone": "Public phone",
+  "contactOptions.whatsapp": "WhatsApp",
+  "contactOptions.website": "Website",
+  "contactOptions.preferredContact": "Preferred contact method",
+  services: "Public service cards",
   roles: "Roles",
   primaryRole: "Primary role",
   status: "Publication status",
@@ -29,12 +35,13 @@ const localizedFields: Record<string, string> = {
   headline: "headline",
   intro: "intro",
   about: "bio",
+  servicesTitle: "service-card heading",
 };
 
 export function providerChangeFieldLabel(field?: string) {
   if (!field) return "Changed field";
   if (directLabels[field]) return directLabels[field];
-  const localized = field.match(/^(headline|intro|about)_([a-z]{2})$/);
+  const localized = field.match(/^(headline|intro|about|servicesTitle)_([a-z]{2})$/);
   if (localized) {
     return `${languages[localized[2]] || localized[2].toUpperCase()} ${localizedFields[localized[1]]}`;
   }
@@ -83,4 +90,3 @@ export function providerChangeValue(
 ) {
   return humanObject(parsedValue(value), cityNames);
 }
-

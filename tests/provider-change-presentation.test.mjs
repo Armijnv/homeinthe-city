@@ -13,6 +13,14 @@ test("Provider change fields use human-readable labels", () => {
     presentation.providerChangeFieldLabel("ownership.ownerUserId"),
     "Account connected",
   );
+  assert.equal(
+    presentation.providerChangeFieldLabel("servicesTitle_nl"),
+    "Dutch service-card heading",
+  );
+  assert.equal(
+    presentation.providerChangeFieldLabel("contactOptions.whatsapp"),
+    "WhatsApp",
+  );
 });
 
 test("Provider city and language changes avoid raw references", () => {
@@ -30,4 +38,3 @@ test("Provider city and language changes avoid raw references", () => {
     "Portuguese (fluent)",
   );
 });
-
