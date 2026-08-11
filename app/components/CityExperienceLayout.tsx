@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 export type CityExperienceNavigationItem = {
   id: string;
@@ -17,86 +17,106 @@ export type CityExperienceSection = {
 
 export default function CityExperienceLayout({
   hero,
-  sideRail,
-  navigationTitle,
   navigationItems,
   sections,
 }: {
   hero: ReactNode;
-  sideRail?: ReactNode;
-  navigationTitle: string;
   navigationItems: CityExperienceNavigationItem[];
   sections: CityExperienceSection[];
 }) {
+  const [activeTab, setActiveTab] = useState(navigationItems[0]?.id || "");
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const availableItems = navigationItems.filter((item) =>
+    sections.some((section) => section.id === item.id),
+  );
+  const activeSection =
+    sections.find((section) => section.id === activeTab) || sections[0];
+
+  function handleTabKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentIndex: number,
+  ) {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    const lastIndex = availableItems.length - 1;
+    const nextIndex =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? lastIndex
+          : event.key === "ArrowRight"
+            ? (currentIndex + 1) % availableItems.length
+            : (currentIndex - 1 + availableItems.length) % availableItems.length;
+
+    setActiveTab(availableItems[nextIndex].id);
+    tabRefs.current[nextIndex]?.focus();
+  }
+
   return (
     <div className="relative mx-auto max-w-6xl">
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
-        <div className="space-y-4 md:col-span-2 md:space-y-8">{hero}</div>
+      {hero}
 
-        {sideRail ? (
-          <aside className="space-y-6 md:pt-16 lg:pt-0">{sideRail}</aside>
-        ) : null}
+      <div
+        role="tablist"
+        aria-label="City guide sections"
+        className="mt-4 grid grid-cols-2 gap-2 rounded-2xl bg-white/95 p-2 shadow-lg shadow-black/10 backdrop-blur-md md:mt-6 md:grid-cols-4 md:gap-3 md:rounded-3xl md:p-3"
+      >
+        {availableItems.map((item, index) => {
+          const isActive = item.id === activeSection?.id;
+
+          return (
+            <button
+              key={item.id}
+              ref={(element) => {
+                tabRefs.current[index] = element;
+              }}
+              id={`${item.id}-tab`}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`${item.id}-panel`}
+              tabIndex={isActive ? 0 : -1}
+              title={item.description}
+              onClick={() => setActiveTab(item.id)}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+              className={`min-h-12 rounded-xl px-2.5 py-2 text-sm font-medium leading-tight transition focus:outline-none focus:ring-2 focus:ring-[#b99455] focus:ring-offset-2 md:min-h-14 md:rounded-2xl md:px-4 md:text-base ${
+                isActive
+                  ? "bg-[#1a1f2e] text-white shadow-sm"
+                  : "bg-stone-50 text-stone-700 hover:bg-stone-100"
+              }`}
+            >
+              {item.title}
+            </button>
+          );
+        })}
       </div>
 
-      {navigationItems.length ? (
+      {activeSection ? (
         <section
-          aria-labelledby="city-experience-navigation-title"
-          className="mt-8 rounded-3xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md md:p-8"
+          id={`${activeSection.id}-panel`}
+          role="tabpanel"
+          aria-labelledby={`${activeSection.id}-tab`}
+          tabIndex={0}
+          className="mt-4 rounded-2xl bg-white/97 p-4 shadow-xl shadow-black/10 backdrop-blur-md focus:outline-none md:mt-6 md:rounded-3xl md:p-8"
         >
-          <h2
-            id="city-experience-navigation-title"
-            className="text-2xl font-normal tracking-tight text-stone-950 md:text-3xl"
-          >
-            {navigationTitle}
+          <h2 className="text-2xl font-normal tracking-tight text-stone-950 md:text-4xl">
+            {activeSection.title}
           </h2>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {navigationItems.map((item) => (
-              <article
-                key={item.id}
-                className="flex min-h-32 flex-col justify-between rounded-2xl border border-stone-200 bg-stone-50 p-5 text-left"
-              >
-                <h3 className="text-lg font-medium text-stone-950">
-                  {item.title}
-                </h3>
-                {item.description ? (
-                  <p className="mt-3 text-sm leading-6 text-stone-600">
-                    {item.description}
-                  </p>
-                ) : null}
-              </article>
-            ))}
-          </div>
+          {activeSection.intro ? (
+            <p className="mt-3 max-w-3xl leading-7 text-stone-600 md:mt-4">
+              {activeSection.intro}
+            </p>
+          ) : null}
+
+          {activeSection.content ? (
+            <div className="mt-5 md:mt-6">{activeSection.content}</div>
+          ) : null}
         </section>
       ) : null}
-
-      <div className="mt-8 space-y-8">
-        {sections.map((section) => (
-          <section
-            key={section.id}
-            id={section.id}
-            aria-labelledby={`${section.id}-title`}
-            className="rounded-3xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md md:p-8"
-          >
-            <h2
-              id={`${section.id}-title`}
-              className="text-3xl font-normal tracking-tight text-stone-950 md:text-4xl"
-            >
-              {section.title}
-            </h2>
-
-            {section.intro ? (
-              <p className="mt-4 max-w-3xl leading-7 text-stone-600">
-                {section.intro}
-              </p>
-            ) : null}
-
-            {section.content ? (
-              <div className="mt-6">{section.content}</div>
-            ) : null}
-          </section>
-        ))}
-      </div>
     </div>
   );
 }

@@ -94,6 +94,7 @@ export default function CityMap({
   lang,
   cityName = "City",
   cityCenter,
+  edgeToEdgeMobile = false,
 }: {
   entries: CityMapEntry[];
   lang: Lang;
@@ -102,6 +103,7 @@ export default function CityMap({
     latitude?: number;
     longitude?: number;
   };
+  edgeToEdgeMobile?: boolean;
 }) {
   const categories = useMemo(() => {
     const grouped = new Map<string, { id: string; label: string; entries: CityMapEntry[] }>();
@@ -185,13 +187,21 @@ export default function CityMap({
   if (!categories.length) return null;
 
   return (
-    <div className="relative z-0 rounded-3xl bg-white p-5 md:p-6">
-      <div className="mb-5">
+    <div
+      className={`relative z-0 bg-white md:mx-0 md:rounded-3xl md:p-6 ${
+        edgeToEdgeMobile ? "-mx-4 p-0" : "rounded-3xl p-5"
+      }`}
+    >
+      <div className={`mb-5 ${edgeToEdgeMobile ? "px-3 pt-3 md:p-0" : ""}`}>
         <h2 className="text-2xl text-stone-800">{cityName} map</h2>
         <p className="text-sm text-stone-500">{mapText[lang]}</p>
       </div>
 
-      <div className="mb-5 flex flex-col gap-3 md:flex-row md:flex-wrap">
+      <div
+        className={`mb-5 flex flex-col gap-3 md:flex-row md:flex-wrap ${
+          edgeToEdgeMobile ? "px-3 md:px-0" : ""
+        }`}
+      >
         <select
           value={activeGroup?.id || ""}
           onChange={(event) => {
@@ -225,7 +235,11 @@ export default function CityMap({
         ))}
       </div>
 
-      <div className="mb-5 grid gap-4 md:grid-cols-2">
+      <div
+        className={`mb-5 grid gap-3 md:grid-cols-2 md:gap-4 ${
+          edgeToEdgeMobile ? "px-3 md:px-0" : ""
+        }`}
+      >
         {visibleEntries.map((entry) => (
           <button
             key={entry.id}
@@ -261,7 +275,12 @@ export default function CityMap({
         ))}
       </div>
 
-      <div ref={mapSectionRef} className="relative z-0 scroll-mt-28 overflow-hidden rounded-2xl">
+      <div
+        ref={mapSectionRef}
+        className={`relative z-0 scroll-mt-28 overflow-hidden ${
+          edgeToEdgeMobile ? "rounded-none md:rounded-2xl" : "rounded-2xl"
+        }`}
+      >
         <MapContainer
           center={[centerLatitude, centerLongitude]}
           zoom={13}
@@ -300,7 +319,11 @@ export default function CityMap({
       </div>
 
       {selectedEntry && (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm">
+        <div
+          className={`mt-4 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 shadow-sm ${
+            edgeToEdgeMobile ? "mx-3 md:mx-0" : ""
+          }`}
+        >
           <div className="grid gap-0 md:grid-cols-[1fr_240px] lg:grid-cols-[1fr_280px]">
             <div className="p-4 md:p-6">
               <div className="mb-3">

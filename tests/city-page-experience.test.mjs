@@ -46,27 +46,33 @@ test("the new city experience is gated to Porto Alegre", () => {
   assert.ok(legacyReturn > experienceLayout);
 });
 
-test("Porto Alegre keeps four discovery cards without unapproved navigation behavior", () => {
-  const ids = ["about-city", "living-working", "explore-city", "host-favorites"];
+test("Porto Alegre uses four in-place tabs without scroll navigation", () => {
+  const ids = ["about-city", "living-working", "explore-city", "from-host"];
 
   for (const id of ids) {
     assert.match(cityPageSource, new RegExp(`id: "${id}"`));
   }
 
-  assert.match(layoutSource, /navigationItems\.map[\s\S]*?<article/);
-  assert.doesNotMatch(layoutSource, /href=\{`#\$\{item\.id\}`\}/);
+  assert.match(layoutSource, /role="tablist"/);
+  assert.match(layoutSource, /role="tab"/);
+  assert.match(layoutSource, /role="tabpanel"/);
+  assert.match(layoutSource, /useState\(navigationItems\[0\]/);
+  assert.match(layoutSource, /sections\.find\(\(section\) => section\.id === activeTab\)/);
   assert.doesNotMatch(layoutSource, /scrollIntoView/);
 });
 
-test("the prototype uses editable hero and section copy with existing content sources", () => {
+test("the prototype uses a compact editable header and existing section content sources", () => {
   assert.match(cityPageSource, /\{headline \? \(/);
-  assert.match(cityPageSource, /city\?\.heroImage\?\.asset\?\.url/);
+  assert.doesNotMatch(cityPageSource, /city\?\.heroImage\?\.asset\?\.url/);
+  assert.match(cityPageSource, /<CityLiveInfoWidget info=\{initialLiveInfo\}/);
+  assert.match(cityPageSource, /src=\{displayHost\.photoUrl\}/);
   assert.match(cityPageSource, /portoAlegreExperienceLocale/);
   assert.doesNotMatch(cityPageSource, /experienceCopy\.positioning/);
   assert.match(cityPageSource, /id: "explore-city",[\s\S]*?<CityMap/);
-  assert.match(cityPageSource, /id: "meet-host"/);
+  assert.match(cityPageSource, /id: "from-host"/);
   assert.match(cityPageSource, /recommendations=\{recommendationGuides\}/);
   assert.match(cityPageSource, /groups=\{recommendationGroups\}/);
+  assert.doesNotMatch(cityPageSource, /id: "host-favorites"/);
 });
 
 test("the Porto Alegre dashboard edits every prototype copy group", () => {
