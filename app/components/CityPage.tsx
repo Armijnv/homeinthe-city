@@ -1029,22 +1029,18 @@ export default function CityPage({
       {
         id: "about-city",
         title: tabLabels.about,
-        description: experienceCopy.aboutCardDescription,
       },
       {
         id: "living-working",
         title: tabLabels.living,
-        description: experienceCopy.livingCardDescription,
       },
       {
         id: "explore-city",
         title: tabLabels.explore,
-        description: experienceCopy.exploreCardDescription,
       },
       {
         id: "from-host",
         title: tabLabels.host,
-        description: experienceCopy.meetHostIntroduction,
       },
     ];
     const favoritePlaces = places.filter((place) => place.favorite);
@@ -1222,7 +1218,7 @@ export default function CityPage({
       {
         id: "from-host",
         title: tabLabels.host,
-        intro: experienceCopy.meetHostIntroduction,
+        intro: experienceCopy.fromHostIntroduction,
         content: displayHost ? (
           <div className="rounded-2xl border border-stone-200 bg-stone-50 p-5">
             <div>

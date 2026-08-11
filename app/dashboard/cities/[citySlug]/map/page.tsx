@@ -53,6 +53,7 @@ const cityMapManagementQuery = `
       description_pt,
       description_nl,
       website,
+      favorite,
       image{
         alt,
         asset->{url}
@@ -129,6 +130,7 @@ export default async function CityMapDashboardPage({ params, searchParams }: Pag
         returnPath={`/dashboard/cities/${citySlug}/map`}
         successMessage={savedMessage(savedStatus)}
         warningMessage={imageWarningMessage(imageStatus)}
+        showHostRecommendation={citySlug === "porto-alegre"}
       />
     </DashboardShell>
   );

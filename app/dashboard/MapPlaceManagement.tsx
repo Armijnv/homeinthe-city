@@ -32,6 +32,7 @@ type MapPlaceManagementProps = {
   returnPath: string;
   successMessage?: string;
   warningMessage?: string;
+  showHostRecommendation?: boolean;
 };
 
 function hasCoordinatePair(latitude?: number | null, longitude?: number | null) {
@@ -75,6 +76,7 @@ export default function MapPlaceManagement({
   returnPath,
   successMessage,
   warningMessage,
+  showHostRecommendation = false,
 }: MapPlaceManagementProps) {
   return (
     <div className="space-y-10">
@@ -92,7 +94,11 @@ export default function MapPlaceManagement({
 
       <section>
         <h2 className="mb-5 text-2xl font-light text-white">Add Map Place</h2>
-        <MapPlaceForm action={addAction} returnPath={returnPath} />
+        <MapPlaceForm
+          action={addAction}
+          returnPath={returnPath}
+          showHostRecommendation={showHostRecommendation}
+        />
       </section>
 
       <section>
@@ -151,6 +157,7 @@ export default function MapPlaceManagement({
                               place={place}
                               returnPath={returnPath}
                               submitLabel="Save Map Place"
+                              showHostRecommendation={showHostRecommendation}
                             />
                           </div>
                         </details>

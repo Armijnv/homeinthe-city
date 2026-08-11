@@ -46,6 +46,7 @@ export type EditableMapPlace = {
       url?: string;
     };
   };
+  favorite?: boolean;
 };
 
 type MapPlaceFormProps = {
@@ -56,6 +57,7 @@ type MapPlaceFormProps = {
   place?: EditableMapPlace;
   returnPath: string;
   submitLabel?: string;
+  showHostRecommendation?: boolean;
 };
 
 function Field({
@@ -118,6 +120,7 @@ export default function MapPlaceForm({
   place,
   returnPath,
   submitLabel = "Add Map Place",
+  showHostRecommendation = false,
 }: MapPlaceFormProps) {
   const [state, formAction] = useActionState(action, initialMapPlaceActionState);
 
@@ -127,6 +130,7 @@ export default function MapPlaceForm({
       place={place}
       returnPath={returnPath}
       submitLabel={submitLabel}
+      showHostRecommendation={showHostRecommendation}
       state={state}
       formAction={formAction}
     />
@@ -137,6 +141,7 @@ function MapPlaceFormFields({
   place,
   returnPath,
   submitLabel = "Add Map Place",
+  showHostRecommendation = false,
   state,
   formAction,
 }: Omit<MapPlaceFormProps, "action"> & {
@@ -236,6 +241,25 @@ function MapPlaceFormFields({
       ) : null}
 
       <FormSection title="Basic details">
+        {showHostRecommendation ? (
+          <>
+            <input type="hidden" name="favoriteControl" value="1" />
+            <label className="flex items-start gap-3 rounded-xl border border-[#d6a85a]/35 bg-[#d6a85a]/10 p-4 text-sm text-stone-200">
+              <input
+                type="checkbox"
+                name="favorite"
+                defaultChecked={fieldValue("favorite", place?.favorite ? "on" : "") === "on"}
+                className="mt-0.5 size-4 shrink-0 accent-[#d6a85a]"
+              />
+              <span>
+                <strong className="block font-medium text-white">Host recommendation</strong>
+                <span className="mt-1 block leading-6 text-stone-300">
+                  Highlight this place as a personal pick inside Explore the City.
+                </span>
+              </span>
+            </label>
+          </>
+        ) : null}
         <div className="grid gap-4 md:grid-cols-3">
           <Field label="English / default name">
             <input

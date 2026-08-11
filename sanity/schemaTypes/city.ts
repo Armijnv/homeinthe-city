@@ -86,6 +86,14 @@ const cityExperienceFields = [
     type: "text",
     rows: 4,
   },
+  {
+    name: "fromHostIntroduction",
+    title: "From your host introduction",
+    type: "text",
+    rows: 6,
+    description:
+      "Personal or editorial city perspective shown in the From Your Host tab.",
+  },
   { name: "meetHostTitle", title: "Meet your host section title", type: "string" },
   {
     name: "meetHostIntroduction",

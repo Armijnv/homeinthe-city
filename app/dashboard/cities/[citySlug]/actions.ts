@@ -8,7 +8,10 @@ import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
 import { client } from "@/sanity/lib/client";
 import { activityFieldChanges, keyedArrayActivityChanges } from "@/app/lib/activityChanges";
-import { cityPageExperienceFieldNames } from "@/app/lib/cityPageExperience";
+import {
+  cityPageExperienceFieldNames,
+  type CityPageExperience,
+} from "@/app/lib/cityPageExperience";
 
 export type CityDashboardActionState = {
   status: "idle" | "success" | "error";
@@ -72,6 +75,7 @@ type CityContentRecord = Record<string, unknown> & {
   };
   sidebarCards?: SidebarCardInput[];
   recommendationGuides?: RecommendationGuideInput[];
+  cityPageExperience?: CityPageExperience;
 };
 
 const languages = ["en", "pt", "nl"] as const;
@@ -149,27 +153,37 @@ function introBlocksFromForm(
     .filter(Boolean);
 }
 
-function cityPageExperienceFromForm(formData: FormData) {
-  return {
-    _type: "object",
-    ...Object.fromEntries(
-      languages.map((lang) => [
-        lang,
-        {
-          _type: "object",
-          ...Object.fromEntries(
-            cityPageExperienceFieldNames.flatMap((field) => {
-              const value = stringValue(
-                formData,
-                `experience_${lang}_${field}`,
-              );
-              return value ? [[field, value]] : [];
-            }),
-          ),
-        },
-      ]),
-    ),
-  };
+function cityPageExperienceFromForm(
+  formData: FormData,
+  existingExperience?: CityPageExperience,
+) {
+  const nextExperience: Record<string, unknown> = { _type: "object" };
+
+  for (const lang of languages) {
+    const existingLocale = {
+      ...((existingExperience?.[lang] || {}) as Record<string, unknown>),
+    };
+    const nextLocale: Record<string, unknown> = {
+      _type: "object",
+      ...existingLocale,
+    };
+
+    for (const field of cityPageExperienceFieldNames) {
+      const inputName = `experience_${lang}_${field}`;
+      if (!formData.has(inputName)) continue;
+
+      const value = stringValue(formData, inputName);
+      if (value) {
+        nextLocale[field] = value;
+      } else {
+        delete nextLocale[field];
+      }
+    }
+
+    nextExperience[lang] = nextLocale;
+  }
+
+  return nextExperience;
 }
 
 function sanitizeSidebarCards(rawCards: SidebarCardInput[]) {
@@ -482,6 +496,7 @@ export async function saveCityContentAction(
     for (const lang of languages) {
       if (citySlug === "porto-alegre") {
         setValues[`name_${lang}`] = stringValue(formData, `name_${lang}`) || undefined;
+        setValues[`cta_${lang}`] = stringValue(formData, `cta_${lang}`) || undefined;
       }
       setValues[`headline_${lang}`] = stringValue(formData, `headline_${lang}`) || undefined;
       setValues[`intro_${lang}`] = stringValue(formData, `intro_${lang}`) || undefined;
@@ -493,7 +508,10 @@ export async function saveCityContentAction(
     }
 
     if (citySlug === "porto-alegre") {
-      setValues.cityPageExperience = cityPageExperienceFromForm(formData);
+      setValues.cityPageExperience = cityPageExperienceFromForm(
+        formData,
+        existing.cityPageExperience,
+      );
       const uploadedHeroImage = await uploadedCityHeroImage(formData);
       if (uploadedHeroImage) {
         setValues.heroImage = uploadedHeroImage;

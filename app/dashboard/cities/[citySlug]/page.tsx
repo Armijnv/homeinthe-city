@@ -39,6 +39,11 @@ const cityDashboardQuery = `
     guideStatus,
     enabledLanguages,
     "hostLanguages": primaryHost->languages[].language,
+    primaryHost->{
+      name,
+      status,
+      primaryRole
+    },
     country,
     heroImage{
       alt,
@@ -49,6 +54,9 @@ const cityDashboardQuery = `
     headline_en,
     headline_pt,
     headline_nl,
+    cta_en,
+    cta_pt,
+    cta_nl,
     intro_en,
     intro_pt,
     intro_nl,

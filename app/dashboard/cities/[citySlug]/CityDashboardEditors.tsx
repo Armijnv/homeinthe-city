@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   useActionState,
@@ -83,6 +84,9 @@ export type CityDashboardEditorData = {
   headline_en?: string;
   headline_pt?: string;
   headline_nl?: string;
+  cta_en?: string;
+  cta_pt?: string;
+  cta_nl?: string;
   intro_en?: string;
   intro_pt?: string;
   intro_nl?: string;
@@ -93,6 +97,11 @@ export type CityDashboardEditorData = {
     alt?: string;
     asset?: { url?: string; _ref?: string };
   };
+  primaryHost?: {
+    name?: string;
+    status?: string;
+    primaryRole?: string;
+  } | null;
   cityPageExperience?: CityPageExperience;
   sidebarCards?: CityDashboardSidebarCard[];
   recommendationGuides?: CityDashboardRecommendation[];
@@ -120,8 +129,8 @@ const initialActionState: CityDashboardActionState = {
 
 const languages: Array<{ id: Lang; label: string; hint: string }> = [
   { id: "en", label: "English", hint: "EN" },
-  { id: "pt", label: "Portuguese", hint: "PT-BR" },
-  { id: "nl", label: "Dutch", hint: "NL" },
+  { id: "pt", label: "Português", hint: "PT-BR" },
+  { id: "nl", label: "Nederlands", hint: "NL" },
 ];
 
 const inputClass =
@@ -369,33 +378,6 @@ function LanguageFields({
   );
 }
 
-const discoveryFields: Array<{
-  title: string;
-  titleField: CityPageExperienceField;
-  descriptionField: CityPageExperienceField;
-}> = [
-  {
-    title: "About the City card",
-    titleField: "aboutCardTitle",
-    descriptionField: "aboutCardDescription",
-  },
-  {
-    title: "Living & Working card",
-    titleField: "livingCardTitle",
-    descriptionField: "livingCardDescription",
-  },
-  {
-    title: "Explore the City card",
-    titleField: "exploreCardTitle",
-    descriptionField: "exploreCardDescription",
-  },
-  {
-    title: "Host's Favorites card",
-    titleField: "favoritesCardTitle",
-    descriptionField: "favoritesCardDescription",
-  },
-];
-
 function experienceValue(
   city: CityDashboardEditorData,
   language: Lang,
@@ -436,234 +418,229 @@ function ExperienceInput({
   );
 }
 
-function PortoAlegreHeroImageField({
-  city,
-}: {
-  city: CityDashboardEditorData;
-}) {
-  const savedImageUrl = city.heroImage?.asset?.url;
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [imageError, setImageError] = useState("");
-  const [imageSelected, setImageSelected] = useState(false);
+type PortoEditorSection = "about" | "living" | "explore" | "from-host";
 
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-
-    if (!file) {
-      setPreviewUrl("");
-      setImageError("");
-      setImageSelected(false);
-      event.target.setCustomValidity("");
-      return;
-    }
-
-    const error = selectedDashboardImageError(file, "Hero image");
-    setPreviewUrl(error ? "" : URL.createObjectURL(file));
-    setImageError(error);
-    setImageSelected(true);
-    event.target.setCustomValidity(error);
-  }
-
-  const displayUrl =
-    previewUrl || savedImageUrl || "/porto-alegre-desktop-background.jpg";
-
-  return (
-    <fieldset className="rounded-xl border border-white/10 bg-black/10 p-4">
-      <legend className="px-2 text-sm font-medium uppercase tracking-widest text-white">
-        Hero image
-      </legend>
-      <div className="mt-2 grid gap-5 md:grid-cols-[minmax(0,280px)_1fr] md:items-start">
-        <div className="relative aspect-[16/10] overflow-hidden rounded-xl border border-white/10 bg-black/20">
-          <Image
-            src={displayUrl}
-            alt={city.heroImage?.alt || "Current Porto Alegre hero"}
-            fill
-            unoptimized={displayUrl.startsWith("blob:")}
-            sizes="280px"
-            className="object-cover"
-          />
-        </div>
-        <div className="space-y-4">
-          <Field label={savedImageUrl ? "Replace image" : "Upload image"}>
-            <input
-              name="heroImage"
-              type="file"
-              accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
-              className={dashboardFileInputClass}
-              onChange={handleImageChange}
-            />
-          </Field>
-          <input
-            type="hidden"
-            name="heroImageSelected"
-            value={imageSelected ? "1" : ""}
-          />
-          {imageError ? (
-            <p className="rounded-lg border border-red-300/40 bg-red-950/30 px-3 py-2 text-sm text-red-100">
-              {imageError}
-            </p>
-          ) : null}
-          <Field label="Image alt text">
-            <input
-              name="heroImageAlt"
-              className={inputClass}
-              defaultValue={city.heroImage?.alt || "Porto Alegre skyline"}
-            />
-          </Field>
-          <p className="text-xs leading-5 text-stone-400">
-            JPG, PNG, WebP, GIF or HEIC/HEIF, up to 10 MB.
-          </p>
-        </div>
-      </div>
-    </fieldset>
-  );
-}
+const portoEditorSections: Array<{ id: PortoEditorSection; label: string }> = [
+  { id: "about", label: "About the City" },
+  { id: "living", label: "Living & Working" },
+  { id: "explore", label: "Explore the City" },
+  { id: "from-host", label: "From Your Host" },
+];
 
 function PortoAlegreExperienceFields({
   city,
+  citySlug,
+  activeLanguage,
+  activeSection,
+  sidebarCards,
+  setSidebarCards,
 }: {
   city: CityDashboardEditorData;
+  citySlug: string;
+  activeLanguage: Lang;
+  activeSection: PortoEditorSection;
+  sidebarCards: CityDashboardSidebarCard[];
+  setSidebarCards: (cards: CityDashboardSidebarCard[]) => void;
 }) {
   return (
-    <div className="space-y-5">
-      <PortoAlegreHeroImageField city={city} />
-      {languages.map((language) => (
-        <section
-          key={language.id}
-          className="rounded-xl border border-white/10 bg-black/10 p-4"
-        >
-          <div className="mb-5 flex items-center justify-between gap-3">
-            <h3 className="text-sm font-medium uppercase tracking-widest text-white">
-              {language.label}
-            </h3>
-            <span className="rounded-full border border-white/15 px-3 py-1 text-xs uppercase tracking-widest text-stone-300">
-              {language.hint}
-            </span>
+    <div className="space-y-6">
+      <section className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5">
+        <div className="mb-5">
+          <p className="text-xs uppercase tracking-widest text-[#d6a85a]">
+            General / top of page
+          </p>
+          <h3 className="mt-2 text-xl font-light text-white">City header</h3>
+          <p className="mt-2 text-sm leading-6 text-stone-300">
+            These fields control the compact header at the top of the public page.
+          </p>
+        </div>
+
+        {languages.map((language) => (
+          <div
+            key={language.id}
+            hidden={language.id !== activeLanguage}
+            className="grid gap-4 sm:grid-cols-2"
+          >
+            <Field label="City name">
+              <input
+                name={`name_${language.id}`}
+                className={inputClass}
+                defaultValue={city[`name_${language.id}`] || ""}
+              />
+            </Field>
+            <Field label="Short tagline">
+              <input
+                name={`headline_${language.id}`}
+                className={inputClass}
+                defaultValue={city[`headline_${language.id}`] || ""}
+              />
+            </Field>
           </div>
+        ))}
 
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="City name">
-                <input
-                  name={`name_${language.id}`}
-                  className={inputClass}
-                  defaultValue={city[`name_${language.id}`] || ""}
-                />
-              </Field>
-              <Field label="Hero tagline">
-                <input
-                  name={`headline_${language.id}`}
-                  className={inputClass}
-                  defaultValue={city[`headline_${language.id}`] || ""}
-                />
-              </Field>
-            </div>
+        <div className="mt-5 rounded-lg border border-white/10 bg-white/5 p-4">
+          <p className="text-xs uppercase tracking-widest text-stone-400">
+            Primary host
+          </p>
+          <p className="mt-2 text-base text-white">
+            {city.primaryHost?.name || "No primary host assigned"}
+          </p>
+          {city.primaryHost ? (
+            <p className="mt-1 text-sm text-stone-400">
+              {city.primaryHost.primaryRole || "Provider"} · {city.primaryHost.status || "status unknown"}
+            </p>
+          ) : null}
+          <p className="mt-3 text-xs leading-5 text-stone-400">
+            Host identity and contact details come from the Provider profile. Assignment remains an administrator setting.
+          </p>
+        </div>
+      </section>
 
-            <fieldset className="rounded-xl border border-white/10 p-4">
-              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
-                Discovery cards
-              </legend>
-              <div className="mt-2 grid gap-4 lg:grid-cols-2">
-                {discoveryFields.map((card) => (
-                  <div
-                    key={card.titleField}
-                    className="space-y-4 rounded-lg bg-white/5 p-4"
-                  >
-                    <p className="text-sm font-medium text-white">{card.title}</p>
-                    <ExperienceInput
-                      city={city}
-                      language={language.id}
-                      field={card.titleField}
-                      label="Title"
-                    />
-                    <ExperienceInput
-                      city={city}
-                      language={language.id}
-                      field={card.descriptionField}
-                      label="Description"
-                      multiline
-                      rows={3}
-                    />
-                  </div>
-                ))}
+      <section
+        id="porto-about-editor"
+        role="tabpanel"
+        aria-labelledby="porto-about-editor-tab"
+        hidden={activeSection !== "about"}
+        className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
+      >
+        <h3 className="text-xl font-light text-white">About the City</h3>
+        <p className="mt-2 text-sm leading-6 text-stone-300">
+          Edit the introduction and main content shown in the public About tab.
+        </p>
+        {languages.map((language) => (
+          <div key={language.id} hidden={language.id !== activeLanguage} className="mt-5 grid gap-4">
+            <ExperienceInput city={city} language={language.id} field="aboutTitle" label="Section title" />
+            <Field label="Introduction">
+              <textarea
+                name={`intro_${language.id}`}
+                className={textareaClass}
+                rows={4}
+                defaultValue={city[`intro_${language.id}`] || ""}
+              />
+            </Field>
+            <Field label="Main formatted content">
+              <textarea
+                name={`introBlocks_${language.id}`}
+                className={`${textareaClass} min-h-48`}
+                rows={10}
+                defaultValue={(city[`introBlocks_${language.id}`] || []).join("\n\n")}
+              />
+            </Field>
+            <p className="text-xs leading-5 text-stone-400">
+              Use blank lines for paragraphs. Start consecutive lines with “- ” for a bullet list.
+            </p>
+          </div>
+        ))}
+      </section>
+
+      <section
+        id="porto-living-editor"
+        role="tabpanel"
+        aria-labelledby="porto-living-editor-tab"
+        hidden={activeSection !== "living"}
+        className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
+      >
+        <h3 className="text-xl font-light text-white">Living &amp; Working</h3>
+        <p className="mt-2 text-sm leading-6 text-stone-300">
+          Practical city information and supporting service cards shown in the public Living &amp; Working tab.
+        </p>
+        {languages.map((language) => (
+          <div key={language.id} hidden={language.id !== activeLanguage} className="mt-5 grid gap-4">
+            <ExperienceInput city={city} language={language.id} field="livingTitle" label="Section title" />
+            <ExperienceInput city={city} language={language.id} field="livingIntroduction" label="Introduction" multiline />
+            <ExperienceInput city={city} language={language.id} field="livingBody" label="Main formatted content" multiline rows={10} />
+            <p className="text-xs leading-5 text-stone-400">
+              Interpreter and available-property links are added automatically. Use blank lines for paragraphs and “- ” for lists.
+            </p>
+          </div>
+        ))}
+        <div className="mt-6 border-t border-white/10 pt-6">
+          <h4 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
+            Additional Living &amp; Working cards
+          </h4>
+          <p className="mb-4 mt-2 text-sm leading-6 text-stone-400">
+            Optional cards displayed alongside the automatically generated service links.
+          </p>
+          <SidebarCardEditor
+            cards={sidebarCards}
+            setCards={setSidebarCards}
+            activeLanguage={activeLanguage}
+          />
+        </div>
+      </section>
+
+      <section
+        id="porto-explore-editor"
+        role="tabpanel"
+        aria-labelledby="porto-explore-editor-tab"
+        hidden={activeSection !== "explore"}
+        className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
+      >
+        <h3 className="text-xl font-light text-white">Explore the City</h3>
+        <p className="mt-2 text-sm leading-6 text-stone-300">
+          Control the introduction and the heading used for host-recommended places. Places and guides are managed below.
+        </p>
+        {languages.map((language) => (
+          <div key={language.id} hidden={language.id !== activeLanguage} className="mt-5 grid gap-4">
+            <ExperienceInput city={city} language={language.id} field="exploreTitle" label="Section title" />
+            <ExperienceInput city={city} language={language.id} field="exploreIntroduction" label="Introduction" multiline />
+            <div className="mt-2 border-t border-white/10 pt-5">
+              <p className="mb-4 text-sm font-medium text-white">Host-recommended places</p>
+              <div className="grid gap-4">
+                <ExperienceInput city={city} language={language.id} field="favoritesTitle" label="Recommendations heading" />
+                <ExperienceInput city={city} language={language.id} field="favoritesIntroduction" label="Recommendations introduction" multiline />
               </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-white/10 p-4">
-              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
-                About the City
-              </legend>
-              <div className="mt-2 grid gap-4">
-                <ExperienceInput city={city} language={language.id} field="aboutTitle" label="Section title" />
-                <Field label="Optional introduction">
-                  <textarea
-                    name={`intro_${language.id}`}
-                    className={textareaClass}
-                    rows={4}
-                    defaultValue={city[`intro_${language.id}`] || ""}
-                  />
-                </Field>
-                <Field label="Formatted body">
-                  <textarea
-                    name={`introBlocks_${language.id}`}
-                    className={`${textareaClass} min-h-48`}
-                    rows={10}
-                    defaultValue={(city[`introBlocks_${language.id}`] || []).join("\n\n")}
-                  />
-                </Field>
-                <p className="text-xs leading-5 text-stone-400">
-                  Use blank lines for paragraphs. Start consecutive lines with “- ” for a bullet list.
-                </p>
-              </div>
-            </fieldset>
-
-            <fieldset className="rounded-xl border border-white/10 p-4">
-              <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">
-                Living & Working
-              </legend>
-              <div className="mt-2 grid gap-4">
-                <ExperienceInput city={city} language={language.id} field="livingTitle" label="Section title" />
-                <ExperienceInput city={city} language={language.id} field="livingIntroduction" label="Introduction" multiline />
-                <ExperienceInput city={city} language={language.id} field="livingBody" label="Formatted body" multiline rows={10} />
-                <p className="text-xs leading-5 text-stone-400">
-                  Use blank lines for paragraphs. Start consecutive lines with “- ” for a bullet list.
-                </p>
-              </div>
-            </fieldset>
-
-            <div className="grid gap-4 lg:grid-cols-3">
-              <fieldset className="rounded-xl border border-white/10 p-4">
-                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Explore</legend>
-                <div className="mt-2 grid gap-4">
-                  <ExperienceInput city={city} language={language.id} field="exploreTitle" label="Section title" />
-                  <ExperienceInput city={city} language={language.id} field="exploreIntroduction" label="Introduction" multiline />
-                </div>
-              </fieldset>
-              <fieldset className="rounded-xl border border-white/10 p-4">
-                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Host&apos;s Favorites</legend>
-                <div className="mt-2 grid gap-4">
-                  <ExperienceInput city={city} language={language.id} field="favoritesTitle" label="Section title" />
-                  <ExperienceInput city={city} language={language.id} field="favoritesIntroduction" label="Introduction" multiline />
-                </div>
-              </fieldset>
-              <fieldset className="rounded-xl border border-white/10 p-4">
-                <legend className="px-2 text-xs uppercase tracking-widest text-[#d6a85a]">Meet Your Host</legend>
-                <div className="mt-2 grid gap-4">
-                  <ExperienceInput city={city} language={language.id} field="meetHostTitle" label="Section title" />
-                  <ExperienceInput city={city} language={language.id} field="meetHostIntroduction" label="Introduction" multiline />
-                </div>
-              </fieldset>
             </div>
           </div>
-        </section>
-      ))}
+        ))}
+        <div className="mt-6 rounded-lg border border-[#d6a85a]/35 bg-[#d6a85a]/10 p-4">
+          <p className="font-medium text-white">Map places and quick place creation</p>
+          <p className="mt-2 text-sm leading-6 text-stone-300">
+            Add restaurants, cafés, museums, walks, markets and host recommendations using the existing phone-friendly place form.
+          </p>
+          <Link
+            href={`/dashboard/cities/${citySlug}/map`}
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-[#d6a85a] px-4 py-2 text-sm font-medium text-[#1a1f2e] transition hover:bg-white"
+          >
+            Manage Explore places
+          </Link>
+        </div>
+      </section>
+
+      <section
+        id="porto-from-host-editor"
+        role="tabpanel"
+        aria-labelledby="porto-from-host-editor-tab"
+        hidden={activeSection !== "from-host"}
+        className="rounded-xl border border-white/10 bg-black/10 p-4 md:p-5"
+      >
+        <h3 className="text-xl font-light text-white">From Your Host</h3>
+        <p className="mt-2 text-sm leading-6 text-stone-300">
+          A minimal editorial introduction for personal observations or perspective on the city. This is separate from the host profile.
+        </p>
+        {languages.map((language) => (
+          <div key={language.id} hidden={language.id !== activeLanguage} className="mt-5 space-y-4">
+            <ExperienceInput
+              city={city}
+              language={language.id}
+              field="fromHostIntroduction"
+              label="Introduction"
+              multiline
+              rows={7}
+            />
+            <Field label="Primary contact button label">
+              <input
+                name={`cta_${language.id}`}
+                className={inputClass}
+                defaultValue={city[`cta_${language.id}`] || ""}
+              />
+            </Field>
+          </div>
+        ))}
+        <p className="mt-4 text-xs leading-5 text-stone-400">
+          Host name, photo and contact details continue to come from the Provider profile and are not part of this editorial area.
+        </p>
+      </section>
     </div>
   );
 }
@@ -735,10 +712,15 @@ function EnabledLanguageFields({
 function SidebarCardEditor({
   cards,
   setCards,
+  activeLanguage,
 }: {
   cards: CityDashboardSidebarCard[];
   setCards: (cards: CityDashboardSidebarCard[]) => void;
+  activeLanguage?: Lang;
 }) {
+  const editingLanguages = activeLanguage
+    ? languages.filter((language) => language.id === activeLanguage)
+    : languages;
   function updateCard(
     index: number,
     field: keyof CityDashboardSidebarCard,
@@ -791,7 +773,7 @@ function SidebarCardEditor({
               </button>
             </div>
 
-            {languages.map((language) => (
+            {editingLanguages.map((language) => (
               <div key={language.id} className="grid gap-3 md:grid-cols-2">
                 <Field label={`Title (${language.hint})`}>
                   <input
@@ -857,13 +839,18 @@ function RecommendationEditor({
   mapPlaces,
   legacyRecommendationCount,
   cityName,
+  activeLanguage,
 }: {
   recommendations: CityDashboardRecommendation[];
   setRecommendations: (recommendations: CityDashboardRecommendation[]) => void;
   mapPlaces: CityDashboardMapPlace[];
   legacyRecommendationCount: number;
   cityName: string;
+  activeLanguage?: Lang;
 }) {
+  const editingLanguages = activeLanguage
+    ? languages.filter((language) => language.id === activeLanguage)
+    : languages;
   function updateRecommendation(
     index: number,
     field: keyof CityDashboardRecommendation,
@@ -926,13 +913,13 @@ function RecommendationEditor({
       />
 
       <div className="rounded-xl border border-white/10 bg-black/10 p-4 text-sm leading-6 text-stone-300">
-        Write recommendations as useful local articles: name the city and topic,
-        explain the local context, and include practical advice a visitor can act on.
+        Curated guides and previous Host&apos;s Favorites are both published inside
+        Explore the City. Write guides as useful local articles with practical context.
         {legacyRecommendationCount ? (
           <p className="mt-3 border-t border-white/10 pt-3 text-amber-100">
-            {legacyRecommendationCount} legacy place-style recommendation
-            {legacyRecommendationCount === 1 ? " is" : "s are"} preserved separately.
-            Review and migrate them before deleting anything in Sanity Studio.
+            {legacyRecommendationCount} previous Host&apos;s Favorite
+            {legacyRecommendationCount === 1 ? " is" : "s are"} already published in
+            Explore. New place recommendations should use the map-place workflow.
           </p>
         ) : null}
       </div>
@@ -988,7 +975,7 @@ function RecommendationEditor({
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-              {languages.map((language) => (
+              {editingLanguages.map((language) => (
                 <section
                   key={language.id}
                   className="space-y-4 rounded-xl border border-white/10 p-4"
@@ -1071,7 +1058,7 @@ function RecommendationEditor({
 
             {isCustom ? (
               <div className="grid gap-3 md:grid-cols-3">
-                {languages.map((language) => (
+                {editingLanguages.map((language) => (
                   <Field key={language.id} label={`Category label (${language.hint})`}>
                     <input
                       className={inputClass}
@@ -1156,6 +1143,10 @@ export default function CityDashboardEditors({
   const [recommendations, setRecommendations] = useState(
     city.recommendationGuides || [],
   );
+  const [activeLanguage, setActiveLanguage] = useState<Lang>("en");
+  const [activePortoSection, setActivePortoSection] =
+    useState<PortoEditorSection>("about");
+  const isPortoAlegre = citySlug === "porto-alegre";
 
   useEffect(() => {
     if (recommendationState.status === "success") {
@@ -1173,48 +1164,125 @@ export default function CityDashboardEditors({
     <div className="space-y-8">
       <Panel
         eyebrow="City content"
-        title={citySlug === "porto-alegre" ? "Porto Alegre page content" : "Public guide copy"}
+        title={isPortoAlegre ? "City page" : "Public guide copy"}
       >
+        {isPortoAlegre ? (
+          <div className="space-y-5 rounded-xl border border-white/10 bg-black/10 p-3 md:p-4">
+            <div>
+              <p className="mb-2 text-xs uppercase tracking-widest text-stone-400">
+                Editing language
+              </p>
+              <div
+                role="tablist"
+                aria-label="Editing language"
+                className="grid grid-cols-3 gap-2"
+              >
+                {languages.map((language) => (
+                  <button
+                    key={language.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={activeLanguage === language.id}
+                    onClick={() => setActiveLanguage(language.id)}
+                    className={`min-h-11 rounded-lg px-2 py-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-[#d6a85a] ${
+                      activeLanguage === language.id
+                        ? "bg-[#d6a85a] text-[#1a1f2e]"
+                        : "bg-white/5 text-stone-200 hover:bg-white/10"
+                    }`}
+                  >
+                    {language.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-2 text-xs uppercase tracking-widest text-stone-400">
+                Public page tab
+              </p>
+              <div
+                role="tablist"
+                aria-label="Public page editing areas"
+                className="grid grid-cols-2 gap-2 lg:grid-cols-4"
+              >
+                {portoEditorSections.map((section) => (
+                  <button
+                    key={section.id}
+                    id={`porto-${section.id}-editor-tab`}
+                    type="button"
+                    role="tab"
+                    aria-selected={activePortoSection === section.id}
+                    aria-controls={`porto-${section.id}-editor`}
+                    onClick={() => setActivePortoSection(section.id)}
+                    className={`min-h-12 rounded-lg px-3 py-2 text-sm font-medium leading-tight transition focus:outline-none focus:ring-2 focus:ring-[#d6a85a] ${
+                      activePortoSection === section.id
+                        ? "bg-white text-[#1a1f2e]"
+                        : "bg-white/5 text-stone-200 hover:bg-white/10"
+                    }`}
+                  >
+                    {section.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
           <EnabledLanguageFields
             city={city}
             canManageLanguages={canManageLanguages}
           />
-          {citySlug === "porto-alegre" ? (
-            <PortoAlegreExperienceFields city={city} />
+          {isPortoAlegre ? (
+            <PortoAlegreExperienceFields
+              city={city}
+              citySlug={citySlug}
+              activeLanguage={activeLanguage}
+              activeSection={activePortoSection}
+              sidebarCards={sidebarCards}
+              setSidebarCards={setSidebarCards}
+            />
           ) : (
             <LanguageFields city={city} />
           )}
 
-          <div className="space-y-4 border-t border-white/10 pt-6">
-            <h3 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
-              Sidebar cards
-            </h3>
-            <SidebarCardEditor cards={sidebarCards} setCards={setSidebarCards} />
-          </div>
+          {!isPortoAlegre ? (
+            <div className="space-y-4 border-t border-white/10 pt-6">
+              <h3 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
+                Sidebar cards
+              </h3>
+              <SidebarCardEditor cards={sidebarCards} setCards={setSidebarCards} />
+            </div>
+          ) : null}
 
           <SaveButton label="Save city content" />
         </form>
       </Panel>
 
-      <Panel eyebrow="Recommendations" title="Curated local guides">
-        <form
-          key={recommendationState.submittedAt || "recommendation-guides"}
-          action={recommendationFormAction}
-          className="space-y-6"
+      <div hidden={isPortoAlegre && activePortoSection !== "explore"}>
+        <Panel
+          eyebrow={isPortoAlegre ? "Explore the City" : "Recommendations"}
+          title="Curated local guides"
         >
-          <ActionMessage state={recommendationState} />
-          <RecommendationEditor
-            recommendations={recommendations}
-            setRecommendations={setRecommendations}
-            mapPlaces={city.mapPlaces || []}
-            legacyRecommendationCount={city.recommendations?.length || 0}
-            cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
-          />
-          <SaveButton label="Save recommendation guides" />
-        </form>
-      </Panel>
+          <form
+            key={recommendationState.submittedAt || "recommendation-guides"}
+            action={recommendationFormAction}
+            className="space-y-6"
+          >
+            <ActionMessage state={recommendationState} />
+            <RecommendationEditor
+              recommendations={recommendations}
+              setRecommendations={setRecommendations}
+              mapPlaces={city.mapPlaces || []}
+              legacyRecommendationCount={city.recommendations?.length || 0}
+              cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
+              activeLanguage={isPortoAlegre ? activeLanguage : undefined}
+            />
+            <SaveButton label="Save recommendation guides" />
+          </form>
+        </Panel>
+      </div>
     </div>
   );
 }

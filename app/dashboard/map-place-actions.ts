@@ -27,6 +27,8 @@ const mapPlaceFormFields = [
   "categoryLabel_nl",
   "neighborhood",
   "website",
+  "favorite",
+  "favoriteControl",
   "latitude",
   "longitude",
   "detail_en",
@@ -249,6 +251,9 @@ export async function addMapPlaceWithState(
     const latitude = numberValue(formData, "latitude");
     const longitude = numberValue(formData, "longitude");
     const website = cleanUrl(stringValue(formData, "website"));
+    const favorite = stringValue(formData, "favoriteControl") === "1"
+      ? stringValue(formData, "favorite") === "on"
+      : undefined;
 
     if (!city._id) {
       throw new MapPlaceActionError("This city could not be found.");
@@ -278,6 +283,7 @@ export async function addMapPlaceWithState(
       latitude,
       longitude,
       website: website || undefined,
+      favorite,
       image: uploadedImage.image || undefined,
     });
 
@@ -325,6 +331,8 @@ export async function updateMapPlaceWithState(
     const latitude = numberValue(formData, "latitude");
     const longitude = numberValue(formData, "longitude");
     const website = cleanUrl(stringValue(formData, "website"));
+    const canUpdateFavorite = stringValue(formData, "favoriteControl") === "1";
+    const favorite = stringValue(formData, "favorite") === "on";
 
     if (!city._id) {
       throw new MapPlaceActionError("This city could not be found.");
@@ -370,6 +378,7 @@ export async function updateMapPlaceWithState(
       [`${selector}.description_pt`]: text.description_pt,
       [`${selector}.description_nl`]: text.description_nl,
       [`${selector}.website`]: website || undefined,
+      ...(canUpdateFavorite ? { [`${selector}.favorite`]: favorite } : {}),
       [`${selector}.categoryPreset`]: category.categoryPreset,
       [`${selector}.category`]: category.category,
       [`${selector}.categoryLabel_en`]: category.categoryLabel_en,
@@ -398,6 +407,7 @@ export async function updateMapPlaceWithState(
       latitude,
       longitude,
       website: website || undefined,
+      ...(canUpdateFavorite ? { favorite } : {}),
       image: uploadedImage.image || (removeImage ? undefined : existingPlace.image),
     });
     if (activityValuesEqual(existingPlace, nextPlace)) {

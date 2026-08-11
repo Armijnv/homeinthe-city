@@ -5,7 +5,6 @@ import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 export type CityExperienceNavigationItem = {
   id: string;
   title: string;
-  description?: string;
 };
 
 export type CityExperienceSection = {
@@ -79,7 +78,6 @@ export default function CityExperienceLayout({
               aria-selected={isActive}
               aria-controls={`${item.id}-panel`}
               tabIndex={isActive ? 0 : -1}
-              title={item.description}
               onClick={() => setActiveTab(item.id)}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
               className={`min-h-12 rounded-xl px-2.5 py-2 text-sm font-medium leading-tight transition focus:outline-none focus:ring-2 focus:ring-[#b99455] focus:ring-offset-2 md:min-h-14 md:rounded-2xl md:px-4 md:text-base ${

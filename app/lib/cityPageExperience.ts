@@ -17,6 +17,7 @@ export const cityPageExperienceFieldNames = [
   "exploreIntroduction",
   "favoritesTitle",
   "favoritesIntroduction",
+  "fromHostIntroduction",
   "meetHostTitle",
   "meetHostIntroduction",
 ] as const;
