@@ -1,4 +1,4 @@
-import { interpreterCityForSlug, type InterpreterLanguage } from "@/app/lib/interpreterPages";
+import type { InterpreterLanguage } from "@/app/lib/interpreterPages";
 
 export type CityInterpreterProvider = {
   _id: string;
@@ -45,9 +45,6 @@ export function isPrimaryInterpreter(
 }
 
 export function cityInterpreterPath(citySlug: string, lang: InterpreterLanguage) {
-  const legacy = interpreterCityForSlug(citySlug);
-  if (legacy?.paths[lang]) return legacy.paths[lang]!;
-
   if (lang === "pt") return `/pt/interprete/${citySlug}`;
   if (lang === "nl") return `/nl/tolk/${citySlug}`;
   return `/interpreter/${citySlug}`;

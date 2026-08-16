@@ -1,16 +1,5 @@
-import InterpreterCityRoute, {
-  getInterpreterCityMetadata,
-} from "@/app/components/InterpreterCityRoute";
-
-const route = {
-  citySlug: "porto-alegre" as const,
-  lang: "pt" as const,
-};
-
-export function generateMetadata() {
-  return getInterpreterCityMetadata(route);
-}
+import { permanentRedirect } from "next/navigation";
 
 export default function Page() {
-  return <InterpreterCityRoute {...route} />;
+  permanentRedirect("/pt/interprete/porto-alegre");
 }

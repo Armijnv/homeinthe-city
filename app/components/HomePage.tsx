@@ -28,7 +28,7 @@ const content = {
     primaryCta: "Explore Porto Alegre",
     primaryHref: "/brazil/porto-alegre",
     interpreterCta: "Interpreter services in Porto Alegre",
-    interpreterHref: "/interpreter-porto-alegre",
+    interpreterHref: "/interpreter/porto-alegre",
     cityCta: "Meet your Porto Alegre host",
     cityHref: "/providers/armijn",
     liveCity: "First active city: Porto Alegre",
@@ -48,7 +48,7 @@ const content = {
       {
         title: "Interpreter services in Porto Alegre",
         text: "Business meetings, factory visits and local conversations with clear language support.",
-        href: "/interpreter-porto-alegre",
+        href: "/interpreter/porto-alegre",
       },
       {
         title: "Translation services",
@@ -72,7 +72,7 @@ const content = {
     primaryCta: "Explorar Porto Alegre",
     primaryHref: "/pt/brasil/porto-alegre",
     interpreterCta: "Intérprete em Porto Alegre",
-    interpreterHref: "/pt/interprete-porto-alegre",
+    interpreterHref: "/pt/interprete/porto-alegre",
     cityCta: "Conheça seu anfitrião local",
     cityHref: "/pt/profissionais/armijn",
     liveCity: "Primeira cidade ativa: Porto Alegre",
@@ -92,7 +92,7 @@ const content = {
       {
         title: "Intérprete em Porto Alegre",
         text: "Reuniões de negócios, visitas a empresas e conversas locais com apoio claro no idioma.",
-        href: "/pt/interprete-porto-alegre",
+        href: "/pt/interprete/porto-alegre",
       },
       {
         title: "Serviços de tradução",
@@ -116,7 +116,7 @@ const content = {
     primaryCta: "Ontdek Porto Alegre",
     primaryHref: "/nl/brazilie/porto-alegre",
     interpreterCta: "Tolkdiensten in Porto Alegre",
-    interpreterHref: "/nl/tolk-porto-alegre",
+    interpreterHref: "/nl/tolk/porto-alegre",
     cityCta: "Ontmoet je Porto Alegre host",
     cityHref: "/nl/professionals/armijn",
     liveCity: "Eerste actieve stad: Porto Alegre",
@@ -136,7 +136,7 @@ const content = {
       {
         title: "Tolkdiensten in Porto Alegre",
         text: "Zakelijke meetings, bedrijfsbezoeken en lokale gesprekken met heldere taalhulp.",
-        href: "/nl/tolk-porto-alegre",
+        href: "/nl/tolk/porto-alegre",
       },
       {
         title: "Vertaaldiensten",

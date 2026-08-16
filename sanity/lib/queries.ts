@@ -411,9 +411,11 @@ export const cityInterpreterCoverageQuery = `
     },
     "servicePage": *[
       _type == "servicePage" &&
-      kind == "cityInterpreter" &&
-      city._ref == ^._id
-    ][0]{
+      (
+        (kind == "cityInterpreter" && city._ref == ^._id) ||
+        slug.current == "interpreter-" + ^.slug.current
+      )
+    ] | order(kind == "cityInterpreter" desc)[0]{
       _id,
       _updatedAt,
       slug
@@ -442,8 +444,12 @@ export const cityInterpreterCoverageBySlugQuery = `
       mainPhoto{alt, asset->{url}}
     },
     "servicePage": *[
-      _type == "servicePage" && kind == "cityInterpreter" && city._ref == ^._id
-    ][0]{_id, _rev, _updatedAt, slug}
+      _type == "servicePage" &&
+      (
+        (kind == "cityInterpreter" && city._ref == ^._id) ||
+        slug.current == "interpreter-" + ^.slug.current
+      )
+    ] | order(kind == "cityInterpreter" desc)[0]{_id, _rev, _updatedAt, slug}
   }
 `;
 

@@ -252,6 +252,35 @@ test("the interpreter dashboard index and sitemap use the shared coverage query"
   assert.match(sitemapSource, /cityInterpreterPath/);
 });
 
+test("all city interpreter URLs use the slug-driven shared route and legacy routes redirect", async () => {
+  const [coverageSource, dynamicRouteSource, pageSource, sitemapSource, ...legacyRoutes] =
+    await Promise.all([
+      readFile(new URL("../app/lib/cityInterpreterCoverage.ts", import.meta.url), "utf8"),
+      readFile(new URL("../app/components/DynamicCityInterpreterRoute.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/components/CityInterpreterPage.tsx", import.meta.url), "utf8"),
+      readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
+      ...[
+        "../app/interpreter-porto-alegre/page.tsx",
+        "../app/interpreter-florianopolis/page.tsx",
+        "../app/interpreter-sao-paulo/page.tsx",
+        "../app/pt/interprete-porto-alegre/page.tsx",
+        "../app/pt/interprete-florianopolis/page.tsx",
+        "../app/pt/interprete-sao-paulo/page.tsx",
+        "../app/nl/tolk-porto-alegre/page.tsx",
+      ].map((path) => readFile(new URL(path, import.meta.url), "utf8")),
+    ]);
+  assert.match(coverageSource, /return `\/interpreter\/\$\{citySlug\}`/);
+  assert.doesNotMatch(coverageSource, /interpreterCityForSlug/);
+  assert.match(dynamicRouteSource, /CityInterpreterPage/);
+  assert.match(dynamicRouteSource, /interpreterCityForSlug\(citySlug\)\?\.content/);
+  assert.match(pageSource, /lg:grid-cols-\[minmax\(0,1\.7fr\)_minmax\(18rem,0\.8fr\)\]/);
+  assert.match(pageSource, /hasCta \|\| hasPricing/);
+  assert.match(sitemapSource, /cityInterpreterCoverageQuery/);
+  for (const source of legacyRoutes) {
+    assert.match(source, /permanentRedirect/);
+  }
+});
+
 test("city-page interpreter cards require published coverage and use the shared path resolver", async () => {
   const [cityQuerySource, cardsSource] = await Promise.all([
     readFile(new URL("../sanity/lib/queries.ts", import.meta.url), "utf8"),

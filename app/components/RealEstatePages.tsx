@@ -451,19 +451,19 @@ const premiumPaths = {
   en: {
     portoAlegreListings: "/real-estate/porto-alegre",
     portoAlegreGuide: "/brazil/porto-alegre",
-    interpreter: "/interpreter-porto-alegre",
+    interpreter: "/interpreter/porto-alegre",
     host: "/providers/armijn",
   },
   pt: {
     portoAlegreListings: "/pt/imoveis/porto-alegre",
     portoAlegreGuide: "/pt/brasil/porto-alegre",
-    interpreter: "/pt/interprete-porto-alegre",
+    interpreter: "/pt/interprete/porto-alegre",
     host: "/pt/profissionais/armijn",
   },
   nl: {
     portoAlegreListings: "/nl/vastgoed/porto-alegre",
     portoAlegreGuide: "/nl/brazilie/porto-alegre",
-    interpreter: "/nl/tolk-porto-alegre",
+    interpreter: "/nl/tolk/porto-alegre",
     host: "/nl/professionals/armijn",
   },
 };
