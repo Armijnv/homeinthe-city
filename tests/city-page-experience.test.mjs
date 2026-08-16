@@ -275,6 +275,8 @@ test("Porto Alegre Living separates automatic services from preserved optional c
   assert.match(layoutSource, /supportingContent\?: ReactNode/);
   assert.match(layoutSource, /lg:grid-cols-\[minmax\(0,1\.7fr\)_minmax\(19rem,0\.9fr\)\]/);
   assert.match(cityDashboardPageSource, /"propertyListingStatuses": \*\[/);
+  assert.match(cityDashboardPageSource, /"hasInterpreterCoverage": count\(\*\[/);
+  assert.match(editorSource, /hasInterpreterCoverage: city\.hasInterpreterCoverage === true/);
   assert.doesNotMatch(cityDashboardPageSource, /status in \["available", "reserved", "sold", "rented"\]/);
   assert.match(cityServicesSource, /automaticRealEstateListingStatuses = \[[\s\S]*?"available",[\s\S]*?"reserved"/);
   assert.match(cityPageSource, /isPortoAlegre[\s\S]*?hasAutomaticRealEstateService\(propertyListings\)[\s\S]*?: propertyListings\.length > 0/);

@@ -94,6 +94,7 @@ export type CityDashboardEditorData = {
   name_en?: string;
   name_pt?: string;
   name_nl?: string;
+  hasInterpreterCoverage?: boolean;
   enabledLanguages?: Lang[];
   hostLanguages?: Lang[];
   headline_en?: string;
@@ -724,6 +725,7 @@ function AutomaticLivingServices({
     lang: activeLanguage,
     citySlug,
     cityName,
+    hasInterpreterCoverage: city.hasInterpreterCoverage === true,
     includeRealEstate: true,
     presentation,
   });
@@ -779,6 +781,7 @@ function AutomaticLivingServices({
                     citySlug,
                     cityName:
                       city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+                    hasInterpreterCoverage: city.hasInterpreterCoverage === true,
                     includeRealEstate: true,
                   }).find((item) => item.kind === card.kind);
                   const locale = savedPresentation?.[language.id];
@@ -883,6 +886,7 @@ function PortoAlegreExperienceFields({
         citySlug,
         cityName:
           city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+        hasInterpreterCoverage: city.hasInterpreterCoverage === true,
         includeRealEstate,
         presentation: city.cityPageExperience?.livingServices,
       }),

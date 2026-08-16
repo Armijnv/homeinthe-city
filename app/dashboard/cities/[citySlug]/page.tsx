@@ -64,6 +64,12 @@ const cityDashboardQuery = `
     introBlocks_en,
     introBlocks_pt,
     introBlocks_nl,
+    "hasInterpreterCoverage": count(*[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ]) > 0,
     cityPageExperience{
       ...,
       livingServices{
