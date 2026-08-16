@@ -4,6 +4,7 @@ import { requirePropertyEditor } from "@/app/lib/propertyDashboard";
 import { client } from "@/sanity/lib/client";
 import { updatePropertyListing } from "../../actions";
 import { PropertyListingForm } from "../../PropertyListingForm";
+import StudioDraftNotice from "@/app/dashboard/StudioDraftNotice";
 
 type PageProps = {
   params: Promise<{ propertyId: string }>;
@@ -35,6 +36,7 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
         href="/dashboard/properties"
         label="Real estate workspace"
       />
+      <StudioDraftNotice documentId={property._id} />
       {query.error ? <p className="mb-4 rounded-lg border border-red-300/40 bg-red-500/10 p-4 text-sm text-red-100">{query.error}</p> : null}
       {query.saved || query.created ? <p className="mb-4 rounded-lg border border-[#d6a85a]/40 bg-[#d6a85a]/10 p-4 text-sm text-[#f0d9aa]">{query.created ? "Property created and sent for administrator oversight." : "Property saved and the administrator change log was updated."}</p> : null}
       {query.unchanged ? <p className="mb-4 rounded-lg border border-white/15 bg-white/5 p-4 text-sm text-stone-300">No changes were detected.</p> : null}

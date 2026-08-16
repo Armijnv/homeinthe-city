@@ -16,6 +16,7 @@ import {
 import { cityGuidePath } from "@/app/lib/cityGuides";
 import { cityName, requireCityHost, type DashboardCity } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
+import StudioDraftNotice from "@/app/dashboard/StudioDraftNotice";
 
 type PageProps = {
   params: Promise<{
@@ -236,6 +237,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
       intro="Edit the public city guide, local recommendations, map places, and coordinate readiness without opening Sanity Studio."
     >
       <DashboardBackLink href="/dashboard/cities" label="City workspace" />
+      <StudioDraftNotice documentId={city._id} />
       <div className="mb-10 grid gap-5 md:grid-cols-2">
         {cards.map((card) => (
           <DashboardCard key={card.title} {...card} />

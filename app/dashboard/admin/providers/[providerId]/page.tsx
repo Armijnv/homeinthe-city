@@ -11,6 +11,7 @@ import { providerProfilePath } from "@/app/lib/cityGuides";
 import { requireAdmin } from "@/app/lib/dashboard";
 import { providerChangeFieldLabel } from "@/app/lib/providerChangePresentation";
 import { client } from "@/sanity/lib/client";
+import StudioDraftNotice from "@/app/dashboard/StudioDraftNotice";
 
 type PageProps = {
   params: Promise<{ providerId: string }>;
@@ -117,6 +118,7 @@ export default async function EditProviderPage({ params, searchParams }: PagePro
       }
     >
       <DashboardBackLink href="/dashboard/admin/providers" label="Providers" />
+      <StudioDraftNotice documentId={provider._id} />
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
           {error}

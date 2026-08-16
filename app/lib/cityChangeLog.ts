@@ -6,6 +6,7 @@ export type CityChangeType =
   | "cityContent"
   | "cityStatus"
   | "cityCoordinates"
+  | "cityIdentity"
   | "recommendations"
   | "recommendationAdded"
   | "recommendationUpdated"

@@ -8,6 +8,7 @@ import { client } from "@/sanity/lib/client";
 import { cityInterpreterCoverageBySlugQuery, servicePageQuery } from "@/sanity/lib/queries";
 import { interpreterLanguages, type CityInterpreterCoverage } from "@/app/lib/cityInterpreterCoverage";
 import Link from "next/link";
+import StudioDraftNotice from "@/app/dashboard/StudioDraftNotice";
 
 export default async function CityInterpreterEditor({
   params,
@@ -34,6 +35,7 @@ export default async function CityInterpreterEditor({
       side={<Pill>{stored ? "Published service-page content" : "No editorial content yet"}</Pill>}
     >
       <DashboardBackLink href={`/dashboard/cities/${citySlug}`} label="City dashboard" />
+      <StudioDraftNotice documentId={stored?._id} />
       {error ? <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">{error}</p> : null}
       {saved ? <p className="mb-6 rounded-xl border border-emerald-300/40 bg-emerald-950/30 p-4 text-sm text-emerald-100">{saved === "unchanged" ? "No interpreter-page changes to save." : "Interpreter page saved successfully."}</p> : null}
       <section className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">

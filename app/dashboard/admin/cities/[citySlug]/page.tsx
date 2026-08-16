@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   updateCityCoordinatesAction,
+  updateCityIdentityAction,
   updateCityStatusAction,
 } from "@/app/dashboard/admin/cities/actions";
 import {
@@ -15,6 +16,7 @@ import {
 import { cityGuidePath, providerProfilePath } from "@/app/lib/cityGuides";
 import { cityName, requireAdmin, type DashboardCity } from "@/app/lib/dashboard";
 import { client } from "@/sanity/lib/client";
+import StudioDraftNotice from "@/app/dashboard/StudioDraftNotice";
 
 type PageProps = {
   params: Promise<{
@@ -27,6 +29,7 @@ type PageProps = {
 };
 
 type AdminCityDetail = DashboardCity & {
+  _rev?: string;
   latitude?: number;
   longitude?: number;
   mapPlaceCount?: number;
@@ -35,6 +38,7 @@ type AdminCityDetail = DashboardCity & {
   recommendationCount?: number;
   legacyRecommendationCount?: number;
   primaryHost?: {
+    _id?: string;
     name?: string;
     slug?: {
       current?: string;
@@ -44,11 +48,14 @@ type AdminCityDetail = DashboardCity & {
   } | null;
 };
 
+type HostOption = { _id: string; name?: string };
+
 const publicListingStatuses = ["available", "reserved", "sold", "rented"];
 
 const adminCityDetailQuery = `
   *[_type == "city" && slug.current == $citySlug][0]{
     _id,
+    _rev,
     name_en,
     name_pt,
     name_nl,
@@ -70,6 +77,7 @@ const adminCityDetailQuery = `
       )
     ]),
     primaryHost->{
+      _id,
       name,
       slug,
       status,
@@ -95,10 +103,10 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
     searchParams,
   ]);
   await requireAdmin(`/dashboard/admin/cities/${citySlug}`);
-  const city = await client.fetch<AdminCityDetail | null>(adminCityDetailQuery, {
+  const [city, hosts] = await Promise.all([client.fetch<AdminCityDetail | null>(adminCityDetailQuery, {
     citySlug,
     publicStatuses: publicListingStatuses,
-  });
+  }), client.fetch<HostOption[]>(`*[_type == "provider" && status == "published" && (primaryRole == "host" || "host" in roles)] | order(name asc){_id,name}`)]);
 
   if (!city) {
     notFound();
@@ -144,6 +152,7 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
       intro="A read-only city workspace foundation for future content, sidebar, map, coordinate, and property management tools."
     >
       <DashboardBackLink href="/dashboard/admin/cities" label="Cities" />
+      <StudioDraftNotice documentId={city._id} />
 
       {error ? (
         <p className="mb-6 rounded-xl border border-red-300/40 bg-red-950/30 p-4 text-sm text-red-100">
@@ -160,6 +169,22 @@ export default async function AdminCityDetailPage({ params, searchParams }: Page
           City coordinates updated. The globe pin can now use this location.
         </p>
       ) : null}
+      {saved === "identity" ? <p className="mb-6 rounded-xl border border-emerald-300/30 bg-emerald-950/20 p-4 text-sm text-emerald-100">City settings saved.</p> : null}
+
+      <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
+        <form action={updateCityIdentityAction} className="grid gap-4 md:grid-cols-2">
+          <input type="hidden" name="cityId" value={city._id} /><input type="hidden" name="citySlug" value={citySlug} />
+          <h2 className="md:col-span-2 text-lg font-medium text-white">City settings</h2>
+          <label>English name<input name="name_en" required defaultValue={city.name_en || ""} className="mt-2 w-full rounded border p-2 text-black" /></label>
+          <label>Portuguese name<input name="name_pt" defaultValue={city.name_pt || ""} className="mt-2 w-full rounded border p-2 text-black" /></label>
+          <label>Dutch name<input name="name_nl" defaultValue={city.name_nl || ""} className="mt-2 w-full rounded border p-2 text-black" /></label>
+          <label>Country<input name="country" defaultValue={city.country || ""} className="mt-2 w-full rounded border p-2 text-black" /></label>
+          <label>Primary host<select name="primaryHostId" defaultValue={city.primaryHost?._id || ""} className="mt-2 w-full rounded border p-2 text-black"><option value="">No primary host</option>{hosts.map((host) => <option key={host._id} value={host._id}>{host.name || "Unnamed host"}</option>)}</select></label>
+          <fieldset><legend>Published languages</legend>{["en","pt","nl"].map((language) => <label key={language} className="mr-3"><input type="checkbox" name="enabledLanguages" value={language} defaultChecked={Boolean(city.enabledLanguages?.includes(language))} /> {language.toUpperCase()}</label>)}</fieldset>
+          <p className="md:col-span-2 text-sm text-stone-300">Slug: {city.slug?.current} — changing a published slug requires redirect history and is intentionally unavailable.</p>
+          <button className="w-fit rounded bg-[#d6a85a] px-4 py-2 text-black">Save city settings</button>
+        </form>
+      </section>
 
       <section className="mb-8 rounded-2xl border border-white/10 bg-white/10 p-6">
         <div className="mb-5 flex flex-wrap gap-2">

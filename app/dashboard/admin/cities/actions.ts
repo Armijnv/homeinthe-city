@@ -289,3 +289,35 @@ export async function updateCityCoordinatesAction(formData: FormData) {
 
   redirect(`/dashboard/admin/cities/${citySlug}?saved=coordinates`);
 }
+
+export async function updateCityIdentityAction(formData: FormData) {
+  const context = await requireAdmin("/dashboard/admin/cities");
+  const cityId = cleanDocumentId(formString(formData, "cityId"));
+  const citySlug = cleanSlug(formString(formData, "citySlug"));
+  if (!cityId || !citySlug) redirect("/dashboard/admin/cities");
+  try {
+    assertSanityWriteToken();
+    const name_en = formString(formData, "name_en");
+    const name_pt = formString(formData, "name_pt");
+    const name_nl = formString(formData, "name_nl");
+    const country = formString(formData, "country");
+    const primaryHostId = cleanDocumentId(formString(formData, "primaryHostId"));
+    const enabledLanguages = selectedStrings(formData, "enabledLanguages");
+    if (!name_en) throw new CityAdminError("English city name is required.");
+    if (enabledLanguages.some((language) => !allowedLanguages.has(language))) throw new CityAdminError("Choose only supported city languages.");
+    if (primaryHostId) {
+      const host = await client.fetch<string | null>(`*[_type == "provider" && _id == $id && status == "published" && (primaryRole == "host" || "host" in roles)][0]._id`, { id: primaryHostId });
+      if (!host) throw new CityAdminError("Choose a published city host.");
+    }
+    const existing = await client.fetch<{_id:string;_rev:string;name_en?:string;slug?:{current?:string}} | null>(`*[_type == "city" && _id == $id && slug.current == $slug][0]{_id,_rev,name_en,slug}`, {id:cityId,slug:citySlug});
+    if (!existing) throw new CityAdminError("City not found.");
+    const values = { name_en, ...(name_pt ? {name_pt} : {}), ...(name_nl ? {name_nl} : {}), ...(country ? {country} : {}), ...(enabledLanguages.length ? {enabledLanguages} : {}), ...(primaryHostId ? {primaryHost:{_type:"reference",_ref:primaryHostId}} : {}) };
+    const unset = [!name_pt && "name_pt", !name_nl && "name_nl", !country && "country", !enabledLanguages.length && "enabledLanguages", !primaryHostId && "primaryHost"].filter((field): field is string => Boolean(field));
+    const log = cityChangeLogDocument({context, city: existing, changeType:"cityIdentity", description:`Updated city identity settings for ${name_en}.`, changes:[]});
+    let transaction = writeClient.transaction().patch(cityId, (patch) => patch.ifRevisionId(existing._rev).set(values).unset(unset));
+    if (log) transaction = transaction.create(log);
+    await transaction.commit();
+    revalidateCityManagement(citySlug);
+  } catch (error) { redirect(`/dashboard/admin/cities/${citySlug}?error=${encodeURIComponent(cityErrorMessage(error))}`); }
+  redirect(`/dashboard/admin/cities/${citySlug}?saved=identity`);
+}
