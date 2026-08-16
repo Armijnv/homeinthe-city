@@ -125,6 +125,9 @@ function revalidateServicePage(paths: string[]) {
 export async function updateInterpreterServicePageAction(formData: FormData) {
   const pageKey = formString(formData, "pageKey");
   const { context, definition } = await requireInterpreterServiceAccess(pageKey);
+  const editorPath = definition.citySlug
+    ? `/dashboard/cities/${definition.citySlug}/interpreter`
+    : `/dashboard/interpreter-services/${encodeURIComponent(definition.key)}`;
   assertSanityWriteToken();
 
   let saved: "updated" | "unchanged" = "unchanged";
@@ -133,7 +136,12 @@ export async function updateInterpreterServicePageAction(formData: FormData) {
       `*[_type == "servicePage" && slug.current == $slug][0]`,
       { slug: definition.servicePageSlug },
     );
-    const input = servicePageInput(formData);
+    const input = {
+      ...servicePageInput(formData),
+      ...(definition.cityId
+        ? { kind: "cityInterpreter", city: { _type: "reference", _ref: definition.cityId } }
+        : {}),
+    };
     const changes = activityFieldChanges(existing || {}, input, ["_type", "_key"]);
 
     if (changes.length) {
@@ -175,8 +183,8 @@ export async function updateInterpreterServicePageAction(formData: FormData) {
     );
   } catch (error) {
     redirect(
-      `/dashboard/interpreter-services/${encodeURIComponent(pageKey)}?error=${encodeURIComponent(errorMessage(error))}`,
+      `${editorPath}?error=${encodeURIComponent(errorMessage(error))}`,
     );
   }
-  redirect(`/dashboard/interpreter-services/${definition.key}?saved=${saved}`);
+  redirect(`${editorPath}?saved=${saved}`);
 }

@@ -208,6 +208,13 @@ export default async function CityDashboardPage({ params }: PageProps) {
       status: "Available now",
     },
     {
+      title: "Interpreter page",
+      text: "Edit city interpreter editorial content. Interpreter profiles and languages remain provider-managed.",
+      href: `/dashboard/cities/${citySlug}/interpreter`,
+      action: "Manage interpreter page",
+      status: "Available now",
+    },
+    {
       title: "Public city page",
       text: `Open the live public city guide for ${name}.`,
       href: cityGuidePath("en", citySlug),

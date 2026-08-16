@@ -10,13 +10,13 @@ const presentation = await loadTypeScriptModule(
   "app/lib/servicePagePresentation.ts",
 );
 
-function provider(citySlug, roles = ["interpreter"]) {
+function provider(citySlug, roles = ["interpreter"], options = {}) {
   return {
     _id: `provider-${citySlug}`,
     roles,
     primaryRole: roles[0],
     cities: [{ slug: { current: citySlug } }],
-    managedCities: [],
+    managedCities: options.managed ? [{ slug: { current: citySlug } }] : [],
   };
 }
 
@@ -33,8 +33,8 @@ test("an administrator can edit the general and every configured city interprete
   }
 });
 
-test("an Armijn-like interpreter can edit only their assigned Porto Alegre page", () => {
-  const armijn = provider("porto-alegre", ["host", "interpreter"]);
+test("a managed-city interpreter can edit only their managed city page", () => {
+  const armijn = provider("porto-alegre", ["host", "interpreter"], { managed: true });
   assert.equal(
     policy.canEditInterpreterServicePage({
       provider: armijn,
@@ -53,8 +53,8 @@ test("an Armijn-like interpreter can edit only their assigned Porto Alegre page"
   );
 });
 
-test("a Jon-like interpreter can edit Florianopolis but not Porto Alegre or admin-only pages", () => {
-  const jon = provider("florianopolis", ["host", "interpreter"]);
+test("a managed-city interpreter cannot edit another city or the general page", () => {
+  const jon = provider("florianopolis", ["host", "interpreter"], { managed: true });
   assert.equal(
     policy.canEditInterpreterServicePage({
       provider: jon,
@@ -111,7 +111,7 @@ test("an unauthenticated account has no interpreter-page access", () => {
   );
 });
 
-test("interpreter-page access does not use managed-city permissions", () => {
+test("city management alone is insufficient without an interpreter role", () => {
   const cityHostOnly = {
     roles: ["host"],
     cities: [],
@@ -125,6 +125,38 @@ test("interpreter-page access does not use managed-city permissions", () => {
     }),
     false,
   );
+});
+
+test("primary hosts may edit only when they also have an interpreter role", () => {
+  const primaryInterpreter = provider("porto-alegre", ["host", "interpreter"]);
+  assert.equal(
+    policy.canEditInterpreterServicePage({
+      provider: primaryInterpreter,
+      isAdmin: false,
+      citySlug: "porto-alegre",
+      primaryHostId: primaryInterpreter._id,
+    }),
+    true,
+  );
+  assert.equal(
+    policy.canEditInterpreterServicePage({
+      provider: provider("porto-alegre", ["host"]),
+      isAdmin: false,
+      citySlug: "porto-alegre",
+      primaryHostId: "provider-porto-alegre",
+    }),
+    false,
+  );
+});
+
+test("coverage derives provider languages and uses a generic route for future cities", async () => {
+  const coverageSource = await readFile(
+    new URL("../app/lib/cityInterpreterCoverage.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(coverageSource, /new Set/);
+  assert.match(coverageSource, /provider\.languages/);
+  assert.match(coverageSource, /\/interpreter\/\$\{citySlug\}/);
 });
 
 const [
@@ -189,6 +221,35 @@ test("all public interpreter routes consume their configured Sanity overlay with
   ]) {
     assert.match(interpreterRegistrySource, new RegExp(slug));
   }
+});
+
+test("the hub derives city coverage from published provider assignments instead of its static city registry", async () => {
+  const hubSource = await readFile(
+    new URL("../app/components/InterpreterHubPage.tsx", import.meta.url),
+    "utf8",
+  );
+  const querySource = await readFile(
+    new URL("../sanity/lib/queries.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(hubSource, /cityInterpreterCoverageQuery/);
+  assert.doesNotMatch(hubSource, /Object\.values\(interpreterCities\)/);
+  assert.match(querySource, /export const cityInterpreterCoverageQuery/);
+  assert.match(querySource, /status == "published"/);
+  assert.match(querySource, /\^\._id in cities\[\]\._ref/);
+});
+
+test("the interpreter dashboard index and sitemap use the shared coverage query", async () => {
+  const [indexSource, sitemapSource] = await Promise.all([
+    readFile(new URL("../app/dashboard/interpreter-services/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
+  ]);
+  for (const source of [indexSource, sitemapSource]) {
+    assert.match(source, /cityInterpreterCoverageQuery/);
+    assert.doesNotMatch(source, /Object\.values\(interpreterCities\)/);
+  }
+  assert.match(indexSource, /\/dashboard\/cities\/\$\{citySlug\}\/interpreter/);
+  assert.match(sitemapSource, /cityInterpreterPath/);
 });
 
 test("interpreter-page activity uses human-readable localized field names", () => {

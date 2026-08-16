@@ -8,16 +8,16 @@ import {
 } from "@/app/lib/cityGuides";
 import {
   cityGuideListQuery,
+  cityInterpreterCoverageQuery,
   hostListQuery,
   propertyListingListQuery,
   providerListQuery,
 } from "@/sanity/lib/queries";
 import {
-  interpreterAlternates,
-  interpreterCities,
   interpreterHubAlternates,
   interpreterHubPaths,
 } from "@/app/lib/interpreterPages";
+import { cityInterpreterPath, type CityInterpreterCoverage } from "@/app/lib/cityInterpreterCoverage";
 
 type SitemapProvider = {
   _updatedAt?: string;
@@ -47,6 +47,7 @@ type SitemapHost = {
 };
 
 type SitemapCityGuide = CityGuideContent;
+type SitemapInterpreterCity = CityInterpreterCoverage;
 
 const siteUrl = "https://homeinthe.city";
 
@@ -82,11 +83,12 @@ function languageAlternates(languages: Record<string, string>) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [providers, hosts, propertyListings, cityGuides] = await Promise.all([
+  const [providers, hosts, propertyListings, cityGuides, interpreterCities] = await Promise.all([
     client.fetch<SitemapProvider[]>(providerListQuery),
     client.fetch<SitemapHost[]>(hostListQuery),
     client.fetch<SitemapPropertyListing[]>(propertyListingListQuery),
     client.fetch<SitemapCityGuide[]>(cityGuideListQuery),
+    client.fetch<SitemapInterpreterCity[]>(cityInterpreterCoverageQuery),
   ]);
 
   const providerEntries = providers.flatMap((provider) => {
@@ -147,17 +149,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   });
 
-  const interpreterEntries = Object.values(interpreterCities).flatMap((city) =>
-    city.languages.flatMap((language) => {
-      const path = city.paths[language];
-      if (!path) return [];
+  const interpreterEntries = interpreterCities.flatMap((city) => {
+    const citySlug = city.slug?.current;
+    if (!citySlug) return [];
+    const languages = ["en", "pt", "nl"] as const;
+    const alternates = languageAlternates(
+      Object.fromEntries(
+        languages.map((language) => [
+          language,
+          `${siteUrl}${cityInterpreterPath(citySlug, language)}`,
+        ]),
+      ),
+    );
+    const updatedAt = city.servicePage?._updatedAt || city._updatedAt;
 
-      return [{
-        url: `${siteUrl}${path}`,
-        alternates: { languages: interpreterAlternates(city) },
-      }];
-    }),
-  );
+    return languages.map((language) => ({
+      ...contentEntry(cityInterpreterPath(citySlug, language), updatedAt),
+      alternates: { languages: alternates },
+    }));
+  });
 
   const interpreterHubEntries = Object.values(interpreterHubPaths).map((path) => ({
     url: `${siteUrl}${path}`,

@@ -6,13 +6,15 @@ import {
   type InterpreterLanguage,
 } from "@/app/lib/interpreterPages";
 
-export type InterpreterServicePageKey = "brazil" | InterpreterCitySlug;
+export type InterpreterServicePageKey = "brazil" | InterpreterCitySlug | `city:${string}`;
 
 export type InterpreterServicePageDefinition = {
   key: InterpreterServicePageKey;
   title: string;
   detail: string;
-  citySlug?: InterpreterCitySlug;
+  citySlug?: string;
+  cityId?: string;
+  primaryHostId?: string;
   servicePageSlug: string;
   languages: InterpreterLanguage[];
   paths: Partial<Record<InterpreterLanguage, string>>;

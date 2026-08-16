@@ -26,6 +26,37 @@ export const servicePage = defineType({
       },
     }),
 
+    defineField({
+      name: "kind",
+      title: "Page Kind",
+      type: "string",
+      options: {
+        list: [
+          { title: "General interpreter hub", value: "interpreterHub" },
+          { title: "City interpreter page", value: "cityInterpreter" },
+        ],
+      },
+      description:
+        "Use City interpreter page for editorial content attached to one city. Existing legacy service pages may remain unclassified until migrated.",
+    }),
+
+    defineField({
+      name: "city",
+      title: "City",
+      type: "reference",
+      to: [{ type: "city" }],
+      options: { disableNew: true },
+      hidden: ({ document }) => document?.kind !== "cityInterpreter",
+      validation: (Rule) =>
+        Rule.custom((value, context) =>
+          context.document?.kind === "cityInterpreter" && !value
+            ? "A city interpreter page must reference its city."
+            : true,
+        ),
+      description:
+        "Required for newly managed city interpreter pages. Provider identity and language coverage are derived from provider profiles.",
+    }),
+
     /* ======================================================
        SEO
     ====================================================== */

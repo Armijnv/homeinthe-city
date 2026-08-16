@@ -1,4 +1,6 @@
 import InterpreterServicePage from "@/app/components/InterpreterServicePage";
+import CityInterpreterPage from "@/app/components/CityInterpreterPage";
+import type { CityInterpreterCoverage } from "@/app/lib/cityInterpreterCoverage";
 import {
   interpreterCity,
   interpreterMetadata,
@@ -9,7 +11,7 @@ import {
 } from "@/app/lib/interpreterPages";
 import { JsonLdScript } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
-import { servicePageQuery } from "@/sanity/lib/queries";
+import { cityInterpreterCoverageBySlugQuery, servicePageQuery } from "@/sanity/lib/queries";
 
 type RouteInput = {
   citySlug: InterpreterCitySlug;
@@ -29,6 +31,14 @@ export async function getInterpreterCityMetadata(input: RouteInput) {
 
 export default async function InterpreterCityRoute(input: RouteInput) {
   const city = interpreterCity(input.citySlug);
+  const coverage = await client.fetch<CityInterpreterCoverage | null>(
+    cityInterpreterCoverageBySlugQuery,
+    { citySlug: input.citySlug },
+  );
+  if (coverage?.servicePage?.slug?.current) {
+    const sharedPage = await getInterpreterCmsPage(coverage.servicePage.slug.current);
+    return <CityInterpreterPage city={coverage} lang={input.lang} page={sharedPage} />;
+  }
   const page = await getInterpreterCmsPage(city.servicePageSlug);
 
   return (

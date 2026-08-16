@@ -6,96 +6,65 @@ import {
   DashboardShell,
   Pill,
 } from "@/app/dashboard/dashboard-ui";
-import { getDashboardContext } from "@/app/lib/dashboard";
 import {
-  interpreterServicePages,
-  interpreterServicePublicPath,
-} from "@/app/lib/interpreterServicePages";
+  cityInterpreterName,
+  cityInterpreterPath,
+  type CityInterpreterCoverage,
+} from "@/app/lib/cityInterpreterCoverage";
+import { getDashboardContext } from "@/app/lib/dashboard";
+import { interpreterServicePageForKey, interpreterServicePublicPath } from "@/app/lib/interpreterServicePages";
 import { canEditInterpreterServicePage } from "@/app/lib/interpreterServicePolicy";
 import { client } from "@/sanity/lib/client";
+import { cityInterpreterCoverageQuery } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = { title: "Interpreter Service Pages" };
 
-type SavedServicePage = {
-  _id: string;
-  slug?: { current?: string };
-  _updatedAt?: string;
-};
-
 export default async function InterpreterServicesDashboardPage() {
   const context = await getDashboardContext("/dashboard/interpreter-services");
-  const pages = interpreterServicePages.filter((page) =>
+  const cities = await client.fetch<CityInterpreterCoverage[]>(cityInterpreterCoverageQuery);
+  const editableCities = cities.filter((city) =>
     canEditInterpreterServicePage({
       provider: context.provider,
       isAdmin: context.isAdmin,
-      citySlug: page.citySlug,
+      citySlug: city.slug?.current,
+      primaryHostId: city.primaryHost?._id,
     }),
   );
-
-  const savedPages = await client.fetch<SavedServicePage[]>(
-    `*[_type == "servicePage" && slug.current in $slugs]{_id, _updatedAt, slug}`,
-    { slugs: pages.map((page) => page.servicePageSlug) },
-  );
-  const savedBySlug = new Map(
-    savedPages.map((page) => [page.slug?.current, page]),
-  );
+  const brazil = interpreterServicePageForKey("brazil");
 
   return (
     <DashboardShell
       eyebrow={context.isAdmin ? "Administrator" : "Interpreter"}
       title="Interpreter service pages"
-      intro={
-        context.isAdmin
-          ? "Manage the general Brazil interpreter page and every configured city interpreter page."
-          : "Manage the interpreter pages for cities where your provider profile is assigned as an interpreter."
-      }
+      intro="City pages are listed from current published interpreter coverage. Provider city assignments control coverage; editorial content is managed with the matching city."
     >
       <BackToDashboard />
       <div className="grid gap-4 lg:grid-cols-2">
-        {pages.map((page) => {
-          const saved = savedBySlug.get(page.servicePageSlug);
+        {context.isAdmin && brazil ? (
+          <DashboardPanel title={brazil.title} eyebrow="General page">
+            <div className="flex flex-wrap items-center gap-2 py-3 first:pt-0"><Pill>Public route live</Pill></div>
+            <DashboardActionRow title="Edit interpreter page" detail={brazil.detail} href={`/dashboard/interpreter-services/${brazil.key}`} />
+            <DashboardActionRow title="View public page" detail={interpreterServicePublicPath(brazil)} href={interpreterServicePublicPath(brazil)} />
+          </DashboardPanel>
+        ) : null}
+        {editableCities.map((city) => {
+          const citySlug = city.slug?.current;
+          if (!citySlug) return null;
+          const cityName = cityInterpreterName(city, "en");
           return (
-            <DashboardPanel
-              key={page.key}
-              title={page.title}
-              eyebrow={page.citySlug ? "City interpreter page" : "General page"}
-            >
+            <DashboardPanel key={city._id} title={`Interpreter services in ${cityName}`} eyebrow="City interpreter page">
               <div className="flex flex-wrap items-center gap-2 py-3 first:pt-0">
-                <Pill>Public route live</Pill>
-                <Pill>{saved ? "Dashboard content saved" : "Code fallback active"}</Pill>
+                <Pill>Public coverage active</Pill>
+                <Pill>{city.servicePage ? "Editorial content saved" : "Provider coverage only"}</Pill>
               </div>
-              <DashboardActionRow
-                title="Edit interpreter page"
-                detail={page.detail}
-                href={`/dashboard/interpreter-services/${page.key}`}
-              />
-              <DashboardActionRow
-                title="View public page"
-                detail={interpreterServicePublicPath(page)}
-                href={interpreterServicePublicPath(page)}
-              />
-              {saved?._updatedAt ? (
-                <p className="py-3 text-xs text-stone-500">
-                  Dashboard content last saved {new Intl.DateTimeFormat("en", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  }).format(new Date(saved._updatedAt))}
-                </p>
-              ) : null}
+              <DashboardActionRow title="Edit city interpreter page" detail={`${city.interpreters?.length || 0} published interpreter${city.interpreters?.length === 1 ? "" : "s"}`} href={`/dashboard/cities/${citySlug}/interpreter`} />
+              <DashboardActionRow title="View public page" detail={cityInterpreterPath(citySlug, "en")} href={cityInterpreterPath(citySlug, "en")} />
             </DashboardPanel>
           );
         })}
       </div>
-      {!pages.length ? (
-        <p className="rounded-xl border border-white/10 bg-white/5 p-5 text-stone-300">
-          No interpreter service page is assigned to this provider account.
-        </p>
-      ) : null}
-      {context.isAdmin ? (
-        <p className="mt-6 text-sm leading-6 text-stone-400">
-          The Sanity Studio Service Pages tool remains available as an advanced fallback.
-          Routine page updates can be made here.
-        </p>
+      {!editableCities.length && !context.isAdmin ? (
+        <p className="rounded-xl border border-white/10 bg-white/5 p-5 text-stone-300">No city interpreter page is available to this account.</p>
       ) : null}
     </DashboardShell>
   );

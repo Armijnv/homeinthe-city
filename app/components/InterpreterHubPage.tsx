@@ -1,51 +1,25 @@
 import Link from "next/link";
 import {
   homeInTheCityWhatsApp,
-  interpreterCities,
   type InterpreterCmsPage,
-  type InterpreterCitySlug,
   type InterpreterLanguage,
 } from "@/app/lib/interpreterPages";
 import ProviderProfileCard, {
   type ProviderListItem,
 } from "@/app/components/ProviderProfileCard";
+import {
+  cityInterpreterName,
+  cityInterpreterPath,
+  interpreterLanguages,
+  type CityInterpreterCoverage,
+} from "@/app/lib/cityInterpreterCoverage";
 import { client } from "@/sanity/lib/client";
-import { providerListQuery } from "@/sanity/lib/queries";
+import { cityInterpreterCoverageQuery } from "@/sanity/lib/queries";
 
 const languageNames: Record<InterpreterLanguage, Record<InterpreterLanguage, string>> = {
   en: { en: "English", pt: "Portuguese", nl: "Dutch" },
   pt: { en: "Inglês", pt: "Português", nl: "Holandês" },
   nl: { en: "Engels", pt: "Portugees", nl: "Nederlands" },
-};
-
-const cityFocus: Record<
-  InterpreterLanguage,
-  Record<InterpreterCitySlug, string>
-> = {
-  en: {
-    "porto-alegre":
-      "Manufacturing, agribusiness, machinery, supplier meetings and trade events across Rio Grande do Sul.",
-    florianopolis:
-      "Technology companies, remote teams, property visits, hospitality and local service providers.",
-    "sao-paulo":
-      "Corporate meetings, trade fairs, suppliers, finance, legal, real estate and complex business schedules.",
-  },
-  pt: {
-    "porto-alegre":
-      "Indústria, agronegócio, máquinas, reuniões com fornecedores e eventos comerciais no Rio Grande do Sul.",
-    florianopolis:
-      "Empresas de tecnologia, equipes remotas, visitas a imóveis, hotelaria e prestadores de serviços locais.",
-    "sao-paulo":
-      "Reuniões corporativas, feiras, fornecedores, finanças, jurídico, imóveis e agendas empresariais intensas.",
-  },
-  nl: {
-    "porto-alegre":
-      "Productie, agribusiness, machines, leveranciersmeetings en zakelijke events in Rio Grande do Sul.",
-    florianopolis:
-      "Technologiebedrijven, remote teams, vastgoedbezoeken, hospitality en lokale dienstverleners.",
-    "sao-paulo":
-      "Corporate meetings, beurzen, leveranciers, finance, juridisch, vastgoed en complexe zakenreizen.",
-  },
 };
 
 const networkCopy = {
@@ -204,16 +178,10 @@ export default async function InterpreterHubPage({
     topCta: hubCmsValue(page, "button", lang) || fallback.topCta,
   };
   const network = networkCopy[lang];
-  const providers = await client.fetch<ProviderListItem[]>(providerListQuery);
-  const interpreterProfiles = Object.values(interpreterCities).flatMap((city) => {
-    const provider = providers.find(
-      (item) =>
-        item.slug?.current === city.providerSlug ||
-        item.name?.toLowerCase().startsWith(city.provider.toLowerCase()),
-    );
-
-    return provider ? [{ city, provider }] : [];
-  });
+  const cities = await client.fetch<CityInterpreterCoverage[]>(cityInterpreterCoverageQuery);
+  const interpreterProfiles = cities.flatMap((city) =>
+    (city.interpreters || []).map((provider) => ({ city, provider })),
+  );
 
   return (
     <>
@@ -258,44 +226,38 @@ export default async function InterpreterHubPage({
               <p className="leading-7 text-stone-600">{t.citiesIntro}</p>
             </div>
             <div className="grid gap-5 lg:grid-cols-3">
-              {Object.values(interpreterCities).map((city) => {
-                const href = city.paths[lang] || city.paths.en!;
-                const usesEnglishFallback = !city.paths[lang];
+              {cities.map((city) => {
+                const citySlug = city.slug?.current;
+                if (!citySlug) return null;
+                const href = cityInterpreterPath(citySlug, lang);
+                const cityName = cityInterpreterName(city, lang);
+                const availableLanguages = Array.from(
+                  new Set((city.interpreters || []).flatMap(interpreterLanguages)),
+                );
 
                 return (
                   <article
-                    key={city.slug}
+                    key={city._id}
                     className="flex flex-col rounded-3xl border border-stone-200 bg-white p-6 shadow-sm"
                   >
                     <p className="mb-2 text-xs uppercase tracking-widest text-stone-500">
-                      {city.region}
+                      {city.country || "Brazil"}
                     </p>
                     <h3 className="mb-3 text-2xl font-medium text-stone-900">
-                      {city.city}
+                      {cityName}
                     </h3>
                     <p className="mb-5 flex-1 leading-7 text-stone-600">
-                      {cityFocus[lang][city.slug]}
+                      {(city.interpreters || []).length === 1
+                        ? "1 interpreter currently available."
+                        : `${(city.interpreters || []).length} interpreters currently available.`}
                     </p>
                     <div className="mb-5 flex flex-wrap gap-2">
-                      {city.languages.map((language) => {
-                        const languageHref = city.paths[language];
-                        if (!languageHref) return null;
-
-                        return (
-                          <Link
-                            key={language}
-                            href={languageHref}
-                            aria-label={`${city.city}: ${languageNames[lang][language]}`}
-                            className="rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700 transition hover:bg-stone-200"
-                          >
-                            {languageNames[lang][language]}
-                          </Link>
-                        );
-                      })}
+                      {availableLanguages.map((language) => (
+                        <span key={language} className="rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700">
+                          {languageNames[lang][language as InterpreterLanguage] || language}
+                        </span>
+                      ))}
                     </div>
-                    {usesEnglishFallback ? (
-                      <p className="mb-3 text-xs text-stone-500">{t.englishFallback}</p>
-                    ) : null}
                     <Link
                       href={href}
                       className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#1a1f2e] px-5 py-3 text-center text-sm font-medium text-white transition hover:bg-stone-800"
@@ -322,14 +284,14 @@ export default async function InterpreterHubPage({
               <div className="grid gap-5 lg:grid-cols-3">
                 {interpreterProfiles.map(({ city, provider }) => (
                   <ProviderProfileCard
-                    key={city.slug}
-                    provider={provider}
+                    key={`${city._id}-${provider._id}`}
+                    provider={provider as ProviderListItem}
                     lang={lang}
                     appearance="light"
                     compact
                     headingLevel={3}
-                    cityInterpreterHref={city.paths[lang] || city.paths.en}
-                    cityInterpreterLabel={network.cityLink(city.city)}
+                    cityInterpreterHref={city.slug?.current ? cityInterpreterPath(city.slug.current, lang) : undefined}
+                    cityInterpreterLabel={network.cityLink(cityInterpreterName(city, lang))}
                   />
                 ))}
               </div>

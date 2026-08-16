@@ -288,6 +288,14 @@ export const servicePageQuery = `
     _rev,
     name,
     slug,
+    kind,
+    city->{
+      _id,
+      name_en,
+      name_pt,
+      name_nl,
+      slug
+    },
 
     seoTitle_en,
     seoTitle_pt,
@@ -344,6 +352,85 @@ export const servicePageQuery = `
     button_en,
     button_pt,
     button_nl
+  }
+`;
+
+export const cityInterpreterCoverageQuery = `
+  *[
+    _type == "city" &&
+    defined(slug.current) &&
+    coalesce(guideStatus, "live") != "hidden" &&
+    count(*[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ]) > 0
+  ] | order(name_en asc){
+    _id,
+    _updatedAt,
+    name_en,
+    name_pt,
+    name_nl,
+    slug,
+    country,
+    primaryHost->{
+      _id,
+      name,
+      slug,
+      status,
+      roles,
+      primaryRole
+    },
+    "interpreters": *[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ] | order(name asc){
+      _id,
+      name,
+      slug,
+      roles,
+      primaryRole,
+      languages[]{language, services},
+      mainPhoto{alt, asset->{url}}
+    },
+    "servicePage": *[
+      _type == "servicePage" &&
+      kind == "cityInterpreter" &&
+      city._ref == ^._id
+    ][0]{
+      _id,
+      _updatedAt,
+      slug
+    }
+  }
+`;
+
+export const cityInterpreterCoverageBySlugQuery = `
+  *[_type == "city" && slug.current == $citySlug][0]{
+    _id,
+    _updatedAt,
+    name_en,
+    name_pt,
+    name_nl,
+    slug,
+    country,
+    primaryHost->{_id, name, slug, status, roles, primaryRole},
+    "interpreters": *[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ] | order(name asc){
+      _id, name, slug, roles, primaryRole,
+      languages[]{language, services},
+      mainPhoto{alt, asset->{url}}
+    },
+    "servicePage": *[
+      _type == "servicePage" && kind == "cityInterpreter" && city._ref == ^._id
+    ][0]{_id, _rev, _updatedAt, slug}
   }
 `;
 
