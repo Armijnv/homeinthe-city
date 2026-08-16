@@ -415,7 +415,7 @@ export const cityInterpreterCoverageQuery = `
         (kind == "cityInterpreter" && city._ref == ^._id) ||
         slug.current == "interpreter-" + ^.slug.current
       )
-    ] | order(kind == "cityInterpreter" desc)[0]{
+    ] | order(kind desc)[0]{
       _id,
       _updatedAt,
       slug
@@ -449,7 +449,7 @@ export const cityInterpreterCoverageBySlugQuery = `
         (kind == "cityInterpreter" && city._ref == ^._id) ||
         slug.current == "interpreter-" + ^.slug.current
       )
-    ] | order(kind == "cityInterpreter" desc)[0]{_id, _rev, _updatedAt, slug}
+    ] | order(kind desc)[0]{_id, _rev, _updatedAt, slug}
   }
 `;
 
