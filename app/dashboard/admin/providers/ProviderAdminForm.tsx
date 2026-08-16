@@ -287,6 +287,10 @@ export default function ProviderAdminForm({
         value={JSON.stringify(serviceCards)}
       />
 
+      <p className="rounded-xl border border-amber-300/25 bg-amber-950/20 px-4 py-3 text-sm leading-6 text-amber-100">
+        Changes here read from and save directly to the published provider document. Sanity Studio drafts are not shown, changed, or published by this editor.
+      </p>
+
       <section className="rounded-2xl border border-white/10 bg-white/10 p-4 sm:p-6">
         <h2 className="text-2xl font-light text-white">Identity and visibility</h2>
         <div className="mt-6 grid gap-5 md:grid-cols-2">

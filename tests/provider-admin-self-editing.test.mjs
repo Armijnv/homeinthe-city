@@ -61,6 +61,16 @@ test("administrator provider editing reads and writes the complete public profil
   assert.match(adminActionSource, /"contactOptions\.website"/);
 });
 
+test("administrator provider editing explicitly operates on the published document", () => {
+  assert.match(adminPageSource, /_id == \$providerId/);
+  assert.doesNotMatch(adminPageSource, /drafts\.provider/);
+  assert.match(
+    adminFormSource,
+    /save directly to the published provider document[\s\S]*Sanity Studio drafts are not shown, changed, or published/i,
+  );
+  assert.match(adminActionSource, /transaction\(\)\.patch\(providerId/);
+});
+
 test("provider activity links to the current administrator provider editor", () => {
   assert.match(activitySource, /"providerId": provider\._ref/);
   assert.match(activitySource, /providerSlug/);
