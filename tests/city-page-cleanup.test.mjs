@@ -21,11 +21,14 @@ test("city pages do not render automatic incomplete-guide copy", () => {
 });
 
 test("empty city sections are conditional and configured sidebar values are optional", () => {
-  assert.match(cityPageSource, /mapEntries\.length \? <CityMap/);
-  assert.match(cityPageSource, /title \|\| introText \|\| hostLine \|\| introBlocks\.length \?/);
-  assert.match(cityPageSource, /primaryHostAction \? <div/);
-  assert.match(cityPageSource, /cardText \? <p/);
-  assert.match(cityPageSource, /cardHref && cardButton \? <a/);
+  assert.match(cityPageSource, /const hasExploreContent = Boolean\(/);
+  assert.match(cityPageSource, /mapEntries\.length,/);
+  assert.match(cityPageSource, /content: hasExploreContent \? \(/);
+  assert.match(cityPageSource, /\{mapEntries\.length \? \(/);
+  assert.match(cityPageSource, /serviceCards\.length \|\| sidebarCards\.length \?/);
+  assert.match(cityPageSource, /return cardTitle \? \(/);
+  assert.match(cityPageSource, /\{cardText \? \(/);
+  assert.match(cityPageSource, /\{cardHref && cardButton \? \(/);
 });
 
 test("Provider Login is available only in the separated menu section and footer", () => {

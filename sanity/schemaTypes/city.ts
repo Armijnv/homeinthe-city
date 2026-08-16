@@ -286,12 +286,9 @@ export const city = defineType({
 
     defineField({
       name: "heroImage",
-      title: "Porto Alegre Hero Image",
+      title: "City Hero Image",
       type: "image",
-      description: "The main image in the experimental Porto Alegre page hero.",
-      hidden: ({ document }) =>
-        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
-        "porto-alegre",
+      description: "The main image in the city page hero.",
       options: { hotspot: true },
       fields: [
         defineField({
@@ -305,16 +302,13 @@ export const city = defineType({
 
     defineField({
       name: "cityPageBackgroundMode",
-      title: "Porto Alegre Page Background",
+      title: "City Page Background",
       type: "string",
       description:
-        "Chooses the default image, the uploaded image, or a neutral background on the Porto Alegre city page.",
-      hidden: ({ document }) =>
-        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
-        "porto-alegre",
+        "Chooses the uploaded image or a neutral background on the city page.",
       options: {
         list: [
-          { title: "Default Porto Alegre image", value: "default" },
+          { title: "Default neutral background", value: "default" },
           { title: "Custom uploaded image", value: "custom" },
           { title: "No background image", value: "none" },
         ],
@@ -381,13 +375,10 @@ export const city = defineType({
 
     defineField({
       name: "cityPageExperience",
-      title: "Porto Alegre Page Experience",
+      title: "City Page Experience",
       type: "object",
       description:
-        "Optional section and discovery-card copy for the experimental Porto Alegre page.",
-      hidden: ({ document }) =>
-        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
-        "porto-alegre",
+        "Optional section and discovery-card copy for the city page.",
       fields: [
         cityExperienceLanguageField("en", "English"),
         cityExperienceLanguageField("pt", "Portuguese"),
@@ -859,13 +850,10 @@ export const city = defineType({
 
     defineField({
       name: "informationCards",
-      title: "Porto Alegre Supporting Information Cards",
+      title: "City Supporting Information Cards",
       type: "array",
       description:
         "Optional localized cards shown with About, Explore, or From Your Host.",
-      hidden: ({ document }) =>
-        (document as { slug?: { current?: string } } | undefined)?.slug?.current !==
-        "porto-alegre",
       of: [
         {
           type: "object",

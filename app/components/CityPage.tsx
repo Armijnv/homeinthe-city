@@ -6,7 +6,6 @@ import {
   cityGuideName,
   cityGuideEnabledLanguages,
   cityGuidePath,
-  isPortoAlegreGuide,
   localizedCityGuideList,
   localizedCityGuideText,
   providerProfilePath,
@@ -19,7 +18,7 @@ import {
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
-import { portoAlegreExperienceLocale } from "@/app/lib/cityPageExperience";
+import { cityPageExperienceLocale } from "@/app/lib/cityPageExperience";
 import {
   localizedRecommendationGuideText,
   mapPlaceAnchorId,
@@ -219,7 +218,6 @@ function HostPhotoActions({
     </div>
   );
 }
-
 const fallbackGuideCopy = {
   en: {
     recommendationGuidesTitle: "Guides from local hosts",
@@ -363,24 +361,6 @@ function providerDisplayHost({
     photoAlt: provider.mainPhoto?.alt || provider.name,
     profileHref: providerSlug ? providerProfilePath(lang, providerSlug) : undefined,
     actions: hostActions(provider),
-  };
-}
-
-function portoAlegreFallbackHost(lang: Lang): DisplayHost {
-  return {
-    name: "Armijn van Dijk",
-    role: roleLabel(lang, "host"),
-    photoUrl: "/me.png",
-    photoAlt: "Armijn van Dijk",
-    profileHref: providerProfilePath(lang, "armijn"),
-    actions: [
-      {
-        label: "WhatsApp",
-        href: "https://wa.me/5551997783369",
-        external: true,
-      },
-      { label: "Email", href: "mailto:contact@homeinthe.city" },
-    ],
   };
 }
 
@@ -1102,7 +1082,6 @@ export default function CityPage({
 
   const t = labels[lang];
   const cityName = cityGuideName(city, lang, citySlug);
-  const isPortoAlegre = isPortoAlegreGuide(citySlug);
   const fallbackCopy = fallbackGuideCopy[lang];
   const headline = localizedCityGuideText(city, "headline", lang);
   const intro = localizedCityGuideText(city, "intro", lang);
@@ -1121,9 +1100,9 @@ export default function CityPage({
   const title = headline || localizedCityGuideText(city, "name", lang);
   const introText = intro;
   const hostLine = "";
-  const includeAutomaticRealEstate = isPortoAlegre
-    ? hasAutomaticRealEstateService(propertyListings)
-    : propertyListings.length > 0;
+  const includeAutomaticRealEstate = hasAutomaticRealEstateService(
+    propertyListings,
+  );
   const serviceCards = automaticCityServiceCards({
     lang,
     citySlug,
@@ -1135,7 +1114,7 @@ export default function CityPage({
   const selectedHost = city?.primaryHost
     ? providerDisplayHost({ provider: city.primaryHost, lang })
     : null;
-  const displayHost = selectedHost || (isPortoAlegre ? portoAlegreFallbackHost(lang) : null);
+  const displayHost = selectedHost;
   const primaryHostAction = displayHost?.actions[0];
   const sidebarCards: SidebarCard[] = (city?.sidebarCards || []).filter(
     (card) =>
@@ -1147,8 +1126,8 @@ export default function CityPage({
       }),
   );
 
-  if (isPortoAlegre) {
-    const experienceCopy = portoAlegreExperienceLocale(
+  {
+    const experienceCopy = cityPageExperienceLocale(
       city?.cityPageExperience,
       lang,
     );
@@ -1347,7 +1326,7 @@ export default function CityPage({
         id: "explore-city",
         title: experienceCopy.exploreTitle || tabLabels.explore,
         intro: hasExploreContent ? experienceCopy.exploreIntroduction : undefined,
-        content: (
+        content: hasExploreContent ? (
           <div className="space-y-8">
             {mapEntries.length ? (
               <CityMap
@@ -1385,7 +1364,7 @@ export default function CityPage({
               </div>
             ) : null}
           </div>
-        ),
+        ) : null,
         supportingContent: exploreInformationCards.length ? (
           <SupportingInformationCards cards={exploreInformationCards} lang={lang} />
         ) : null,
@@ -1433,7 +1412,7 @@ export default function CityPage({
         ? null
         : cityPageBackgroundMode === "custom"
           ? city?.heroImage?.asset?.url || null
-          : "/porto-alegre-desktop-background.jpg";
+          : null;
     const hero = (
       <header className="overflow-hidden rounded-2xl bg-[#1a1f2e] p-5 text-white shadow-xl shadow-black/15 md:rounded-3xl md:p-7">
         <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(28rem,0.95fr)] lg:items-center lg:gap-7">
@@ -1527,451 +1506,4 @@ export default function CityPage({
     );
   }
 
-  return (
-    <div className="relative z-10 min-h-screen overflow-hidden bg-stone-50 px-6 pt-28 pb-14 md:bg-transparent">
-      {recommendationGuides.length ? (
-        <JsonLdScript
-          data={recommendationGuideJsonLd({
-            recommendations: recommendationGuides,
-            lang,
-            cityName,
-            citySlug,
-          })}
-        />
-      ) : null}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 via-transparent to-white/20" />
-
-      <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
-        {displayHost ? (
-          <div className="fixed right-4 top-24 z-[70] group md:right-8 lg:top-24">
-            <div
-              className="relative h-20 w-20 cursor-pointer md:h-24 md:w-24 lg:h-28 lg:w-28"
-              onClick={() => setOpen(!open)}
-            >
-              <Image
-                src={displayHost.photoUrl}
-                alt={displayHost.photoAlt}
-                fill
-                sizes="(max-width: 768px) 80px, (max-width: 1024px) 96px, 112px"
-                className="rounded-full border-4 border-white object-cover shadow-xl"
-              />
-            </div>
-
-            {open && (
-              <>
-                {displayHost.profileHref ? (
-                  <a
-                    href={displayHost.profileHref}
-                    className="absolute right-28 top-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-28 lg:right-32"
-                  >
-                    {t.profile}
-                  </a>
-                ) : null}
-
-                {displayHost.actions.slice(0, 2).map((action, index) => (
-                  <a
-                    key={action.href}
-                    href={action.href}
-                    target={action.external ? "_blank" : undefined}
-                    rel={action.external ? "noreferrer" : undefined}
-                    className={
-                      index === 0
-                        ? "absolute right-32 top-16 rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-32 lg:right-36 lg:top-20"
-                        : "absolute right-20 top-[7.5rem] rounded-full bg-white px-4 py-2 text-sm font-medium text-stone-900 shadow-xl hover:bg-stone-100 md:right-20 lg:right-24 lg:top-36"
-                    }
-                  >
-                    {action.label}
-                  </a>
-                ))}
-              </>
-            )}
-          </div>
-        ) : null}
-
-        <div className="space-y-4 md:col-span-2 md:space-y-8">
-          <div className="max-w-[calc(100%-5.75rem)] md:hidden">
-            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
-          </div>
-
-          <div className="flex gap-3 text-xl" aria-label="City guide languages">
-            {cityGuideEnabledLanguages(city).map((language) => (
-              <a
-                key={language}
-                href={cityGuidePath(language, citySlug)}
-                aria-label={
-                  language === "en"
-                    ? "English"
-                    : language === "pt"
-                      ? "Portuguese"
-                      : "Dutch"
-                }
-                aria-current={language === lang ? "page" : undefined}
-              >
-                {language === "en" ? "🇬🇧" : language === "pt" ? "🇧🇷" : "🇳🇱"}
-              </a>
-            ))}
-          </div>
-
-          {title || introText || hostLine || introBlocks.length ? (
-            <div className="rounded-3xl bg-white/97 p-8 shadow-2xl shadow-black/15 backdrop-blur-md">
-              {title ? <h1 className="mb-6 text-4xl font-normal tracking-tight text-black md:text-6xl">{title}</h1> : null}
-              {introText ? <p className="max-w-2xl font-medium leading-relaxed text-stone-700">{introText}</p> : null}
-              {hostLine ? <p className="mt-4 max-w-2xl leading-relaxed text-stone-700">{hostLine}</p> : null}
-              {introBlocks.length ? <div className="mt-6 space-y-4">{introBlocks.map((block: string, index: number) => <p key={index} className="max-w-2xl leading-relaxed text-stone-700">{block}</p>)}</div> : null}
-            </div>
-          ) : null}
-
-          {mapEntries.length ? <CityMap entries={mapEntries} lang={lang} cityName={cityName} cityCenter={{ latitude: city?.latitude, longitude: city?.longitude }} /> : null}
-
-          {recommendationGuides.length ? (
-            <section
-              aria-labelledby="recommendation-guides-title"
-              className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm"
-            >
-              <h2
-                id="recommendation-guides-title"
-                className="text-2xl text-stone-800"
-              >
-                {fallbackCopy.recommendationGuidesTitle}
-              </h2>
-              <p className="mt-3 max-w-2xl leading-7 text-stone-600">
-                {fallbackCopy.recommendationGuidesIntro(cityName)}
-              </p>
-
-              <div className="mt-6 space-y-5">
-                {recommendationGuides.map((recommendation, index) => {
-                  const values = recommendation as Record<string, unknown>;
-                  const title = localizedRecommendationGuideText(values, "title", lang);
-                  if (!title) return null;
-
-                  const introduction = localizedRecommendationGuideText(
-                    values,
-                    "introduction",
-                    lang,
-                  );
-                  const content = localizedRecommendationGuideText(values, "content", lang);
-                  const relatedPlaces = places.filter(
-                    (place) =>
-                      place._key &&
-                      recommendation.relatedMapPlaceKeys?.includes(place._key),
-                  );
-                  const relatedProviderSlug =
-                    recommendation.relatedProvider?.slug?.current;
-                  const relatedCitySlug = recommendation.relatedCity?.slug?.current;
-                  const relatedCityName = relatedCitySlug
-                    ? cityGuideName(recommendation.relatedCity, lang, relatedCitySlug)
-                    : "";
-
-                  return (
-                    <article
-                      key={recommendation._key || `${title}-${index}`}
-                      className="overflow-hidden rounded-2xl border border-stone-200 bg-stone-50"
-                    >
-                      {recommendation.featuredImage?.asset?.url ? (
-                        <div className="relative aspect-[16/8] w-full bg-stone-200">
-                          <Image
-                            src={recommendation.featuredImage.asset.url}
-                            alt={recommendation.featuredImage.alt || `${title}, ${cityName}`}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 720px"
-                            className="object-cover"
-                          />
-                        </div>
-                      ) : null}
-
-                      <div className="p-5 sm:p-6">
-                        <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#9b6b22]">
-                          {recommendationCategoryLabel(recommendation, lang)}
-                        </p>
-                        <h3 className="mt-2 text-xl font-medium text-stone-950 sm:text-2xl">
-                          {title}
-                        </h3>
-                        {introduction ? (
-                          <p className="mt-3 max-w-3xl leading-7 text-stone-700">
-                            {introduction}
-                          </p>
-                        ) : null}
-
-                        {content ? (
-                          <details className="group mt-5 border-t border-stone-200 pt-4">
-                            <summary className="inline-flex min-h-11 cursor-pointer list-none items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-800 [&::-webkit-details-marker]:hidden">
-                              {fallbackCopy.readRecommendation}
-                            </summary>
-                            <div className="mt-6 space-y-5">
-                              <RecommendationGuideBody content={content} />
-
-                              {relatedPlaces.length ? (
-                                <aside className="rounded-xl border border-stone-200 bg-white p-4">
-                                  <h4 className="font-medium text-stone-900">
-                                    {fallbackCopy.relatedPlaces}
-                                  </h4>
-                                  <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                                    {relatedPlaces.map((place) => (
-                                      <li key={place._key}>
-                                        <a
-                                          href={`#${mapPlaceAnchorId(place._key || "")}`}
-                                          className="inline-flex min-h-11 items-center rounded-full border border-stone-300 bg-stone-50 px-4 py-2 text-sm font-medium text-stone-800 transition hover:border-stone-400 hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455]"
-                                        >
-                                          {localizedMapPlaceText(place, "name", lang)}
-                                        </a>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </aside>
-                              ) : null}
-
-                              {(relatedProviderSlug || relatedCitySlug) ? (
-                                <div className="flex flex-wrap gap-3 border-t border-stone-200 pt-5 text-sm">
-                                  {relatedProviderSlug ? (
-                                    <Link
-                                      href={providerProfilePath(lang, relatedProviderSlug)}
-                                      className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
-                                    >
-                                      {fallbackCopy.relatedHost}: {recommendation.relatedProvider?.name}
-                                    </Link>
-                                  ) : null}
-                                  {relatedCitySlug ? (
-                                    <Link
-                                      href={cityGuidePath(lang, relatedCitySlug)}
-                                      className="rounded-full border border-stone-300 px-4 py-2 text-stone-800 hover:bg-white"
-                                    >
-                                      {fallbackCopy.relatedCity}: {relatedCityName}
-                                    </Link>
-                                  ) : null}
-                                </div>
-                              ) : null}
-                            </div>
-                          </details>
-                        ) : null}
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null}
-
-          {recommendationGroups.length ? (
-            <section className="rounded-3xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
-              <h2 className="mb-5 text-2xl text-stone-800">
-                {fallbackCopy.legacyRecommendationsTitle}
-              </h2>
-
-              <div className="space-y-7">
-                {recommendationGroups.map((group) => (
-                  <div
-                    key={group.id}
-                    className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
-                  >
-                    <h3 className="mb-4 text-lg font-medium text-stone-900">
-                      {group.label}
-                    </h3>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {group.items.map((recommendation, index) => {
-                        const title = localizedRecommendationText(
-                          recommendation,
-                          "name",
-                          lang,
-                        );
-                        const detail = localizedRecommendationText(
-                          recommendation,
-                          "detail",
-                          lang,
-                        );
-                        const description = localizedRecommendationText(
-                          recommendation,
-                          "description",
-                          lang,
-                        );
-
-                        return (
-                          <article
-                            key={`${group.id}-${title}-${index}`}
-                            className="border-t border-stone-200 pt-4 first:border-t-0 first:pt-0 sm:border-t-0 sm:pt-0"
-                          >
-                            {recommendation.favorite ? (
-                              <p className="mb-2 text-xs uppercase tracking-widest text-[#9b6b22]">
-                                {fallbackCopy.recommendationPick}
-                              </p>
-                            ) : null}
-
-                            <h4 className="text-base font-medium text-stone-950">
-                              {title}
-                            </h4>
-
-                            {recommendation.neighborhood ? (
-                              <p className="mt-1 text-sm text-stone-500">
-                                {recommendation.neighborhood}
-                              </p>
-                            ) : null}
-
-                            {detail ? (
-                              <p className="mt-3 text-sm leading-6 text-stone-700">
-                                {detail}
-                              </p>
-                            ) : null}
-
-                            {description && description !== detail ? (
-                              <p className="mt-3 text-sm leading-6 text-stone-600">
-                                {description}
-                              </p>
-                            ) : null}
-
-                            {recommendation.website ? (
-                              <a
-                                href={recommendation.website}
-                                target={
-                                  recommendation.website.startsWith("http")
-                                    ? "_blank"
-                                    : undefined
-                                }
-                                rel={
-                                  recommendation.website.startsWith("http")
-                                    ? "noreferrer"
-                                    : undefined
-                                }
-                                className="mt-4 inline-block rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
-                              >
-                                {fallbackCopy.recommendationLink}
-                              </a>
-                            ) : null}
-                          </article>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {primaryHostAction ? <div className="rounded-2xl bg-white/97 p-6 shadow-lg shadow-black/10 backdrop-blur-sm">
-            <h2 className="mb-2 text-xl font-medium text-black">{t.helpTitle}</h2>
-
-            <a
-              href={primaryHostAction.href}
-              target={primaryHostAction.external ? "_blank" : undefined}
-              rel={primaryHostAction.external ? "noreferrer" : undefined}
-              className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-            >
-              {localizedCityGuideText(city, "cta", lang) || t.cta}
-            </a>
-          </div> : null}
-        </div>
-
-        <div className="space-y-6 pt-24 md:pt-36 lg:pt-0">
-          <div className="hidden md:block">
-            <CityLiveInfoWidget info={initialLiveInfo} lang={lang} />
-          </div>
-
-          {displayHost ? (
-            <div className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md">
-              <h3 className="mb-4 text-lg font-medium text-black">
-                {t.hostCardTitle}
-              </h3>
-
-              <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-stone-200">
-                  <Image
-                    src={displayHost.photoUrl}
-                    alt={displayHost.photoAlt}
-                    fill
-                    sizes="64px"
-                    className="object-cover"
-                  />
-                </div>
-
-                <div>
-                  <p className="font-medium text-stone-900">{displayHost.name}</p>
-                  <p className="text-sm text-stone-600">{displayHost.role}</p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-2">
-                {displayHost.profileHref ? (
-                  <Link
-                    href={displayHost.profileHref}
-                    className="inline-block rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-800 hover:bg-stone-100"
-                  >
-                    {t.profile}
-                  </Link>
-                ) : null}
-
-                {displayHost.actions.map((action) => (
-                  <a
-                    key={action.href}
-                    href={action.href}
-                    target={action.external ? "_blank" : undefined}
-                    rel={action.external ? "noreferrer" : undefined}
-                    className="inline-block rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
-                  >
-                    {action.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {/* ======================================================
-             SECONDARY SERVICE ENTRY POINTS
-          ====================================================== */}
-
-          {serviceCards.map((card) => (
-            <div
-              key={card.href}
-              className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
-            >
-              <h3 className="mb-3 text-lg font-medium text-black">
-                {card.title}
-              </h3>
-
-              {card.text ? <p className="mb-5 text-sm leading-relaxed text-stone-700">{card.text}</p> : null}
-
-              {card.href.startsWith("mailto:") ? (
-                <a
-                  href={card.href}
-                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-                >
-                  {card.button}
-                </a>
-              ) : (
-                <Link
-                  href={card.href}
-                  className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800"
-                >
-                  {card.button}
-                </Link>
-              )}
-            </div>
-          ))}
-
-          {/* ======================================================
-             SANITY CITY CARDS
-          ====================================================== */}
-
-          {sidebarCards.map((card, index) => {
-            const cardTitle = localizedField(card, "title", lang);
-            const cardText = localizedField(card, "text", lang);
-            const cardHref = localizedField(card, "href", lang);
-            const cardButton = localizedField(card, "button", lang);
-
-            return cardTitle ? (
-              <div
-                key={`${cardHref}-${index}`}
-                className="rounded-2xl bg-white/97 p-6 shadow-xl shadow-black/10 backdrop-blur-md"
-              >
-                <h3 className={`${cardText || (cardHref && cardButton) ? "mb-3" : ""} text-lg font-medium text-black`}>{cardTitle}</h3>
-
-                {cardText ? <p className={`${cardHref && cardButton ? "mb-5" : ""} text-sm leading-relaxed text-stone-700`}>{cardText}</p> : null}
-
-                {cardHref && cardButton ? <a href={cardHref} className="inline-block rounded-full bg-[#1a1f2e] px-5 py-3 text-sm text-white hover:bg-stone-800">{cardButton}</a> : null}
-              </div>
-            ) : null
-          })}
-
-        </div>
-      </div>
-    </div>
-  );
 }

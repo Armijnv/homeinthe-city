@@ -182,9 +182,7 @@ async function uploadedLivingServiceImage(
   }
 
   const fallbackAlt =
-    serviceKey === "interpreter"
-      ? "Interpreter services in Porto Alegre"
-      : "Real estate in Porto Alegre";
+    serviceKey === "interpreter" ? "Interpreter services" : "Real estate";
 
   try {
     return await uploadSanityImage(
@@ -404,7 +402,7 @@ async function informationCardsFromForm(formData: FormData) {
       const uploadedImage = await uploadedInformationCardImage(
         formData,
         cardKey,
-        `${fallbackTitle} in Porto Alegre`,
+        `${fallbackTitle} supporting image`,
       );
       const removeImage =
         stringValue(formData, `removeInformationCardImage-${cardKey}`) === "on";
@@ -525,7 +523,7 @@ async function uploadedCityHeroImage(formData: FormData) {
   try {
     return await uploadSanityImage(
       entry,
-      "Porto Alegre city page background",
+      "City page background",
     );
   } catch (error) {
     console.error("City page background upload failed", error);
@@ -742,20 +740,18 @@ export async function saveCityContentAction(
     }
 
     for (const lang of languages) {
-      if (citySlug === "porto-alegre") {
-        setValues[`name_${lang}`] = stringValue(formData, `name_${lang}`) || undefined;
-        setValues[`cta_${lang}`] = stringValue(formData, `cta_${lang}`) || undefined;
-      }
+      setValues[`name_${lang}`] = stringValue(formData, `name_${lang}`) || undefined;
+      setValues[`cta_${lang}`] = stringValue(formData, `cta_${lang}`) || undefined;
       setValues[`headline_${lang}`] = stringValue(formData, `headline_${lang}`) || undefined;
       setValues[`intro_${lang}`] = stringValue(formData, `intro_${lang}`) || undefined;
       setValues[`introBlocks_${lang}`] = introBlocksFromForm(
         formData,
         lang,
-        citySlug === "porto-alegre",
+        true,
       );
     }
 
-    if (citySlug === "porto-alegre") {
+    {
       setValues.informationCards = await informationCardsFromForm(formData);
       setValues.cityPageExperience = await cityPageExperienceFromForm(
         formData,
@@ -813,10 +809,7 @@ export async function saveCityContentAction(
       context,
       city,
       changeType: "cityContent",
-      description:
-        citySlug === "porto-alegre"
-          ? "Updated Porto Alegre page content."
-          : "Updated city guide content or sidebar cards.",
+      description: "Updated city page content.",
       changes,
     });
     if (changeLog) transaction.create(changeLog);
@@ -913,10 +906,7 @@ export async function saveCityRecommendationsAction(
     if (!logs.length) {
       return {
         status: "success",
-        message:
-          citySlug === "porto-alegre"
-            ? "No host story changes to save."
-            : "No recommendation changes to save.",
+        message: "No host story changes to save.",
         submittedAt: Date.now(),
       };
     }
@@ -927,10 +917,7 @@ export async function saveCityRecommendationsAction(
 
     return {
       status: "success",
-      message:
-        citySlug === "porto-alegre"
-          ? "Host stories saved."
-          : "Recommendations saved.",
+      message: "Host stories saved.",
       submittedAt: Date.now(),
     };
   } catch (error) {

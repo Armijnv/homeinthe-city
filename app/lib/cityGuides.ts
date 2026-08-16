@@ -314,10 +314,6 @@ export function cityGuideName(
   );
 }
 
-export function isPortoAlegreGuide(citySlug: string) {
-  return citySlug === "porto-alegre";
-}
-
 export function cityGuideStatus(city: CityGuideContent | null | undefined) {
   return city?.guideStatus || "live";
 }
@@ -382,15 +378,6 @@ export function cityGuideDisplayContent(
   return city;
 }
 
-const fallbackDescriptions: Record<CityGuideLang, (cityName: string) => string> = {
-  en: (cityName) =>
-    `A Home in the City guide for ${cityName}, with local context, practical support and curated places as they are added.`,
-  pt: (cityName) =>
-    `Um guia da Home in the City para ${cityName}, com contexto local, apoio prático e lugares selecionados conforme forem adicionados.`,
-  nl: (cityName) =>
-    `Een Home in the City-gids voor ${cityName}, met lokale context, praktische hulp en geselecteerde plekken zodra ze worden toegevoegd.`,
-};
-
 export function cityGuideTitle({
   city,
   lang,
@@ -401,12 +388,6 @@ export function cityGuideTitle({
   citySlug: string;
 }) {
   const cityName = cityGuideName(city, lang, citySlug);
-
-  if (isPortoAlegreGuide(citySlug)) {
-    if (lang === "pt") return "Guia Local de Porto Alegre";
-    if (lang === "nl") return "Porto Alegre Lokale Gids";
-    return "Porto Alegre City Guide";
-  }
 
   if (lang === "pt") return `Guia local de ${cityName}`;
   if (lang === "nl") return `${cityName} lokale gids`;
@@ -422,21 +403,9 @@ export function cityGuideDescription({
   lang: CityGuideLang;
   citySlug: string;
 }) {
-  const cityName = cityGuideName(city, lang, citySlug);
   const intro = localizedCityGuideText(city, "intro", lang);
 
-  if (intro) return intro;
-  if (isPortoAlegreGuide(citySlug)) {
-    if (lang === "pt") {
-      return "Guia local de Porto Alegre com restaurantes, locais para negócios, espaços culturais, caminhadas, informações práticas, moradia e contatos confiáveis.";
-    }
-    if (lang === "nl") {
-      return "Een lokale gids voor Porto Alegre met restaurants, zakelijke locaties, culturele plekken, wandelroutes, praktische informatie, verblijf en vertrouwde contacten.";
-    }
-    return "A hosted Porto Alegre city guide with restaurants, business locations, cultural venues, walks, practical information, housing and trusted local contacts.";
-  }
-
-  return fallbackDescriptions[lang](cityName);
+  return intro || undefined;
 }
 
 export function cityGuideMetadata({
@@ -454,14 +423,14 @@ export function cityGuideMetadata({
 
   return {
     title,
-    description,
+    ...(description ? { description } : {}),
     alternates: {
       canonical: url,
       languages: cityGuideAlternates(citySlug, city),
     },
     openGraph: {
       title: `${title} | Home in the City`,
-      description,
+      ...(description ? { description } : {}),
       url,
       siteName: "Home in the City",
       locale: cityGuideLocale[lang],

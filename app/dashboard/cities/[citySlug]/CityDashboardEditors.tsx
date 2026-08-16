@@ -14,7 +14,6 @@ import { useFormStatus } from "react-dom";
 import type { CityDashboardActionState } from "@/app/dashboard/cities/[citySlug]/actions";
 import { recommendationGuideCategories } from "@/app/lib/recommendationGuides";
 import {
-  portoAlegreExperienceDefaults,
   type CityPageExperience,
   type CityPageExperienceField,
   type LivingServicePresentation,
@@ -422,7 +421,7 @@ function experienceValue(
   language: Lang,
   field: CityPageExperienceField,
 ) {
-  const experience = city.cityPageExperience || portoAlegreExperienceDefaults;
+  const experience = city.cityPageExperience || {};
   return experience[language]?.[field] || "";
 }
 
@@ -457,9 +456,9 @@ function ExperienceInput({
   );
 }
 
-type PortoEditorSection = "about" | "living" | "explore" | "from-host";
+type CityEditorSection = "about" | "living" | "explore" | "from-host";
 
-const portoEditorSections: Array<{ id: PortoEditorSection; label: string }> = [
+const cityEditorSections: Array<{ id: CityEditorSection; label: string }> = [
   { id: "about", label: "About the City" },
   { id: "living", label: "Living & Working" },
   { id: "explore", label: "Explore the City" },
@@ -478,11 +477,7 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
   const [imageError, setImageError] = useState("");
   const [imageSelected, setImageSelected] = useState(false);
   const displayUrl = previewUrl ||
-    (backgroundMode === "custom"
-      ? savedImageUrl
-      : backgroundMode === "default"
-        ? "/porto-alegre-desktop-background.jpg"
-        : undefined);
+    (backgroundMode === "custom" ? savedImageUrl : undefined);
 
   useEffect(() => {
     return () => {
@@ -540,7 +535,7 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
                 : "Choose an image below"
               : backgroundMode === "none"
                 ? "No background image"
-                : "Default Porto Alegre background"}
+                : "Neutral background"}
           </p>
         </div>
 
@@ -548,7 +543,7 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
           <fieldset className="space-y-2">
             <legend className="mb-2 text-sm font-medium text-white">Background</legend>
             {([
-              ["default", "Default Porto Alegre image"],
+              ["default", "Default neutral background"],
               ["custom", "Custom image"],
               ["none", "No background image"],
             ] as const).map(([value, label]) => (
@@ -716,7 +711,7 @@ function AutomaticLivingServices({
   activeLanguage: Lang;
 }) {
   const cityName =
-    city[`name_${activeLanguage}`] || city.name_en || "Porto Alegre";
+    city[`name_${activeLanguage}`] || city.name_en || citySlug;
   const listingCount = qualifyingAutomaticRealEstateListingCount(
     city.propertyListingStatuses || [],
   );
@@ -780,7 +775,7 @@ function AutomaticLivingServices({
                     lang: language.id,
                     citySlug,
                     cityName:
-                      city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+                      city[`name_${language.id}`] || city.name_en || citySlug,
                     hasInterpreterCoverage: city.hasInterpreterCoverage === true,
                     includeRealEstate: true,
                   }).find((item) => item.kind === card.kind);
@@ -833,10 +828,10 @@ function AutomaticLivingServices({
 
               <p className="mt-4 border-t border-white/10 pt-4 text-xs leading-5 text-stone-400">
                 {card.kind === "interpreter"
-                  ? "Service availability and the destination come from Porto Alegre’s interpreter service. The presentation fields and optional image are managed here."
+                  ? "Service availability and the destination come from this city’s interpreter coverage. The presentation fields and optional image are managed here."
                   : appearsPublicly
-                    ? `This card is generated because ${listingCount} eligible Porto Alegre property ${listingCount === 1 ? "listing matches" : "listings match"} the public-page query. Listings are managed in the Property Listings workspace.`
-                    : "This card appears only when an eligible Porto Alegre property listing exists. Listings are managed in the Property Listings workspace."}
+                    ? `This card is generated because ${listingCount} eligible city property ${listingCount === 1 ? "listing matches" : "listings match"} the public-page query. Listings are managed in the Property Listings workspace.`
+                    : "This card appears only when an eligible city property listing exists. Listings are managed in the Property Listings workspace."}
               </p>
               <Link
                 href={card.href}
@@ -844,7 +839,7 @@ function AutomaticLivingServices({
               >
                 {card.kind === "interpreter"
                   ? "Open interpreter services page"
-                  : "Open Porto Alegre real-estate page"}
+                  : "Open city real-estate page"}
               </Link>
             </article>
           );
@@ -854,7 +849,7 @@ function AutomaticLivingServices({
   );
 }
 
-function PortoAlegreExperienceFields({
+function CityExperienceFields({
   city,
   citySlug,
   activeLanguage,
@@ -868,7 +863,7 @@ function PortoAlegreExperienceFields({
   city: CityDashboardEditorData;
   citySlug: string;
   activeLanguage: Lang;
-  activeSection: PortoEditorSection;
+  activeSection: CityEditorSection;
   sidebarCards: CityDashboardSidebarCard[];
   setSidebarCards: (cards: CityDashboardSidebarCard[]) => void;
   informationCards: CityDashboardInformationCard[];
@@ -885,7 +880,7 @@ function PortoAlegreExperienceFields({
         lang: language.id,
         citySlug,
         cityName:
-          city[`name_${language.id}`] || city.name_en || "Porto Alegre",
+          city[`name_${language.id}`] || city.name_en || citySlug,
         hasInterpreterCoverage: city.hasInterpreterCoverage === true,
         includeRealEstate,
         presentation: city.cityPageExperience?.livingServices,
@@ -1817,7 +1812,7 @@ function RecommendationEditor({
                               event.target.value,
                             )
                           }
-                          placeholder="A Perfect Sunday in Porto Alegre"
+                          placeholder="A perfect Sunday in this city"
                         />
                       </Field>
                       <Field label={`Short introduction (${language.hint})`}>
@@ -1974,9 +1969,8 @@ export default function CityDashboardEditors({
     city.recommendationGuides || [],
   );
   const [activeLanguage, setActiveLanguage] = useState<Lang>("en");
-  const [activePortoSection, setActivePortoSection] =
-    useState<PortoEditorSection>("about");
-  const isPortoAlegre = citySlug === "porto-alegre";
+  const [activeCitySection, setActiveCitySection] =
+    useState<CityEditorSection>("about");
 
   useEffect(() => {
     if (recommendationState.status === "success") {
@@ -1994,10 +1988,9 @@ export default function CityDashboardEditors({
     <div className="space-y-8">
       <Panel
         eyebrow="City content"
-        title={isPortoAlegre ? "City page" : "Public guide copy"}
+        title="City page"
       >
-        {isPortoAlegre ? (
-          <div className="space-y-5 rounded-xl border border-white/10 bg-black/10 p-3 md:p-4">
+        <div className="space-y-5 rounded-xl border border-white/10 bg-black/10 p-3 md:p-4">
             <div>
               <p className="mb-2 text-xs uppercase tracking-widest text-stone-400">
                 Editing language
@@ -2035,17 +2028,17 @@ export default function CityDashboardEditors({
                 aria-label="Public page editing areas"
                 className="grid grid-cols-2 gap-2 lg:grid-cols-4"
               >
-                {portoEditorSections.map((section) => (
+                {cityEditorSections.map((section) => (
                   <button
                     key={section.id}
-                    id={`porto-${section.id}-editor-tab`}
+                    id={`city-${section.id}-editor-tab`}
                     type="button"
                     role="tab"
-                    aria-selected={activePortoSection === section.id}
-                    aria-controls={`porto-${section.id}-editor`}
-                    onClick={() => setActivePortoSection(section.id)}
+                    aria-selected={activeCitySection === section.id}
+                    aria-controls={`city-${section.id}-editor`}
+                    onClick={() => setActiveCitySection(section.id)}
                     className={`min-h-12 rounded-lg px-3 py-2 text-sm font-medium leading-tight transition focus:outline-none focus:ring-2 focus:ring-[#d6a85a] ${
-                      activePortoSection === section.id
+                      activeCitySection === section.id
                         ? "bg-white text-[#1a1f2e]"
                         : "bg-white/5 text-stone-200 hover:bg-white/10"
                     }`}
@@ -2055,55 +2048,39 @@ export default function CityDashboardEditors({
                 ))}
               </div>
             </div>
-          </div>
-        ) : null}
+        </div>
 
         <form action={contentFormAction} className="space-y-6">
           <ActionMessage state={contentState} />
-          {isPortoAlegre ? (
-            <input
-              type="hidden"
-              name="informationCardsJson"
-              value={JSON.stringify(informationCards)}
-            />
-          ) : null}
+          <input
+            type="hidden"
+            name="informationCardsJson"
+            value={JSON.stringify(informationCards)}
+          />
           <EnabledLanguageFields
             city={city}
             canManageLanguages={canManageLanguages}
           />
-          {isPortoAlegre ? (
-            <PortoAlegreExperienceFields
+          <CityExperienceFields
               city={city}
               citySlug={citySlug}
               activeLanguage={activeLanguage}
-              activeSection={activePortoSection}
+              activeSection={activeCitySection}
               sidebarCards={sidebarCards}
               setSidebarCards={setSidebarCards}
               informationCards={informationCards}
               setInformationCards={setInformationCards}
               isAdministrator={isAdministrator}
             />
-          ) : (
-            <LanguageFields city={city} />
-          )}
-
-          {!isPortoAlegre ? (
-            <div className="space-y-4 border-t border-white/10 pt-6">
-              <h3 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
-                Sidebar cards
-              </h3>
-              <SidebarCardEditor cards={sidebarCards} setCards={setSidebarCards} />
-            </div>
-          ) : null}
 
           <SaveButton label="Save city content" />
         </form>
       </Panel>
 
-      <div hidden={isPortoAlegre && activePortoSection !== "from-host"}>
+      <div hidden={activeCitySection !== "from-host"}>
         <Panel
-          eyebrow={isPortoAlegre ? "From Your Host" : "Recommendations"}
-          title={isPortoAlegre ? "Host stories" : "Curated local guides"}
+          eyebrow="From Your Host"
+          title="Host stories"
         >
           <form
             key={recommendationState.submittedAt || "recommendation-guides"}
@@ -2117,11 +2094,11 @@ export default function CityDashboardEditors({
               mapPlaces={city.mapPlaces || []}
               legacyRecommendationCount={city.recommendations?.length || 0}
               cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
-              activeLanguage={isPortoAlegre ? activeLanguage : undefined}
-              hostStories={isPortoAlegre}
+              activeLanguage={activeLanguage}
+              hostStories
             />
             <SaveButton
-              label={isPortoAlegre ? "Save host stories" : "Save recommendation guides"}
+              label="Save host stories"
             />
           </form>
         </Panel>

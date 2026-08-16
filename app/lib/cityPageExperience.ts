@@ -135,11 +135,9 @@ export const portoAlegreExperienceDefaults: Record<
   },
 };
 
-export function portoAlegreExperienceLocale(
+export function cityPageExperienceLocale(
   experience: CityPageExperience | null | undefined,
   lang: CityGuideLang,
 ) {
-  return experience
-    ? experience[lang] || {}
-    : portoAlegreExperienceDefaults[lang];
+  return experience?.[lang] || {};
 }

@@ -44,7 +44,7 @@ type CityGuideJsonLdInput = {
   url: string;
   name: string;
   cityName: string;
-  description: string;
+  description?: string;
   inLanguage: string;
   administrativeRegion?: string;
   country?: string | null;
