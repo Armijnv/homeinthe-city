@@ -426,7 +426,10 @@ export function cityGuideMetadata({
     ...(description ? { description } : {}),
     alternates: {
       canonical: url,
-      languages: cityGuideAlternates(citySlug, city),
+      languages: {
+        ...cityGuideAlternates(citySlug, city),
+        "x-default": `${cityGuideSiteUrl}${cityGuidePath("en", citySlug)}`,
+      },
     },
     openGraph: {
       title: `${title} | Home in the City`,
@@ -435,6 +438,11 @@ export function cityGuideMetadata({
       siteName: "Home in the City",
       locale: cityGuideLocale[lang],
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Home in the City`,
+      ...(description ? { description } : {}),
     },
   };
 }

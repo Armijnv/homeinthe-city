@@ -26,10 +26,8 @@ export async function generateMetadata({
   if (!host) notFound();
 
   return {
-    title: `${cleanMetadataTitle(host?.headline_pt || host?.name) || "Host"} | Intérprete em Porto Alegre`,
-    description:
-      host?.intro_pt ||
-      "Intérprete em Porto Alegre para visitantes de negócios. Suporte em inglês, holandês e português para reuniões e visitas empresariais.",
+    title: cleanMetadataTitle(host?.headline_pt || host?.name) || "Perfil de anfitrião",
+    description: host?.intro_pt || "Perfil público de anfitrião local na Home in the City.",
 
     alternates: {
       canonical: `https://homeinthe.city/pt/hosts/${slug}`,
@@ -37,6 +35,7 @@ export async function generateMetadata({
         en: `https://homeinthe.city/hosts/${slug}`,
         pt: `https://homeinthe.city/pt/hosts/${slug}`,
         nl: `https://homeinthe.city/nl/hosts/${slug}`,
+        "x-default": `https://homeinthe.city/hosts/${slug}`,
       },
     },
 
@@ -51,6 +50,7 @@ export async function generateMetadata({
       locale: "pt_BR",
       type: "website",
     },
+    twitter: { card: "summary_large_image", title: host?.headline_pt || host?.name || "Perfil de anfitrião", description: host?.intro_pt || "Perfil público de anfitrião local na Home in the City.", images: host?.photo?.asset?.url ? [host.photo.asset.url] : undefined },
   };
 }
 

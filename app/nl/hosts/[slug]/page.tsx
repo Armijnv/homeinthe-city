@@ -26,10 +26,8 @@ export async function generateMetadata({
   if (!host) notFound();
 
   return {
-    title: `${cleanMetadataTitle(host?.headline_nl || host?.name) || "Host"} | Nederlandse tolk in Porto Alegre`,
-    description:
-      host?.intro_nl ||
-      "Nederlandse tolk in Porto Alegre voor zakelijke bezoekers. Ondersteuning in Nederlands, Engels en Portugees voor meetings en bedrijfsbezoeken.",
+    title: cleanMetadataTitle(host?.headline_nl || host?.name) || "Hostprofiel",
+    description: host?.intro_nl || "Openbaar profiel van een lokale host bij Home in the City.",
 
     alternates: {
       canonical: `https://homeinthe.city/nl/hosts/${slug}`,
@@ -37,6 +35,7 @@ export async function generateMetadata({
         en: `https://homeinthe.city/hosts/${slug}`,
         pt: `https://homeinthe.city/pt/hosts/${slug}`,
         nl: `https://homeinthe.city/nl/hosts/${slug}`,
+        "x-default": `https://homeinthe.city/hosts/${slug}`,
       },
     },
 
@@ -51,6 +50,7 @@ export async function generateMetadata({
       locale: "nl_NL",
       type: "website",
     },
+    twitter: { card: "summary_large_image", title: host?.headline_nl || host?.name || "Hostprofiel", description: host?.intro_nl || "Openbaar profiel van een lokale host bij Home in the City.", images: host?.photo?.asset?.url ? [host.photo.asset.url] : undefined },
   };
 }
 

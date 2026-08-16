@@ -65,7 +65,10 @@ export async function dynamicCityInterpreterMetadata(
   return {
     title,
     ...(description ? { description } : {}),
-    alternates: { canonical: `https://homeinthe.city${path}`, languages },
+    alternates: {
+      canonical: `https://homeinthe.city${path}`,
+      languages: { ...languages, "x-default": languages.en },
+    },
     openGraph: {
       title,
       ...(description ? { description } : {}),
@@ -73,6 +76,11 @@ export async function dynamicCityInterpreterMetadata(
       siteName: "Home in the City",
       locale: lang === "pt" ? "pt_BR" : lang === "nl" ? "nl_NL" : "en_US",
       type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      ...(description ? { description } : {}),
     },
   };
 }

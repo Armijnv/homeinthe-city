@@ -128,6 +128,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
   });
 
+  const realEstateCityEntries = Array.from(
+    new Set(
+      propertyListings
+        .map((listing) => listing.city?.slug?.current || citySlugFromName(listing.cityName))
+        .filter((citySlug): citySlug is string => Boolean(citySlug)),
+    ),
+  ).flatMap((citySlug) => [
+    contentEntry(`/real-estate/${citySlug}`),
+    contentEntry(`/pt/imoveis/${citySlug}`),
+    contentEntry(`/nl/vastgoed/${citySlug}`),
+  ]);
+
   const cityGuideEntries = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
     if (!citySlug || !cityGuideIsPublic(city)) return [];
@@ -191,6 +203,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: "https://homeinthe.city/nl",
     },
 
+    contentEntry("/providers"),
+    contentEntry("/pt/profissionais"),
+    contentEntry("/nl/professionals"),
+    contentEntry("/hosts"),
+
     /* ======================================================
        INTERPRETER PAGES
     ====================================================== */
@@ -223,40 +240,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
 
     {
-      url: "https://homeinthe.city/real-estate/porto-alegre",
-    },
-
-    {
-      url: "https://homeinthe.city/real-estate/florianopolis",
-    },
-
-    {
       url: "https://homeinthe.city/pt/imoveis",
-    },
-
-    {
-      url: "https://homeinthe.city/pt/imoveis/porto-alegre",
-    },
-
-    {
-      url: "https://homeinthe.city/pt/imoveis/florianopolis",
     },
 
     {
       url: "https://homeinthe.city/nl/vastgoed",
     },
 
-    {
-      url: "https://homeinthe.city/nl/vastgoed/porto-alegre",
-    },
-
-    {
-      url: "https://homeinthe.city/nl/vastgoed/florianopolis",
-    },
-
     ...hostEntries,
     ...providerEntries,
     ...cityGuideEntries,
+    ...realEstateCityEntries,
     ...propertyEntries,
   ];
 }
