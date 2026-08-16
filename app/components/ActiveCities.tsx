@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { cityGuidePath, type CityGuideLang } from "@/app/lib/cityGuides";
-import {
-  interpreterPathForCity,
-  type InterpreterCitySlug,
-} from "@/app/lib/interpreterPages";
+import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
 
 type ActiveCity = {
-  slug: InterpreterCitySlug;
+  slug: string;
   name: string;
   services: Record<CityGuideLang, string[]>;
 };
@@ -185,7 +182,7 @@ export default function ActiveCities({ lang }: { lang: CityGuideLang }) {
                   {content.cityCta}
                 </Link>
                 <Link
-                  href={interpreterPathForCity(city.slug, lang)}
+                  href={cityInterpreterPath(city.slug, lang)}
                   className="inline-flex min-h-12 items-center justify-center rounded-full border border-stone-300 px-5 py-3 text-center text-sm font-medium text-[#1a1f2e] transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-[#b99455] focus:ring-offset-2"
                 >
                   {content.interpreterCta}

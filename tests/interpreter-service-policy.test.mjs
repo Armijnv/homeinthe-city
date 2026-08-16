@@ -252,6 +252,31 @@ test("the interpreter dashboard index and sitemap use the shared coverage query"
   assert.match(sitemapSource, /cityInterpreterPath/);
 });
 
+test("city-page interpreter cards require published coverage and use the shared path resolver", async () => {
+  const [cityQuerySource, cardsSource] = await Promise.all([
+    readFile(new URL("../sanity/lib/queries.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/cityServiceCards.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(cityQuerySource, /"hasInterpreterCoverage"/);
+  assert.match(cardsSource, /hasInterpreterCoverage/);
+  assert.match(cardsSource, /@\/app\/lib\/cityInterpreterCoverage/);
+  assert.doesNotMatch(cardsSource, /interpreterCityForSlug/);
+});
+
+test("city navigation uses published coverage and the shared path resolver", async () => {
+  const [headerSource, activeCitiesSource, cityQuerySource] = await Promise.all([
+    readFile(new URL("../app/components/Header.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ActiveCities.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../sanity/lib/queries.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(headerSource, /currentCityGuide\?\.hasInterpreterCoverage/);
+  assert.match(headerSource, /cityInterpreterPath/);
+  assert.doesNotMatch(headerSource, /interpreterPathForCity/);
+  assert.match(activeCitiesSource, /cityInterpreterPath/);
+  assert.doesNotMatch(activeCitiesSource, /interpreterPathForCity/);
+  assert.match(cityQuerySource, /export const cityNavigationQuery[\s\S]*hasInterpreterCoverage/);
+});
+
 test("interpreter-page activity uses human-readable localized field names", () => {
   assert.equal(
     presentation.servicePageFieldLabel("intro_pt"),

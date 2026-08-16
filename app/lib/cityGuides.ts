@@ -138,6 +138,7 @@ export type CityGuideContent = {
   latitude?: number;
   longitude?: number;
   country?: string | null;
+  hasInterpreterCoverage?: boolean;
   primaryHost?: CityGuideProvider | null;
   heroImage?: CityGuideImage & { alt?: string };
   cityPageBackgroundMode?: CityPageBackgroundMode;

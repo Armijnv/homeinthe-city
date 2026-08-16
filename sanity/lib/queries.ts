@@ -14,6 +14,13 @@ const cityGuideProjection = `
     longitude,
     country,
 
+    "hasInterpreterCoverage": count(*[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ]) > 0,
+
     heroImage{
       alt,
       asset->{
@@ -271,6 +278,12 @@ export const cityNavigationQuery = `
     recommendations[]{_key},
     sidebarCards[]{_key},
     informationCards[]{_key},
+    "hasInterpreterCoverage": count(*[
+      _type == "provider" &&
+      status == "published" &&
+      (primaryRole == "interpreter" || "interpreter" in roles) &&
+      ^._id in cities[]._ref
+    ]) > 0,
     primaryHost->{
       status,
       languages[]{language}

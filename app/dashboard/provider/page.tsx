@@ -8,10 +8,13 @@ import {
 } from "@/app/dashboard/dashboard-ui";
 import { cityName, getDashboardContext } from "@/app/lib/dashboard";
 import {
-  interpreterServicePages,
-  interpreterServicePublicPath,
-} from "@/app/lib/interpreterServicePages";
+  cityInterpreterName,
+  cityInterpreterPath,
+  type CityInterpreterCoverage,
+} from "@/app/lib/cityInterpreterCoverage";
 import { canEditInterpreterServicePage } from "@/app/lib/interpreterServicePolicy";
+import { client } from "@/sanity/lib/client";
+import { cityInterpreterCoverageQuery } from "@/sanity/lib/queries";
 
 export const metadata: Metadata = { title: "Provider Workspace" };
 
@@ -24,14 +27,21 @@ export default async function ProviderWorkspacePage() {
   const roles = new Set([provider.primaryRole, ...(provider.roles || [])]);
   const isInterpreter = roles.has("interpreter");
   const providerSlug = provider.slug?.current;
-  const assignedInterpreterPages = interpreterServicePages.filter(
-    (page) =>
-      page.citySlug &&
-      canEditInterpreterServicePage({
-        provider,
-        isAdmin: context.isAdmin,
-        citySlug: page.citySlug,
-      }),
+  const interpreterCities = isInterpreter
+    ? (await client.fetch<CityInterpreterCoverage[]>(cityInterpreterCoverageQuery)).filter(
+        (city) =>
+          city.interpreters?.some(
+            (interpreter) => interpreter._id === provider._id,
+          ),
+      )
+    : [];
+  const editableInterpreterCities = interpreterCities.filter((city) =>
+    canEditInterpreterServicePage({
+      provider,
+      isAdmin: context.isAdmin,
+      citySlug: city.slug?.current,
+      primaryHostId: city.primaryHost?._id,
+    }),
   );
 
   return (
@@ -86,15 +96,28 @@ export default async function ProviderWorkspacePage() {
       {isInterpreter ? (
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <DashboardPanel title="Interpreter service pages" eyebrow="Assigned cities">
-            {assignedInterpreterPages.length ? (
-              assignedInterpreterPages.map((page) => (
-                <DashboardActionRow
-                  key={page.key}
-                  title={page.title}
-                  detail="Edit the city interpreter service page"
-                  href={`/dashboard/interpreter-services/${page.key}`}
-                />
-              ))
+            {interpreterCities.length ? (
+              interpreterCities.map((city) => {
+                const citySlug = city.slug?.current;
+                const canEdit = editableInterpreterCities.includes(city);
+                const name = cityInterpreterName(city, "en");
+                return (
+                  <DashboardActionRow
+                    key={city._id}
+                    title={`Interpreter services in ${name}`}
+                    detail={
+                      canEdit
+                        ? "Edit the city interpreter service page"
+                        : "City management access is required to edit this page"
+                    }
+                    href={
+                      canEdit && citySlug
+                        ? `/dashboard/cities/${citySlug}/interpreter`
+                        : undefined
+                    }
+                  />
+                );
+              })
             ) : (
               <DashboardActionRow
                 title="No assigned interpreter page"
@@ -103,14 +126,19 @@ export default async function ProviderWorkspacePage() {
             )}
           </DashboardPanel>
           <DashboardPanel title="Public interpreter pages" eyebrow="Preview">
-            {assignedInterpreterPages.map((page) => (
-              <DashboardActionRow
-                key={page.key}
-                title={page.detail}
-                detail={interpreterServicePublicPath(page)}
-                href={interpreterServicePublicPath(page)}
-              />
-            ))}
+            {interpreterCities.map((city) => {
+              const citySlug = city.slug?.current;
+              if (!citySlug) return null;
+              const path = cityInterpreterPath(citySlug, "en");
+              return (
+                <DashboardActionRow
+                  key={city._id}
+                  title={cityInterpreterName(city, "en")}
+                  detail={path}
+                  href={path}
+                />
+              );
+            })}
           </DashboardPanel>
         </div>
       ) : null}

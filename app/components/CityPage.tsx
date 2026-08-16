@@ -1128,6 +1128,7 @@ export default function CityPage({
     lang,
     citySlug,
     cityName,
+    hasInterpreterCoverage: city?.hasInterpreterCoverage === true,
     includeRealEstate: includeAutomaticRealEstate,
     presentation: city?.cityPageExperience?.livingServices,
   });

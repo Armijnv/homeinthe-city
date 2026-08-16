@@ -6,11 +6,8 @@ import type {
   CityPageExperienceImage,
   LivingServicePresentations,
 } from "@/app/lib/cityPageExperience";
-import {
-  cityInterpreterPath,
-  interpreterCityForSlug,
-  interpreterRoute,
-} from "@/app/lib/interpreterPages";
+import { interpreterRoute } from "@/app/lib/interpreterPages";
+import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
 
 export type AutomaticCityServiceCard = {
   kind: "interpreter" | "real-estate";
@@ -80,33 +77,37 @@ export function automaticCityServiceCards({
   lang,
   citySlug,
   cityName,
+  hasInterpreterCoverage,
   includeRealEstate,
   presentation,
 }: {
   lang: CityGuideLang;
   citySlug: string;
   cityName: string;
+  hasInterpreterCoverage: boolean;
   includeRealEstate: boolean;
   presentation?: LivingServicePresentations;
 }): AutomaticCityServiceCard[] {
   const cards: AutomaticCityServiceCard[] = [];
-  const interpreterCity = interpreterCityForSlug(citySlug);
   const interpreterHref = cityInterpreterPath(citySlug, lang);
-  const interpreterContent = interpreterCity?.content[lang];
 
-  if (interpreterHref && interpreterContent) {
+  if (hasInterpreterCoverage) {
     const custom = presentation?.interpreter?.[lang];
     cards.push({
       kind: "interpreter",
-      title: custom?.title?.trim() || interpreterContent.title,
-      text: custom?.description?.trim() || interpreterContent.serviceIntro,
-      button: custom?.buttonLabel?.trim() || (
+      title: custom?.title?.trim() ||
+        lang === "pt"
+          ? `Serviços de intérprete em ${cityName}`
+          : lang === "nl"
+            ? `Tolkdiensten in ${cityName}`
+            : `Interpreter services in ${cityName}`,
+      text: custom?.description?.trim(),
+      button: custom?.buttonLabel?.trim() ||
         lang === "pt"
           ? "Serviços de intérprete"
           : lang === "nl"
             ? "Tolkdiensten"
-            : "Interpreter services"
-      ),
+            : "Interpreter services",
       href: interpreterHref,
       image: presentation?.interpreter?.image,
     });
@@ -151,8 +152,12 @@ export function sidebarCardAutomaticServiceOverlap({
   );
   if (exactAutomaticLink) return "automatic-service-link" as const;
 
-  const hasCityInterpreter = Boolean(cityInterpreterPath(citySlug, lang));
-  return hasCityInterpreter && interpreterRoute(href)
+  const hasCityInterpreter = automaticCards.some(
+    (card) => card.kind === "interpreter",
+  );
+  const cityInterpreterHref = normalizeHref(cityInterpreterPath(citySlug, lang));
+  return hasCityInterpreter &&
+    (href === cityInterpreterHref || Boolean(interpreterRoute(href)))
     ? ("interpreter-service-route" as const)
     : null;
 }

@@ -259,8 +259,8 @@ test("Porto Alegre Explore reuses the existing place workflow for host picks", (
 });
 
 test("Porto Alegre Living separates automatic services from preserved optional cards", () => {
-  assert.match(cityServicesSource, /interpreterContent\.title/);
-  assert.match(cityServicesSource, /interpreterContent\.serviceIntro/);
+  assert.match(cityServicesSource, /hasInterpreterCoverage/);
+  assert.match(cityServicesSource, /cityInterpreterPath/);
   assert.match(cityServicesSource, /kind: "real-estate"/);
   assert.match(cityServicesSource, /sidebarCardAutomaticServiceOverlap/);
   assert.match(cityPageSource, /automaticCityServiceCards/);
@@ -287,7 +287,8 @@ test("automatic Living service presentation is editable without controlling avai
   assert.match(experienceSource, /livingServices\?: LivingServicePresentations/);
   assert.match(schemaSource, /name: "livingServices"/);
   assert.match(schemaSource, /livingServicePresentationField/);
-  assert.match(cityServicesSource, /custom\?\.title\?\.trim\(\) \|\| interpreterContent\.title/);
+  assert.match(cityServicesSource, /custom\?\.title\?\.trim\(\) \|\|/);
+  assert.match(cityServicesSource, /hasInterpreterCoverage/);
   assert.match(cityServicesSource, /custom\?\.buttonLabel\?\.trim\(\)/);
   assert.match(editorSource, /livingService_\$\{serviceKey\}_\$\{language\.id\}_title/);
   assert.match(editorSource, /livingServiceImage-\$\{serviceKey\}/);

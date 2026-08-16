@@ -8,6 +8,10 @@ const dashboardSource = await readFile(
   new URL("../app/dashboard/page.tsx", import.meta.url),
   "utf8",
 );
+const providerWorkspaceSource = await readFile(
+  new URL("../app/dashboard/provider/page.tsx", import.meta.url),
+  "utf8",
+);
 
 test("administrators see admin and Property tools", () => {
   assert.deepEqual(workspace.dashboardWorkspaceVisibility(null, true), {
@@ -73,4 +77,11 @@ test("dashboard places account actions after workspace navigation and status", (
   assert.ok(propertyWorkspace > providerWorkspace);
   assert.ok(profileStatus > propertyWorkspace);
   assert.ok(accountActions > profileStatus);
+});
+
+test("the provider workspace derives interpreter cities from provider coverage", () => {
+  assert.match(providerWorkspaceSource, /cityInterpreterCoverageQuery/);
+  assert.match(providerWorkspaceSource, /interpreter\._id === provider\._id/);
+  assert.match(providerWorkspaceSource, /\/dashboard\/cities\/\$\{citySlug\}\/interpreter/);
+  assert.doesNotMatch(providerWorkspaceSource, /interpreterServicePages/);
 });

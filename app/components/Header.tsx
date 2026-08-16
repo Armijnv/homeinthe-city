@@ -20,9 +20,9 @@ import {
 import {
   interpreterHubPaths,
   interpreterHubRoute,
-  interpreterPathForCity,
   interpreterRoute,
 } from "@/app/lib/interpreterPages";
+import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
 
 type MenuLink = {
   label: string;
@@ -407,7 +407,9 @@ export default function Header({
 
   const interpreterPath =
     currentInterpreterRoute?.city.paths[lang] ||
-    interpreterPathForCity(cityGuideSlug, lang);
+    (cityGuideSlug && currentCityGuide?.hasInterpreterCoverage
+      ? cityInterpreterPath(cityGuideSlug, lang)
+      : interpreterHubPaths[lang]);
 
   const translatorsPath = pathname.startsWith("/pt")
     ? "/pt/servicos-de-traducao"
