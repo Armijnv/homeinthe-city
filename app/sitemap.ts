@@ -14,8 +14,8 @@ import {
 } from "@/sanity/lib/queries";
 import {
   interpreterHubAlternates,
-  interpreterHubPaths,
 } from "@/app/lib/interpreterHub";
+import { interpreterHubPaths } from "@/app/lib/interpreterRoutes";
 import { cityInterpreterPath, type CityInterpreterCoverage } from "@/app/lib/cityInterpreterCoverage";
 
 type SitemapProvider = {
