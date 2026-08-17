@@ -164,9 +164,11 @@ const [
   editorSource,
   adminSource,
   activitySource,
-  cityRouteSource,
+  dynamicRouteSource,
   hubRouteSource,
-  interpreterRegistrySource,
+  hubConfigSource,
+  routeSource,
+  legacyDashboardEditorSource,
 ] = await Promise.all([
   readFile(
     new URL("../app/dashboard/interpreter-services/actions.ts", import.meta.url),
@@ -182,14 +184,19 @@ const [
   readFile(new URL("../app/dashboard/admin/page.tsx", import.meta.url), "utf8"),
   readFile(new URL("../app/lib/adminActivity.ts", import.meta.url), "utf8"),
   readFile(
-    new URL("../app/components/InterpreterCityRoute.tsx", import.meta.url),
+    new URL("../app/components/DynamicCityInterpreterRoute.tsx", import.meta.url),
     "utf8",
   ),
   readFile(
     new URL("../app/components/InterpreterHubRoute.tsx", import.meta.url),
     "utf8",
   ),
-  readFile(new URL("../app/lib/interpreterPages.ts", import.meta.url), "utf8"),
+  readFile(new URL("../app/lib/interpreterHub.ts", import.meta.url), "utf8"),
+  readFile(new URL("../app/lib/interpreterRoutes.ts", import.meta.url), "utf8"),
+  readFile(
+    new URL("../app/dashboard/interpreter-services/[pageKey]/page.tsx", import.meta.url),
+    "utf8",
+  ),
 ]);
 
 test("service-page saves authorize on the server and create administrator activity", () => {
@@ -210,17 +217,14 @@ test("the interpreter editor is discoverable and uses one language at a time", (
   assert.match(editorSource, /Managed automatically/);
 });
 
-test("all public interpreter routes consume their configured Sanity overlay with code fallbacks", () => {
-  assert.match(cityRouteSource, /city\.servicePageSlug/);
+test("public interpreter routes use Sanity city coverage and retain only the Brazil hub configuration", () => {
+  assert.match(dynamicRouteSource, /cityInterpreterCoverageBySlugQuery/);
+  assert.match(dynamicRouteSource, /CityInterpreterPage/);
   assert.match(hubRouteSource, /interpreterHubServicePageSlug/);
-  for (const slug of [
-    "interpreter-porto-alegre",
-    "interpreter-florianopolis",
-    "interpreter-sao-paulo",
-    "interpreters-brazil",
-  ]) {
-    assert.match(interpreterRegistrySource, new RegExp(slug));
-  }
+  assert.match(hubConfigSource, /interpreterHubServicePageSlug = "interpreters-brazil"/);
+  assert.doesNotMatch(hubConfigSource, /porto-alegre|florianopolis|sao-paulo/);
+  assert.match(routeSource, /cityInterpreterRoute/);
+  assert.doesNotMatch(dynamicRouteSource, /interpreterCityForSlug|interpreterPages/);
 });
 
 test("the hub derives city coverage from published provider assignments instead of its static city registry", async () => {
@@ -272,13 +276,19 @@ test("all city interpreter URLs use the slug-driven shared route and legacy rout
   assert.match(coverageSource, /return `\/interpreter\/\$\{citySlug\}`/);
   assert.doesNotMatch(coverageSource, /interpreterCityForSlug/);
   assert.match(dynamicRouteSource, /CityInterpreterPage/);
-  assert.match(dynamicRouteSource, /interpreterCityForSlug\(citySlug\)\?\.content/);
+  assert.doesNotMatch(dynamicRouteSource, /interpreterCityForSlug|interpreterPages/);
   assert.match(pageSource, /lg:grid-cols-\[minmax\(0,1\.7fr\)_minmax\(18rem,0\.8fr\)\]/);
   assert.match(pageSource, /hasCta \|\| hasPricing/);
   assert.match(sitemapSource, /cityInterpreterCoverageQuery/);
   for (const source of legacyRoutes) {
     assert.match(source, /permanentRedirect/);
   }
+});
+
+test("legacy city dashboard editor paths redirect to the canonical dynamic city editor", () => {
+  assert.match(legacyDashboardEditorSource, /permanentRedirect/);
+  assert.match(legacyDashboardEditorSource, /\/dashboard\/cities\//);
+  assert.match(legacyDashboardEditorSource, /citySlugForLegacyPageKey/);
 });
 
 test("city-page interpreter cards require published coverage and use the shared path resolver", async () => {

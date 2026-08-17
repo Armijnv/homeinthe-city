@@ -6,7 +6,7 @@ import type {
   CityPageExperienceImage,
   LivingServicePresentations,
 } from "@/app/lib/cityPageExperience";
-import { interpreterRoute } from "@/app/lib/interpreterPages";
+import { cityInterpreterRoute } from "@/app/lib/interpreterRoutes";
 import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
 
 export type AutomaticCityServiceCard = {
@@ -157,7 +157,7 @@ export function sidebarCardAutomaticServiceOverlap({
   );
   const cityInterpreterHref = normalizeHref(cityInterpreterPath(citySlug, lang));
   return hasCityInterpreter &&
-    (href === cityInterpreterHref || Boolean(interpreterRoute(href)))
+    (href === cityInterpreterHref || Boolean(cityInterpreterRoute(href)))
     ? ("interpreter-service-route" as const)
     : null;
 }

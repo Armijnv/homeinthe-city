@@ -1,4 +1,4 @@
-import type { InterpreterLanguage } from "@/app/lib/interpreterPages";
+import type { InterpreterLanguage } from "@/app/lib/interpreterTypes";
 
 export type CityInterpreterProvider = {
   _id: string;

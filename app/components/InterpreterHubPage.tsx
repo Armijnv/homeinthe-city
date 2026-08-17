@@ -1,9 +1,8 @@
 import Link from "next/link";
 import {
   homeInTheCityWhatsApp,
-  type InterpreterCmsPage,
-  type InterpreterLanguage,
-} from "@/app/lib/interpreterPages";
+} from "@/app/lib/interpreterHub";
+import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 import ProviderProfileCard, {
   type ProviderListItem,
 } from "@/app/components/ProviderProfileCard";

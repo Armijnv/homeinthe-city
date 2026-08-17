@@ -2,10 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type {
-  InterpreterCmsPage,
-  InterpreterLanguage,
-} from "@/app/lib/interpreterPages";
+import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 
 type LocalizedField =
   | "seoTitle"

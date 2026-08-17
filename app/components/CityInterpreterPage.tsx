@@ -8,10 +8,8 @@ import {
 } from "@/app/lib/cityInterpreterCoverage";
 import {
   homeInTheCityWhatsApp,
-  type InterpreterCmsPage,
-  type InterpreterLanguage,
-  type InterpreterPageContent,
-} from "@/app/lib/interpreterPages";
+} from "@/app/lib/interpreterHub";
+import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 
 const labels = {
   en: { eyebrow: "Interpreter services", interpreters: "Available interpreters", primary: "Primary city host", languages: "Languages", allCities: "All interpreter services in Brazil", contact: "Message Home in the City" },
@@ -27,21 +25,19 @@ export default function CityInterpreterPage({
   city,
   lang,
   page,
-  fallback,
 }: {
   city: CityInterpreterCoverage;
   lang: InterpreterLanguage;
   page?: InterpreterCmsPage | null;
-  fallback?: InterpreterPageContent;
 }) {
   const t = labels[lang];
   const cityName = cityInterpreterName(city, lang);
   const interpreters = city.interpreters || [];
-  const heading = value(page, "title", lang) || fallback?.title || `${t.eyebrow} in ${cityName}`;
-  const intro = value(page, "intro", lang) || fallback?.intro;
-  const ctaTitle = value(page, "ctaTitle", lang) || fallback?.ctaTitle;
-  const ctaText = value(page, "ctaText", lang) || fallback?.ctaText;
-  const ctaButton = value(page, "button", lang) || fallback?.ctaButton || t.contact;
+  const heading = value(page, "title", lang) || `${t.eyebrow} in ${cityName}`;
+  const intro = value(page, "intro", lang);
+  const ctaTitle = value(page, "ctaTitle", lang);
+  const ctaText = value(page, "ctaText", lang);
+  const ctaButton = value(page, "button", lang) || t.contact;
   const editorialSections = (page?.sections || [])
     .map((section) => ({
       key: section._key,
@@ -72,7 +68,6 @@ export default function CityInterpreterPage({
               </div>
             </section>
 
-            {fallback ? <RepositoryFallbackContent content={fallback} /> : null}
             {editorialSections.map((section, index) => (
               <article key={section.key || index} className="rounded-2xl bg-white p-6 shadow-sm">
                 {section.title ? <h2 className="mb-3 text-2xl font-light text-stone-900">{section.title}</h2> : null}
@@ -92,15 +87,5 @@ export default function CityInterpreterPage({
         <Link href={lang === "pt" ? "/pt/interpretes-brasil" : lang === "nl" ? "/nl/tolken-brazilie" : "/interpreters-brazil"} className="mt-10 inline-block text-sm text-stone-600 underline">{t.allCities}</Link>
       </div>
     </main>
-  );
-}
-
-function RepositoryFallbackContent({ content }: { content: InterpreterPageContent }) {
-  return (
-    <>
-      <section><h2 className="mb-4 text-3xl font-light text-stone-900">{content.serviceTitle}</h2><p className="mb-5 leading-7 text-stone-600">{content.serviceIntro}</p><div className="grid gap-4 md:grid-cols-2">{content.services.map((item) => <article key={item.title} className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="mb-2 text-xl font-medium text-stone-900">{item.title}</h3><p className="leading-7 text-stone-600">{item.text}</p></article>)}</div></section>
-      <section><h2 className="mb-4 text-3xl font-light text-stone-900">{content.focusTitle}</h2><div className="grid gap-4 md:grid-cols-2">{content.focusItems.map((item) => <article key={item.title} className="rounded-2xl bg-white p-6 shadow-sm"><h3 className="mb-2 text-xl font-medium text-stone-900">{item.title}</h3><p className="leading-7 text-stone-600">{item.text}</p></article>)}</div></section>
-      <section className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="mb-4 text-2xl font-light text-stone-900">{content.localTitle}</h2><div className="space-y-3">{content.localPoints.map((point) => <p key={point} className="leading-7 text-stone-600">{point}</p>)}</div></section>
-    </>
   );
 }

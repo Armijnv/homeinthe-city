@@ -1,6 +1,5 @@
 import { city } from "./city";
 import { cityChangeLog } from "./cityChangeLog";
-import { host } from "./host";
 import { provider } from "./provider";
 import { providerChangeLog } from "./providerChangeLog";
 import { providerSubmission } from "./providerSubmission";
@@ -12,7 +11,6 @@ import { servicePageChangeLog } from "./servicePageChangeLog";
 export const schemaTypes = [
   city,
   cityChangeLog,
-  host,
   provider,
   providerChangeLog,
   providerSubmission,

@@ -1,12 +1,8 @@
-import {
-  interpreterCities,
-  interpreterHubPaths,
-  interpreterHubServicePageSlug,
-  type InterpreterCitySlug,
-  type InterpreterLanguage,
-} from "@/app/lib/interpreterPages";
+import { interpreterHubServicePageSlug } from "@/app/lib/interpreterHub";
+import { interpreterHubPaths } from "@/app/lib/interpreterRoutes";
+import type { InterpreterLanguage } from "@/app/lib/interpreterTypes";
 
-export type InterpreterServicePageKey = "brazil" | InterpreterCitySlug | `city:${string}`;
+export type InterpreterServicePageKey = "brazil" | `city:${string}`;
 
 export type InterpreterServicePageDefinition = {
   key: InterpreterServicePageKey;
@@ -20,28 +16,17 @@ export type InterpreterServicePageDefinition = {
   paths: Partial<Record<InterpreterLanguage, string>>;
 };
 
-export const interpreterServicePages: InterpreterServicePageDefinition[] = [
-  {
-    key: "brazil",
-    title: "Interpreter services in Brazil",
-    detail: "General Brazil interpreter page",
-    servicePageSlug: interpreterHubServicePageSlug,
-    languages: ["en", "pt", "nl"],
-    paths: interpreterHubPaths,
-  },
-  ...Object.values(interpreterCities).map((city) => ({
-    key: city.slug,
-    title: `Interpreter services in ${city.city}`,
-    detail: `${city.city}, ${city.region}`,
-    citySlug: city.slug,
-    servicePageSlug: city.servicePageSlug,
-    languages: city.languages,
-    paths: city.paths,
-  })),
-];
+const interpreterHubPage: InterpreterServicePageDefinition = {
+  key: "brazil",
+  title: "Interpreter services in Brazil",
+  detail: "General Brazil interpreter page",
+  servicePageSlug: interpreterHubServicePageSlug,
+  languages: ["en", "pt", "nl"],
+  paths: interpreterHubPaths,
+};
 
 export function interpreterServicePageForKey(key?: string) {
-  return interpreterServicePages.find((page) => page.key === key);
+  return key === "brazil" ? interpreterHubPage : undefined;
 }
 
 export function interpreterServicePublicPath(

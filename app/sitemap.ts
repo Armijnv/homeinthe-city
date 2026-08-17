@@ -9,14 +9,13 @@ import {
 import {
   cityGuideListQuery,
   cityInterpreterCoverageQuery,
-  hostListQuery,
   propertyListingListQuery,
   providerListQuery,
 } from "@/sanity/lib/queries";
 import {
   interpreterHubAlternates,
   interpreterHubPaths,
-} from "@/app/lib/interpreterPages";
+} from "@/app/lib/interpreterHub";
 import { cityInterpreterPath, type CityInterpreterCoverage } from "@/app/lib/cityInterpreterCoverage";
 
 type SitemapProvider = {
@@ -37,13 +36,6 @@ type SitemapPropertyListing = {
     };
   };
   cityName?: string;
-};
-
-type SitemapHost = {
-  _updatedAt?: string;
-  slug?: {
-    current?: string;
-  };
 };
 
 type SitemapCityGuide = CityGuideContent;
@@ -83,9 +75,8 @@ function languageAlternates(languages: Record<string, string>) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [providers, hosts, propertyListings, cityGuides, interpreterCities] = await Promise.all([
+  const [providers, propertyListings, cityGuides, interpreterCities] = await Promise.all([
     client.fetch<SitemapProvider[]>(providerListQuery),
-    client.fetch<SitemapHost[]>(hostListQuery),
     client.fetch<SitemapPropertyListing[]>(propertyListingListQuery),
     client.fetch<SitemapCityGuide[]>(cityGuideListQuery),
     client.fetch<SitemapInterpreterCity[]>(cityInterpreterCoverageQuery),
@@ -99,17 +90,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       contentEntry(`/providers/${slug}`, provider._updatedAt),
       contentEntry(`/pt/profissionais/${slug}`, provider._updatedAt),
       contentEntry(`/nl/professionals/${slug}`, provider._updatedAt),
-    ];
-  });
-
-  const hostEntries = hosts.flatMap((host) => {
-    const slug = host.slug?.current;
-    if (!slug || slug === "armijn") return [];
-
-    return [
-      contentEntry(`/hosts/${slug}`, host._updatedAt),
-      contentEntry(`/pt/hosts/${slug}`, host._updatedAt),
-      contentEntry(`/nl/hosts/${slug}`, host._updatedAt),
     ];
   });
 
@@ -206,8 +186,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     contentEntry("/providers"),
     contentEntry("/pt/profissionais"),
     contentEntry("/nl/professionals"),
-    contentEntry("/hosts"),
-
     /* ======================================================
        INTERPRETER PAGES
     ====================================================== */
@@ -247,7 +225,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: "https://homeinthe.city/nl/vastgoed",
     },
 
-    ...hostEntries,
     ...providerEntries,
     ...cityGuideEntries,
     ...realEstateCityEntries,

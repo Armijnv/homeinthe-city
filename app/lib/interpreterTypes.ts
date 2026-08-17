@@ -1,0 +1,53 @@
+export type InterpreterLanguage = "en" | "pt" | "nl";
+
+export type InterpreterCmsPage = {
+  _id?: string;
+  _rev?: string;
+  name?: string;
+  slug?: { current?: string };
+  seoTitle_en?: string;
+  seoTitle_pt?: string;
+  seoTitle_nl?: string;
+  seoDescription_en?: string;
+  seoDescription_pt?: string;
+  seoDescription_nl?: string;
+  eyebrow_en?: string;
+  eyebrow_pt?: string;
+  eyebrow_nl?: string;
+  title_en?: string;
+  title_pt?: string;
+  title_nl?: string;
+  intro_en?: string;
+  intro_pt?: string;
+  intro_nl?: string;
+  sections?: {
+    _key?: string;
+    title_en?: string;
+    title_pt?: string;
+    title_nl?: string;
+    text_en?: string;
+    text_pt?: string;
+    text_nl?: string;
+  }[];
+  pricingTitle_en?: string;
+  pricingTitle_pt?: string;
+  pricingTitle_nl?: string;
+  pricingItems?: {
+    _key?: string;
+    label_en?: string;
+    label_pt?: string;
+    label_nl?: string;
+    detail_en?: string;
+    detail_pt?: string;
+    detail_nl?: string;
+  }[];
+  ctaTitle_en?: string;
+  ctaTitle_pt?: string;
+  ctaTitle_nl?: string;
+  ctaText_en?: string;
+  ctaText_pt?: string;
+  ctaText_nl?: string;
+  button_en?: string;
+  button_pt?: string;
+  button_nl?: string;
+};

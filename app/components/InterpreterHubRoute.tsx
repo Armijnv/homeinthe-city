@@ -1,15 +1,22 @@
 import InterpreterHubPage from "@/app/components/InterpreterHubPage";
-import { getInterpreterCmsPage } from "@/app/components/InterpreterCityRoute";
 import {
   interpreterHubMetadata,
   interpreterHubServicePageSlug,
   interpreterHubStructuredData,
-  type InterpreterLanguage,
-} from "@/app/lib/interpreterPages";
+} from "@/app/lib/interpreterHub";
+import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 import { JsonLdScript } from "@/app/lib/structuredData";
+import { client } from "@/sanity/lib/client";
+import { servicePageQuery } from "@/sanity/lib/queries";
+
+async function getInterpreterHubCmsPage() {
+  return client.fetch<InterpreterCmsPage | null>(servicePageQuery, {
+    slug: interpreterHubServicePageSlug,
+  });
+}
 
 export async function getInterpreterHubMetadata(lang: InterpreterLanguage) {
-  const page = await getInterpreterCmsPage(interpreterHubServicePageSlug);
+  const page = await getInterpreterHubCmsPage();
   return interpreterHubMetadata(lang, page);
 }
 
@@ -18,7 +25,7 @@ export default async function InterpreterHubRoute({
 }: {
   lang: InterpreterLanguage;
 }) {
-  const page = await getInterpreterCmsPage(interpreterHubServicePageSlug);
+  const page = await getInterpreterHubCmsPage();
 
   return (
     <>

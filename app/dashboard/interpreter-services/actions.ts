@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { activityFieldChanges } from "@/app/lib/activityChanges";
 import { requireInterpreterServiceAccess } from "@/app/lib/interpreterServiceAccess";
-import type { InterpreterLanguage } from "@/app/lib/interpreterPages";
+import type { InterpreterLanguage } from "@/app/lib/interpreterTypes";
 import { servicePageChangeLogDocument } from "@/app/lib/servicePageChangeLog";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";

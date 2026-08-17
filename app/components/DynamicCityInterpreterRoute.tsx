@@ -7,12 +7,7 @@ import {
   interpreterLanguages,
   type CityInterpreterCoverage,
 } from "@/app/lib/cityInterpreterCoverage";
-import {
-  interpreterCityForSlug,
-  type InterpreterCmsPage,
-  type InterpreterLanguage,
-  type InterpreterPageContent,
-} from "@/app/lib/interpreterPages";
+import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 import { JsonLdScript, serviceJsonLd } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { cityInterpreterCoverageBySlugQuery, servicePageQuery } from "@/sanity/lib/queries";
@@ -26,17 +21,15 @@ export async function DynamicCityInterpreterRoute({ citySlug, lang }: { citySlug
   if (!city?.interpreters?.length) notFound();
   const pageSlug = city.servicePage?.slug?.current;
   const page = pageSlug ? await client.fetch<InterpreterCmsPage | null>(servicePageQuery, { slug: pageSlug }) : null;
-  const fallback = interpreterCityForSlug(citySlug)?.content[lang];
   return (
     <>
       <JsonLdScript
-        data={dynamicCityInterpreterStructuredData(city, lang, page, fallback)}
+        data={dynamicCityInterpreterStructuredData(city, lang, page)}
       />
       <CityInterpreterPage
         city={city}
         lang={lang}
         page={page}
-        fallback={page ? undefined : fallback}
       />
     </>
   );
@@ -89,13 +82,12 @@ function dynamicCityInterpreterStructuredData(
   city: CityInterpreterCoverage,
   lang: InterpreterLanguage,
   page: InterpreterCmsPage | null,
-  fallback?: InterpreterPageContent,
 ) {
   const citySlug = city.slug?.current || "";
   const name = cityInterpreterName(city, lang);
   const title = page?.[`seoTitle_${lang}`] || page?.[`title_${lang}`] || `Interpreter services in ${name}`;
   const description =
-    page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`] || fallback?.intro ||
+    page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`] ||
     `Interpreter services in ${name}`;
   return serviceJsonLd({
     url: `https://homeinthe.city${cityInterpreterPath(citySlug, lang)}`,

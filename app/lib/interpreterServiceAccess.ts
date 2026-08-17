@@ -55,7 +55,9 @@ export async function requireInterpreterServiceAccess(
     };
   }
 
-  const returnTo = `/dashboard/interpreter-services/${definition.key}`;
+  const returnTo = definition.citySlug
+    ? `/dashboard/cities/${definition.citySlug}/interpreter`
+    : `/dashboard/interpreter-services/${definition.key}`;
   const context = await getDashboardContext(returnTo);
 
   if (

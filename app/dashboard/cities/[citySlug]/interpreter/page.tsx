@@ -2,7 +2,7 @@ import { DashboardBackLink, DashboardShell, Pill } from "@/app/dashboard/dashboa
 import InterpreterServiceForm from "@/app/dashboard/interpreter-services/InterpreterServiceForm";
 import { updateInterpreterServicePageAction } from "@/app/dashboard/interpreter-services/actions";
 import { requireInterpreterServiceAccess } from "@/app/lib/interpreterServiceAccess";
-import type { InterpreterCmsPage } from "@/app/lib/interpreterPages";
+import type { InterpreterCmsPage } from "@/app/lib/interpreterTypes";
 import { interpreterServicePublicPath } from "@/app/lib/interpreterServicePages";
 import { client } from "@/sanity/lib/client";
 import { cityInterpreterCoverageBySlugQuery, servicePageQuery } from "@/sanity/lib/queries";

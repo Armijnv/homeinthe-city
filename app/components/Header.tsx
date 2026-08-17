@@ -20,8 +20,8 @@ import {
 import {
   interpreterHubPaths,
   interpreterHubRoute,
-  interpreterRoute,
-} from "@/app/lib/interpreterPages";
+  cityInterpreterRoute,
+} from "@/app/lib/interpreterRoutes";
 import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
 
 type MenuLink = {
@@ -156,11 +156,7 @@ export default function Header({
     pathname.match(/^\/providers\/([^/]+)/)?.[1] ||
     pathname.match(/^\/pt\/profissionais\/([^/]+)/)?.[1] ||
     pathname.match(/^\/nl\/professionals\/([^/]+)/)?.[1];
-  const hostSlug =
-    pathname.match(/^\/hosts\/([^/]+)/)?.[1] ||
-    pathname.match(/^\/pt\/hosts\/([^/]+)/)?.[1] ||
-    pathname.match(/^\/nl\/hosts\/([^/]+)/)?.[1];
-  const profileSlug = providerSlug || hostSlug;
+  const profileSlug = providerSlug;
   const isProviderListPath =
     pathname === "/providers" ||
     pathname === "/pt/profissionais" ||
@@ -181,7 +177,7 @@ export default function Header({
     : pathname.startsWith("/nl")
     ? "nl"
     : "en";
-  const currentInterpreterRoute = interpreterRoute(pathname);
+  const currentInterpreterRoute = cityInterpreterRoute(pathname);
   const currentInterpreterHubLanguage = interpreterHubRoute(pathname);
 
   const labels = {
@@ -290,14 +286,10 @@ export default function Header({
       ? "/translation-services"
       : realEstateMatch
       ? localizedRealEstatePath("/real-estate")
-      : currentInterpreterRoute?.city.paths.en
-      ? currentInterpreterRoute.city.paths.en
+      : currentInterpreterRoute
+      ? cityInterpreterPath(currentInterpreterRoute.citySlug, "en")
       : currentInterpreterHubLanguage
       ? interpreterHubPaths.en
-      : pathname.includes("/pt/hosts/")
-      ? pathname.replace("/pt/hosts", "/hosts")
-      : pathname.includes("/nl/hosts/")
-      ? pathname.replace("/nl/hosts", "/hosts")
       : pathname.includes("/pt/brasil/")
       ? pathname.replace("/pt/brasil", "/brazil")
       : pathname.includes("/nl/brazilie/")
@@ -315,14 +307,10 @@ export default function Header({
       ? "/pt/servicos-de-traducao"
       : realEstateMatch
       ? localizedRealEstatePath("/pt/imoveis")
-      : currentInterpreterRoute?.city.paths.pt
-      ? currentInterpreterRoute.city.paths.pt
+      : currentInterpreterRoute
+      ? cityInterpreterPath(currentInterpreterRoute.citySlug, "pt")
       : currentInterpreterHubLanguage
       ? interpreterHubPaths.pt
-      : pathname.includes("/nl/hosts/")
-      ? pathname.replace("/nl/hosts", "/pt/hosts")
-      : pathname.includes("/hosts/")
-      ? `/pt${pathname}`
       : pathname.includes("/nl/brazilie/")
       ? pathname.replace("/nl/brazilie", "/pt/brasil")
       : pathname.includes("/brazil/")
@@ -342,14 +330,10 @@ export default function Header({
       ? "/nl/vertaaldiensten"
       : realEstateMatch
       ? localizedRealEstatePath("/nl/vastgoed")
-      : currentInterpreterRoute?.city.paths.nl
-      ? currentInterpreterRoute.city.paths.nl
+      : currentInterpreterRoute
+      ? cityInterpreterPath(currentInterpreterRoute.citySlug, "nl")
       : currentInterpreterHubLanguage
       ? interpreterHubPaths.nl
-      : pathname.includes("/pt/hosts/")
-      ? pathname.replace("/pt/hosts", "/nl/hosts")
-      : pathname.includes("/hosts/")
-      ? `/nl${pathname}`
       : pathname.includes("/pt/brasil/")
       ? pathname.replace("/pt/brasil", "/nl/brazilie")
       : pathname.includes("/brazil/")
@@ -379,7 +363,7 @@ export default function Header({
     (provider) => provider.slug === profileSlug,
   )?.languages;
   const availableLanguages = currentInterpreterRoute
-    ? currentInterpreterRoute.city.languages
+    ? (["en", "pt", "nl"] as CityGuideLang[])
     : currentInterpreterHubLanguage
     ? (["en", "pt", "nl"] as CityGuideLang[])
     : cityGuideSlug
@@ -406,7 +390,9 @@ export default function Header({
     : "/providers/armijn";
 
   const interpreterPath =
-    currentInterpreterRoute?.city.paths[lang] ||
+    (currentInterpreterRoute
+      ? cityInterpreterPath(currentInterpreterRoute.citySlug, lang)
+      : undefined) ||
     (cityGuideSlug && currentCityGuide?.hasInterpreterCoverage
       ? cityInterpreterPath(cityGuideSlug, lang)
       : interpreterHubPaths[lang]);
