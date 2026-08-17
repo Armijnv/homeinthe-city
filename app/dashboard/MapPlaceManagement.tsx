@@ -53,7 +53,7 @@ function propertyTitle(property: MapPlaceProperty) {
 }
 
 function placeTitle(place: EditableMapPlace) {
-  return place.name_en || place.name || place.name_pt || place.name_nl || "Untitled place";
+  return place.name_en || place.name_pt || place.name_nl || "Untitled place";
 }
 
 function DeleteButton() {
@@ -120,7 +120,7 @@ export default function MapPlaceManagement({
               <tbody className="divide-y divide-white/10 text-stone-200">
                 {places.map((place, index) => {
                   const category = mapCategoryForPlace(place, "en");
-                  const key = place._key || `${place.name}-${index}`;
+                  const key = place._key || `${place.name_en || place.name_pt || place.name_nl}-${index}`;
 
                   return (
                     <tr key={key}>
@@ -130,9 +130,9 @@ export default function MapPlaceManagement({
                       <td className="px-5 py-4">
                         <div>{category.label}</div>
                         <div className="mt-1 text-xs text-stone-400">
-                          {place.categoryPreset && place.categoryPreset !== "custom"
-                            ? `Preset: ${place.categoryPreset}`
-                            : `Key: ${place.category || "No key"}`}
+                          {place.categoryPreset === "custom"
+                            ? "Custom category"
+                            : `Preset: ${place.categoryPreset || "Not set"}`}
                         </div>
                       </td>
                       <td className="px-5 py-4">{place.neighborhood || "No area"}</td>

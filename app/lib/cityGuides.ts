@@ -15,12 +15,10 @@ export type CityGuideImage = {
 
 export type CityGuideMapPlace = {
   _key?: string;
-  name: string;
   name_en?: string;
   name_pt?: string;
   name_nl?: string;
   categoryPreset?: string;
-  category?: string;
   categoryLabel_en?: string;
   categoryLabel_pt?: string;
   categoryLabel_nl?: string;

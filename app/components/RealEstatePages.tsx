@@ -82,20 +82,6 @@ const labels = {
     bathrooms: "bath",
     parking: "parking",
     area: "m²",
-    portoAlegre: {
-      slug: "porto-alegre",
-      title: "Porto Alegre Real Estate",
-      intro:
-        "Rental and sale listings in Porto Alegre, with local context for neighborhoods, lifestyle and practical relocation needs.",
-      typeFocus: "Rentals and sales",
-    },
-    florianopolis: {
-      slug: "florianopolis",
-      title: "Florianópolis Real Estate",
-      intro:
-        "Property listings for Florianópolis, from city apartments to coastal homes for buyers and long-stay renters.",
-      typeFocus: "Sales and rentals",
-    },
   },
   pt: {
     eyebrow: "Imóveis Home in the City",
@@ -131,20 +117,6 @@ const labels = {
     bathrooms: "banheiros",
     parking: "vagas",
     area: "m²",
-    portoAlegre: {
-      slug: "porto-alegre",
-      title: "Imóveis em Porto Alegre",
-      intro:
-        "Anúncios de aluguel e venda em Porto Alegre, com contexto local sobre bairros, estilo de vida e necessidades práticas de mudança.",
-      typeFocus: "Aluguéis e vendas",
-    },
-    florianopolis: {
-      slug: "florianopolis",
-      title: "Imóveis em Florianópolis",
-      intro:
-        "Anúncios em Florianópolis, de apartamentos urbanos a casas próximas ao litoral para compra ou estadias longas.",
-      typeFocus: "Vendas e aluguéis",
-    },
   },
   nl: {
     eyebrow: "Home in the City Vastgoed",
@@ -180,20 +152,6 @@ const labels = {
     bathrooms: "badkamers",
     parking: "parkeren",
     area: "m²",
-    portoAlegre: {
-      slug: "porto-alegre",
-      title: "Vastgoed in Porto Alegre",
-      intro:
-        "Huur- en koopaanbod in Porto Alegre, met lokale context over wijken, levensstijl en praktische verhuisvragen.",
-      typeFocus: "Huur en koop",
-    },
-    florianopolis: {
-      slug: "florianopolis",
-      title: "Vastgoed in Florianópolis",
-      intro:
-        "Woningaanbod in Florianópolis, van stadsappartementen tot huizen bij de kust voor kopers en lang verblijf.",
-      typeFocus: "Koop en huur",
-    },
   },
 };
 
@@ -203,7 +161,7 @@ function cityPath(lang: Lang, citySlug: string) {
 
 export function listingCitySlug(listing: PropertyListing) {
   if (listing.city?.slug?.current) return listing.city.slug.current;
-  if (!listing.cityName) return "porto-alegre";
+  if (!listing.cityName) return "";
 
   return slugifyCityName(listing.cityName);
 }
@@ -232,6 +190,7 @@ function citySummariesFromListings(
 
   listings.forEach((listing) => {
     const slug = listingCitySlug(listing);
+    if (!slug) return;
     const name = listingCityName(listing, lang) || slug;
     const existing = cities.get(slug);
 
@@ -268,7 +227,9 @@ export function realEstateCityConfigFromListings(
     (city) => city.slug === citySlug,
   );
 
-  if (!dynamicCity) return realEstateCityConfig(lang, citySlug);
+  if (!dynamicCity) {
+    throw new Error(`No public property listings for ${citySlug}`);
+  }
 
   const t = labels[lang];
 
@@ -1728,9 +1689,4 @@ export function RealEstateCityPage({
       </div>
     </main>
   );
-}
-
-export function realEstateCityConfig(lang: Lang, citySlug: string) {
-  const t = labels[lang];
-  return citySlug === "florianopolis" ? t.florianopolis : t.portoAlegre;
 }

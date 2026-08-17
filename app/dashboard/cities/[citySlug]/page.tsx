@@ -147,9 +147,9 @@ const cityDashboardQuery = `
     },
     mapPlaces[]{
       _key,
-      name,
       name_en,
-      name_pt
+      name_pt,
+      name_nl
     },
     recommendationGuides[]{
       _key,

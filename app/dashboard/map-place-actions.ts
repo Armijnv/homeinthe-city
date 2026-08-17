@@ -21,7 +21,6 @@ const mapPlaceFormFields = [
   "name_pt",
   "name_nl",
   "categoryPreset",
-  "customCategory",
   "categoryLabel_en",
   "categoryLabel_pt",
   "categoryLabel_nl",
@@ -58,17 +57,6 @@ function numberValue(formData: FormData, key: string) {
   return Number.isFinite(value) ? value : null;
 }
 
-function slugish(value: string) {
-  return (
-    value
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "custom"
-  );
-}
-
 function cleanUrl(value: string) {
   if (!value) return "";
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
@@ -83,7 +71,6 @@ function withoutUndefined<T extends Record<string, unknown>>(value: T) {
 
 function categoryFields(formData: FormData) {
   const categoryPreset = stringValue(formData, "categoryPreset");
-  const customCategory = stringValue(formData, "customCategory");
   const categoryLabelEn = stringValue(formData, "categoryLabel_en");
   const categoryLabelPt = stringValue(formData, "categoryLabel_pt");
   const categoryLabelNl = stringValue(formData, "categoryLabel_nl");
@@ -92,10 +79,7 @@ function categoryFields(formData: FormData) {
   return {
     isCustom,
     categoryPreset: isCustom ? "custom" : categoryPreset || undefined,
-    category: isCustom
-      ? customCategory || slugish(categoryLabelEn || "custom")
-      : undefined,
-    categoryLabel_en: isCustom ? categoryLabelEn || customCategory : undefined,
+    categoryLabel_en: isCustom ? categoryLabelEn || undefined : undefined,
     categoryLabel_pt: isCustom ? categoryLabelPt || undefined : undefined,
     categoryLabel_nl: isCustom ? categoryLabelNl || undefined : undefined,
   };
@@ -204,8 +188,7 @@ async function uploadedMapPlaceImage(
 }
 
 function localizedPlaceText(formData: FormData) {
-  const legacyName = stringValue(formData, "name");
-  const nameEn = stringValue(formData, "name_en") || legacyName;
+  const nameEn = stringValue(formData, "name_en");
   const namePt = stringValue(formData, "name_pt");
   const nameNl = stringValue(formData, "name_nl");
   const name = nameEn || namePt || nameNl;
@@ -217,7 +200,7 @@ function localizedPlaceText(formData: FormData) {
   const descriptionNl = stringValue(formData, "description_nl");
 
   return {
-    name,
+    displayName: name,
     name_en: nameEn || undefined,
     name_pt: namePt || undefined,
     name_nl: nameNl || undefined,
@@ -259,12 +242,17 @@ export async function addMapPlaceWithState(
       throw new MapPlaceActionError("This city could not be found.");
     }
 
-    if (!text.name) {
+    if (!text.displayName) {
       throw new MapPlaceActionError("Add at least the English/default place name.");
     }
 
     if (latitude === null || longitude === null) {
       throw new MapPlaceActionError("Add valid latitude and longitude before saving.");
+    }
+    const category = categoryFields(formData);
+    const { isCustom, ...categoryValues } = category;
+    if (isCustom && !category.categoryLabel_en) {
+      throw new MapPlaceActionError("Add an English label for a custom map category.");
     }
     const currentCity = await client.fetch<{ _rev: string } | null>(
       `*[_type == "city" && _id == $cityId][0]{_rev}`,
@@ -272,13 +260,14 @@ export async function addMapPlaceWithState(
     );
     if (!currentCity) throw new MapPlaceActionError("This city could not be loaded for editing.");
 
-    const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
+    const uploadedImage = await uploadedMapPlaceImage(formData, text.displayName);
     imageWarning = uploadedImage.warning;
+    const { displayName, ...placeText } = text;
     const mapPlace = withoutUndefined({
       _type: "object",
       _key: `place-${Date.now()}`,
-      ...text,
-      ...categoryFields(formData),
+      ...placeText,
+      ...categoryValues,
       neighborhood: neighborhood || undefined,
       latitude,
       longitude,
@@ -294,7 +283,7 @@ export async function addMapPlaceWithState(
       context,
       city,
       changeType: "mapPlaceAdded",
-      description: `Added map place: ${text.name}.`,
+      description: `Added map place: ${displayName}.`,
       changes: [{ field: "mapPlace", beforeValue: undefined, afterValue: mapPlace }],
     });
     if (changeLog) transaction.create(changeLog);
@@ -342,7 +331,7 @@ export async function updateMapPlaceWithState(
       throw new MapPlaceActionError("This map place is missing its saved key.");
     }
 
-    if (!text.name) {
+    if (!text.displayName) {
       throw new MapPlaceActionError("Add at least the English/default place name.");
     }
 
@@ -360,11 +349,13 @@ export async function updateMapPlaceWithState(
       throw new MapPlaceActionError("This map place no longer exists.");
     }
     const category = categoryFields(formData);
-    const uploadedImage = await uploadedMapPlaceImage(formData, text.name);
+    if (category.isCustom && !category.categoryLabel_en) {
+      throw new MapPlaceActionError("Add an English label for a custom map category.");
+    }
+    const uploadedImage = await uploadedMapPlaceImage(formData, text.displayName);
     imageWarning = uploadedImage.warning;
     const removeImage = stringValue(formData, "removeImage") === "on";
     const setValues: Record<string, unknown> = {
-      [`${selector}.name`]: text.name,
       [`${selector}.name_en`]: text.name_en,
       [`${selector}.name_pt`]: text.name_pt,
       [`${selector}.name_nl`]: text.name_nl,
@@ -380,7 +371,6 @@ export async function updateMapPlaceWithState(
       [`${selector}.website`]: website || undefined,
       ...(canUpdateFavorite ? { [`${selector}.favorite`]: favorite } : {}),
       [`${selector}.categoryPreset`]: category.categoryPreset,
-      [`${selector}.category`]: category.category,
       [`${selector}.categoryLabel_en`]: category.categoryLabel_en,
       [`${selector}.categoryLabel_pt`]: category.categoryLabel_pt,
       [`${selector}.categoryLabel_nl`]: category.categoryLabel_nl,
@@ -397,9 +387,10 @@ export async function updateMapPlaceWithState(
     );
     const nextPlace = withoutUndefined({
       ...existingPlace,
-      ...text,
+      name_en: text.name_en,
+      name_pt: text.name_pt,
+      name_nl: text.name_nl,
       categoryPreset: category.categoryPreset,
-      category: category.category,
       categoryLabel_en: category.categoryLabel_en,
       categoryLabel_pt: category.categoryLabel_pt,
       categoryLabel_nl: category.categoryLabel_nl,
@@ -426,7 +417,7 @@ export async function updateMapPlaceWithState(
       context,
       city,
       changeType: "mapPlaceUpdated",
-      description: `Updated map place: ${text.name}.`,
+      description: `Updated map place: ${text.displayName}.`,
       changes: [{ field: "mapPlace", beforeValue: existingPlace, afterValue: nextPlace }],
     });
     if (changeLog) transaction.create(changeLog);
@@ -454,7 +445,7 @@ export async function deleteMapPlaceAction(citySlug: string, formData: FormData)
     );
     const existingPlace = currentCity?.place;
     if (!existingPlace) return;
-    const placeName = String(existingPlace.name_en || existingPlace.name_pt || existingPlace.name_nl || existingPlace.name || "Untitled map place");
+    const placeName = String(existingPlace.name_en || existingPlace.name_pt || existingPlace.name_nl || "Untitled map place");
 
     const transaction = writeClient
       .transaction()

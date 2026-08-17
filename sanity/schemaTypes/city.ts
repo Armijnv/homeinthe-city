@@ -383,13 +383,6 @@ export const city = defineType({
           type: "object",
           fields: [
             {
-              name: "name",
-              title: "Legacy / default place name",
-              type: "string",
-              description:
-                "Existing single-language name. New dashboard entries also fill the English/default name below.",
-            },
-            {
               name: "name_en",
               title: "Place name (English / default)",
               type: "string",
@@ -418,16 +411,6 @@ export const city = defineType({
               options: {
                 list: mapCategoryPresets,
               },
-            },
-
-            {
-              name: "category",
-              title: "Legacy / custom category key",
-              type: "string",
-              description:
-                "Only visible for old legacy values or Custom categories. Existing values still work, such as restaurant, coffee, museum, business and organicFair. For a new custom category, use a simple English key like repair shop and fill in the translated labels below.",
-              hidden: ({ parent }) =>
-                Boolean(parent?.categoryPreset && parent.categoryPreset !== "custom"),
             },
 
             {
@@ -527,7 +510,7 @@ export const city = defineType({
           ],
           preview: {
             select: {
-              title: "name",
+              title: "name_en",
               subtitle: "detail_en",
               media: "image",
             },

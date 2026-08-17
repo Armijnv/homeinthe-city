@@ -42,12 +42,10 @@ const adminCityMapQuery = `
     guideStatus,
     mapPlaces[]{
       _key,
-      name,
       name_en,
       name_pt,
       name_nl,
       categoryPreset,
-      category,
       categoryLabel_en,
       categoryLabel_pt,
       categoryLabel_nl,

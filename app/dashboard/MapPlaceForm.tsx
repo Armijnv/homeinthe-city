@@ -18,15 +18,14 @@ import {
   dashboardFileInputClass,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
+import MapPlaceCoordinatePicker from "@/app/dashboard/MapPlaceCoordinatePicker";
 
 export type EditableMapPlace = {
   _key?: string;
-  name?: string;
   name_en?: string;
   name_pt?: string;
   name_nl?: string;
   categoryPreset?: string;
-  category?: string;
   categoryLabel_en?: string;
   categoryLabel_pt?: string;
   categoryLabel_nl?: string;
@@ -188,8 +187,8 @@ function MapPlaceFormFields({
     setLocationMessage("Getting location...");
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setLatitude(position.coords.latitude.toFixed(6));
-        setLongitude(position.coords.longitude.toFixed(6));
+        setLatitude(String(position.coords.latitude));
+        setLongitude(String(position.coords.longitude));
         setLocationMessage("Location added.");
       },
       () => setLocationMessage("Could not get location."),
@@ -267,7 +266,7 @@ function MapPlaceFormFields({
               required
               className={inputClass}
               placeholder="Place name"
-              defaultValue={fieldValue("name_en", textValue(place?.name_en, place?.name))}
+              defaultValue={fieldValue("name_en", textValue(place?.name_en, place?.name_pt, place?.name_nl))}
             />
           </Field>
           <Field label="Portuguese name">
@@ -329,17 +328,10 @@ function MapPlaceFormFields({
 
         {isCustom ? (
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Custom key">
-              <input
-                name="customCategory"
-                className={inputClass}
-                placeholder="repair shop"
-                defaultValue={fieldValue("customCategory", place?.category || "")}
-              />
-            </Field>
             <Field label="English label">
               <input
                 name="categoryLabel_en"
+                required
                 className={inputClass}
                 placeholder="Repair shop"
                 defaultValue={fieldValue("categoryLabel_en", place?.categoryLabel_en || "")}
@@ -401,6 +393,14 @@ function MapPlaceFormFields({
         {locationMessage ? (
           <p className="text-sm text-stone-300">{locationMessage}</p>
         ) : null}
+        <MapPlaceCoordinatePicker
+          latitude={latitude}
+          longitude={longitude}
+          onCoordinatesChange={({ latitude: nextLatitude, longitude: nextLongitude }) => {
+            setLatitude(String(nextLatitude));
+            setLongitude(String(nextLongitude));
+          }}
+        />
       </FormSection>
 
       <FormSection title="Descriptions">
@@ -475,7 +475,7 @@ function MapPlaceFormFields({
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-black/20">
                 <Image
                   src={imageUrl}
-                  alt={place?.image?.alt || place?.name || "Map place photo"}
+                  alt={place?.image?.alt || textValue(place?.name_en, place?.name_pt, place?.name_nl) || "Map place photo"}
                   fill
                   sizes="220px"
                   className="object-cover"
@@ -514,7 +514,7 @@ function MapPlaceFormFields({
                 placeholder="Short description of the photo"
                 defaultValue={fieldValue(
                   "imageAlt",
-                  place?.image?.alt || textValue(place?.name_en, place?.name),
+                  place?.image?.alt || textValue(place?.name_en, place?.name_pt, place?.name_nl),
                 )}
               />
             </Field>

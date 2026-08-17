@@ -31,6 +31,48 @@ type MenuLink = {
   disabled?: boolean;
 };
 
+type PropertyListingNavigationItem = {
+  city?: {
+    name_en?: string;
+    name_pt?: string;
+    name_nl?: string;
+    slug?: { current?: string };
+  };
+  cityName?: string;
+};
+
+function citySlugFromName(cityName?: string) {
+  return cityName
+    ?.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function propertyCityLinks(
+  listings: PropertyListingNavigationItem[],
+  lang: CityGuideLang,
+  realEstatePath: string,
+) {
+  const cities = new Map<string, string>();
+
+  listings.forEach((listing) => {
+    const slug = listing.city?.slug?.current || citySlugFromName(listing.cityName);
+    if (!slug) return;
+    const name =
+      listing.city?.[`name_${lang}`] ||
+      listing.city?.name_en ||
+      listing.cityName ||
+      slug;
+    cities.set(slug, name);
+  });
+
+  return Array.from(cities.entries())
+    .sort(([, left], [, right]) => left.localeCompare(right))
+    .map(([slug, label]) => ({ label, href: `${realEstatePath}/${slug}` }));
+}
+
 type MenuSection = {
   title: string;
   links: MenuLink[];
@@ -147,9 +189,11 @@ function MenuContent({
 export default function Header({
   cityGuides = [],
   providerLanguages = [],
+  propertyListings = [],
 }: {
   cityGuides?: CityGuideContent[];
   providerLanguages?: ProviderLanguageNavigationItem[];
+  propertyListings?: PropertyListingNavigationItem[];
 }) {
   const pathname = usePathname();
   const providerSlug =
@@ -198,8 +242,6 @@ export default function Header({
       parks: "Parks & Walks",
       culture: "Culture & Events",
       markets: "Markets",
-      portoAlegreRentals: "Porto Alegre Rentals",
-      florianopolisSales: "Florianópolis Sales",
       allListings: "All Listings",
       aboutHome: "About Home in the City",
       email: "Email",
@@ -226,8 +268,6 @@ export default function Header({
       parks: "Parques e caminhadas",
       culture: "Cultura e eventos",
       markets: "Mercados",
-      portoAlegreRentals: "Aluguéis em Porto Alegre",
-      florianopolisSales: "Vendas em Florianópolis",
       allListings: "Todos os anúncios",
       aboutHome: "Sobre a Home in the City",
       email: "Email",
@@ -254,8 +294,6 @@ export default function Header({
       parks: "Parken en wandelingen",
       culture: "Cultuur en events",
       markets: "Markten",
-      portoAlegreRentals: "Huurwoningen Porto Alegre",
-      florianopolisSales: "Koopwoningen Florianópolis",
       allListings: "Alle woningen",
       aboutHome: "Over Home in the City",
       email: "Email",
@@ -408,8 +446,7 @@ export default function Header({
     : pathname.startsWith("/nl")
     ? "/nl/vastgoed"
     : "/real-estate";
-  const portoAlegreRealEstatePath = `${realEstatePath}/porto-alegre`;
-  const florianopolisRealEstatePath = `${realEstatePath}/florianopolis`;
+  const realEstateCityLinks = propertyCityLinks(propertyListings, lang, realEstatePath);
   const aboutPath = homePath;
   const cityGuideLinks = cityGuides.flatMap((city) => {
     const citySlug = city.slug?.current;
@@ -473,8 +510,7 @@ export default function Header({
     {
       title: t.propertyListings,
       links: [
-        { label: t.portoAlegreRentals, href: portoAlegreRealEstatePath },
-        { label: t.florianopolisSales, href: florianopolisRealEstatePath },
+        ...realEstateCityLinks,
         { label: t.allListings, href: realEstatePath },
       ],
     },

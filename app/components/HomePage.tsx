@@ -344,7 +344,7 @@ export default function HomePage({
         </div>
       </section>
 
-      <ActiveCities lang={lang} />
+      <ActiveCities lang={lang} cityGuides={cityGuides} />
 
       <section className="relative z-20 bg-[#f5f1ea] px-6 py-14 text-[#1a1f2e] md:px-10 lg:px-20">
         <div className="mx-auto max-w-6xl">

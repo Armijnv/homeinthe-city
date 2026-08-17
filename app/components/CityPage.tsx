@@ -464,12 +464,9 @@ function localizedMapPlaceText(
   const values = place as Record<string, unknown>;
   const localized = values[`${field}_${lang}`];
   const english = values[`${field}_en`];
-  const legacy = field === "name" ? place.name : "";
 
   if (typeof localized === "string" && localized.trim()) return localized;
   if (typeof english === "string" && english.trim()) return english;
-  if (legacy.trim()) return legacy;
-
   return "";
 }
 
@@ -569,11 +566,11 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
       {
         id: place._key
           ? mapPlaceAnchorId(place._key)
-          : `place-${category.id}-${title || place.name}-${index}`,
+          : `place-${category.id}-${title}-${index}`,
         sourceType: "place",
         categoryId: category.id,
         categoryLabel: category.label,
-        title: title || place.name,
+        title,
         subtitle: place.neighborhood,
         detail,
         description,
@@ -585,7 +582,7 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
         image: place.image?.asset?.url
           ? {
               url: place.image.asset.url,
-              alt: place.image.alt || title || place.name,
+              alt: place.image.alt || title,
             }
           : undefined,
         videoUrl: place.video?.asset?.url,

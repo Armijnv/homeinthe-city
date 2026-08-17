@@ -34,12 +34,10 @@ const cityMapManagementQuery = `
   *[_type == "city" && slug.current == $citySlug][0]{
     mapPlaces[]{
       _key,
-      name,
       name_en,
       name_pt,
       name_nl,
       categoryPreset,
-      category,
       categoryLabel_en,
       categoryLabel_pt,
       categoryLabel_nl,

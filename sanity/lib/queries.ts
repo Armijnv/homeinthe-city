@@ -97,12 +97,10 @@ const cityGuideProjection = `
 
     mapPlaces[]{
       _key,
-      name,
       name_en,
       name_pt,
       name_nl,
       categoryPreset,
-      category,
       categoryLabel_en,
       categoryLabel_pt,
       categoryLabel_nl,
@@ -709,6 +707,16 @@ export const propertyListingListQuery = `
       name,
       slug
     }
+  }
+`;
+
+export const propertyListingNavigationQuery = `
+  *[
+    _type == "propertyListing" &&
+    status in ["available", "reserved", "sold", "rented"]
+  ]{
+    city->{name_en, name_pt, name_nl, slug},
+    cityName
   }
 `;
 

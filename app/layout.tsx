@@ -7,6 +7,7 @@ import type { ProviderLanguageNavigationItem } from "@/app/lib/providerLanguages
 import { client } from "@/sanity/lib/client";
 import {
   cityNavigationQuery,
+  propertyListingNavigationQuery,
   providerLanguageNavigationQuery,
 } from "@/sanity/lib/queries";
 import type { Metadata } from "next";
@@ -17,6 +18,16 @@ const geist = Geist({ subsets: ["latin"] });
 const siteUrl = "https://homeinthe.city";
 const siteName = "Home in the City";
 const defaultOgImage = `${siteUrl}/og-armijn2.jpg`;
+
+type PropertyListingNavigationItem = {
+  city?: {
+    name_en?: string;
+    name_pt?: string;
+    name_nl?: string;
+    slug?: { current?: string };
+  };
+  cityName?: string;
+};
 
 const siteJsonLd = {
   "@context": "https://schema.org",
@@ -106,11 +117,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [cityGuides, providerLanguages] = await Promise.all([
+  const [cityGuides, providerLanguages, propertyListings] = await Promise.all([
     client.fetch<CityGuideContent[]>(cityNavigationQuery).catch(() => []),
     client
       .fetch<ProviderLanguageNavigationItem[]>(providerLanguageNavigationQuery)
       .catch(() => []),
+    client.fetch<PropertyListingNavigationItem[]>(propertyListingNavigationQuery).catch(() => []),
   ]);
 
   return (
@@ -138,6 +150,7 @@ export default async function RootLayout({
           <Header
             cityGuides={cityGuides}
             providerLanguages={providerLanguages}
+            propertyListings={propertyListings}
           />
 
           {/* ======================================================

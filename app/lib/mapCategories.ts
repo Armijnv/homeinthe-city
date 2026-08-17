@@ -2,7 +2,6 @@ export type MapCategoryLang = "en" | "pt" | "nl";
 
 export type MapCategoryPlace = {
   categoryPreset?: string;
-  category?: string;
   categoryLabel_en?: string;
   categoryLabel_pt?: string;
   categoryLabel_nl?: string;
@@ -136,14 +135,12 @@ function customCategoryLabel(place: MapCategoryPlace, lang: MapCategoryLang) {
   return (
     place[`categoryLabel_${lang}`] ||
     place.categoryLabel_en ||
-    place.category ||
     "Other"
   );
 }
 
 export function mapCategoryForPlace(place: MapCategoryPlace, lang: MapCategoryLang) {
   const preset = place.categoryPreset;
-  const rawCategory = place.category;
 
   if (preset && preset !== "custom") {
     const selectedPreset = mapCategoryPresets.find((category) => category.id === preset);
@@ -156,24 +153,10 @@ export function mapCategoryForPlace(place: MapCategoryPlace, lang: MapCategoryLa
     }
   }
 
-  const normalizedRaw = normalizeCategoryAlias(rawCategory);
-  const matchedPreset = mapCategoryPresets.find(
-    (category) =>
-      normalizeCategoryAlias(category.id) === normalizedRaw ||
-      category.aliases.some((alias) => normalizeCategoryAlias(alias) === normalizedRaw),
-  );
-
-  if (matchedPreset && preset !== "custom") {
-    return {
-      id: matchedPreset.id,
-      label: matchedPreset.labels[lang],
-    };
-  }
-
   const label = customCategoryLabel(place, lang);
 
   return {
-    id: `custom-${slugifyCategory(place.categoryLabel_en || rawCategory || label)}`,
+    id: `custom-${slugifyCategory(place.categoryLabel_en || label)}`,
     label,
   };
 }

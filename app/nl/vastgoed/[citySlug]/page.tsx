@@ -25,6 +25,7 @@ export async function generateMetadata({
 }: PageProps): Promise<Metadata> {
   const { citySlug } = await params;
   const listings = await getListings(citySlug);
+  if (!listings.length) notFound();
   const city = realEstateCityConfigFromListings("nl", citySlug, listings);
 
   return {

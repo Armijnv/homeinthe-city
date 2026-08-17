@@ -84,9 +84,9 @@ export type CityDashboardRecommendation = {
 
 type CityDashboardMapPlace = {
   _key?: string;
-  name?: string;
   name_en?: string;
   name_pt?: string;
+  name_nl?: string;
 };
 
 export type CityDashboardEditorData = {
@@ -1898,7 +1898,7 @@ function RecommendationEditor({
                 <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   {mapPlaces.flatMap((place) => {
                     if (!place._key) return [];
-                    const label = place.name_en || place.name || place.name_pt || place._key;
+                    const label = place.name_en || place.name_pt || place.name_nl || place._key;
                     return [
                       <label
                         key={place._key}

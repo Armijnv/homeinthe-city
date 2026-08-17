@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard] =
+const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker] =
   await Promise.all([
     readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CityExperienceLayout.tsx", import.meta.url), "utf8"),
@@ -12,6 +12,12 @@ const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, map
     readFile(new URL("../app/lib/cityGuides.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/cities/[citySlug]/map/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ActiveCities.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/map-place-actions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/RealEstatePages.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/Header.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/MapPlaceForm.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/MapPlaceCoordinatePicker.tsx", import.meta.url), "utf8"),
   ]);
 
 test("every city uses the same shared city-page template", () => {
@@ -60,5 +66,58 @@ test("future cities select data by slug rather than requiring a static page", as
     const source = await readFile(new URL(path, import.meta.url), "utf8");
     assert.match(source, /getCityPageData\(citySlug\)/);
     assert.match(source, /cityGuideIsPublic\(city\)/);
+  }
+});
+
+test("active city cards are derived from published city data and optional interpreter coverage", () => {
+  assert.match(activeCities, /publishedCityGuides\(cityGuides\)/);
+  assert.match(activeCities, /city\.hasInterpreterCoverage/);
+  assert.doesNotMatch(activeCities, /const activeCities/);
+  assert.doesNotMatch(activeCities, /porto-alegre|florianopolis|sao-paulo/);
+});
+
+test("new and edited map places use localized names and category presets without writing legacy fields", () => {
+  assert.match(mapActions, /name_en: nameEn/);
+  assert.match(mapActions, /categoryPreset: isCustom \? "custom"/);
+  assert.doesNotMatch(mapActions, /\$\{selector\}\.(?:name|category)`/);
+  assert.doesNotMatch(schema, /Legacy place name|Legacy category key/);
+});
+
+test("map-place editing keeps the draggable marker and coordinate fields synchronized", () => {
+  assert.match(mapPlaceForm, /String\(place\.latitude\)/);
+  assert.match(mapPlaceForm, /<MapPlaceCoordinatePicker/);
+  assert.match(mapPlaceForm, /latitude=\{latitude\}/);
+  assert.match(mapPlaceForm, /longitude=\{longitude\}/);
+  assert.match(mapPlaceForm, /setLatitude\(String\(nextLatitude\)\)/);
+  assert.match(mapPlaceForm, /setLongitude\(String\(nextLongitude\)\)/);
+  assert.doesNotMatch(mapPlaceForm, /coords\.latitude\.toFixed|coords\.longitude\.toFixed/);
+
+  assert.match(coordinatePicker, /draggable/);
+  assert.match(coordinatePicker, /dragend\(\)/);
+  assert.match(coordinatePicker, /markerRef\.current\?\.getLatLng\(\)/);
+  assert.match(coordinatePicker, /latitude: position\.lat/);
+  assert.match(coordinatePicker, /longitude: position\.lng/);
+  assert.match(coordinatePicker, /markerRef\.current\?\.setLatLng/);
+  assert.match(coordinatePicker, /touch-pan-y/);
+  assert.match(mapActions, /\[`\$\{selector\}\.latitude`\]: latitude/);
+  assert.match(mapActions, /\[`\$\{selector\}\.longitude`\]: longitude/);
+});
+
+test("real-estate city pages and navigation derive only from eligible listing coverage", async () => {
+  assert.match(realEstatePages, /No public property listings for/);
+  assert.doesNotMatch(realEstatePages, /export function realEstateCityConfig\(/);
+  assert.doesNotMatch(realEstatePages, /return "porto-alegre"/);
+  assert.match(header, /propertyCityLinks\(propertyListings, lang, realEstatePath\)/);
+  assert.doesNotMatch(header, /portoAlegreRealEstatePath|florianopolisRealEstatePath/);
+
+  for (const path of [
+    "../app/real-estate/porto-alegre/page.tsx",
+    "../app/real-estate/florianopolis/page.tsx",
+    "../app/pt/imoveis/porto-alegre/page.tsx",
+    "../app/pt/imoveis/florianopolis/page.tsx",
+    "../app/nl/vastgoed/porto-alegre/page.tsx",
+    "../app/nl/vastgoed/florianopolis/page.tsx",
+  ]) {
+    await assert.rejects(access(new URL(path, import.meta.url)));
   }
 });
