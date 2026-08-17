@@ -123,7 +123,6 @@ export type CityDashboardEditorData = {
   sidebarCards?: CityDashboardSidebarCard[];
   informationCards?: CityDashboardInformationCard[];
   recommendationGuides?: CityDashboardRecommendation[];
-  recommendations?: Array<{ _key?: string }>;
   mapPlaces?: CityDashboardMapPlace[];
 };
 
@@ -1592,7 +1591,6 @@ function RecommendationEditor({
   recommendations,
   setRecommendations,
   mapPlaces,
-  legacyRecommendationCount,
   cityName,
   activeLanguage,
   hostStories = false,
@@ -1600,7 +1598,6 @@ function RecommendationEditor({
   recommendations: CityDashboardRecommendation[];
   setRecommendations: (recommendations: CityDashboardRecommendation[]) => void;
   mapPlaces: CityDashboardMapPlace[];
-  legacyRecommendationCount: number;
   cityName: string;
   activeLanguage?: Lang;
   hostStories?: boolean;
@@ -1687,13 +1684,6 @@ function RecommendationEditor({
         {hostStories
           ? "Personal stories and guides published in From Your Host. Add a title, short introduction and full story using the selected editing language."
           : "Curated guides and previous Host's Favorites are both published inside Explore the City. Write guides as useful local articles with practical context."}
-        {!hostStories && legacyRecommendationCount ? (
-          <p className="mt-3 border-t border-white/10 pt-3 text-amber-100">
-            {legacyRecommendationCount} previous Host&apos;s Favorite
-            {legacyRecommendationCount === 1 ? " is" : "s are"} already published in
-            Explore. New place recommendations should use the map-place workflow.
-          </p>
-        ) : null}
       </div>
 
       {!recommendations.length ? (
@@ -2092,7 +2082,6 @@ export default function CityDashboardEditors({
               recommendations={recommendations}
               setRecommendations={setRecommendations}
               mapPlaces={city.mapPlaces || []}
-              legacyRecommendationCount={city.recommendations?.length || 0}
               cityName={city.name_en || city.name_pt || city.name_nl || "the city"}
               activeLanguage={activeLanguage}
               hostStories

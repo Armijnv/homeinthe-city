@@ -1,14 +1,6 @@
 import type { CityGuideLang } from "@/app/lib/cityGuides";
 
 export const cityPageExperienceFieldNames = [
-  "aboutCardTitle",
-  "aboutCardDescription",
-  "livingCardTitle",
-  "livingCardDescription",
-  "exploreCardTitle",
-  "exploreCardDescription",
-  "favoritesCardTitle",
-  "favoritesCardDescription",
   "aboutTitle",
   "livingTitle",
   "livingIntroduction",
@@ -18,8 +10,6 @@ export const cityPageExperienceFieldNames = [
   "favoritesTitle",
   "favoritesIntroduction",
   "fromHostIntroduction",
-  "meetHostTitle",
-  "meetHostIntroduction",
 ] as const;
 
 export type CityPageExperienceField =
@@ -66,4 +56,3 @@ export function cityPageExperienceLocale(
 ) {
   return experience?.[lang] || {};
 }
-

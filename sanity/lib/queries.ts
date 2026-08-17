@@ -171,27 +171,6 @@ const cityGuideProjection = `
       }
     },
 
-    recommendations[]{
-      name,
-      name_en,
-      name_pt,
-      name_nl,
-      categoryPreset,
-      category,
-      categoryLabel_en,
-      categoryLabel_pt,
-      categoryLabel_nl,
-      neighborhood,
-      description_en,
-      description_pt,
-      description_nl,
-      detail_en,
-      detail_pt,
-      detail_nl,
-      website,
-      favorite
-    },
-
     sidebarCards[]{
       title_en,
       title_pt,
@@ -275,7 +254,6 @@ export const cityNavigationQuery = `
     introBlocks_nl,
     mapPlaces[]{_key},
     recommendationGuides[]{_key},
-    recommendations[]{_key},
     sidebarCards[]{_key},
     informationCards[]{_key},
     "hasInterpreterCoverage": count(*[

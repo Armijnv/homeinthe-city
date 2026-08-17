@@ -13,7 +13,6 @@ import {
   type CityGuideLang as Lang,
   type CityGuideMapPlace as MapPlace,
   type CityGuideProvider,
-  type CityGuideRecommendation,
   type CityGuideRecommendationGuide,
   type CityGuideSidebarCard as SidebarCard,
 } from "@/app/lib/cityGuides";
@@ -57,12 +56,6 @@ const CityMap = dynamic(
 );
 
 type CityMapEntry = import("@/app/components/CityMap").CityMapEntry;
-
-type RecommendationGroup = {
-  id: string;
-  label: string;
-  items: CityGuideRecommendation[];
-};
 
 type HostAction = {
   label: string;
@@ -480,49 +473,6 @@ function localizedMapPlaceText(
   return "";
 }
 
-function localizedRecommendationText(
-  recommendation: CityGuideRecommendation,
-  field: "name" | "detail" | "description",
-  lang: Lang,
-) {
-  const values = recommendation as Record<string, unknown>;
-  const localized = values[`${field}_${lang}`];
-  const english = values[`${field}_en`];
-  const legacy = field === "name" ? recommendation.name : "";
-
-  if (typeof localized === "string" && localized.trim()) return localized;
-  if (typeof english === "string" && english.trim()) return english;
-  if (legacy?.trim()) return legacy;
-
-  return "";
-}
-
-function groupedRecommendations(
-  recommendations: CityGuideRecommendation[],
-  lang: Lang,
-): RecommendationGroup[] {
-  return recommendations.reduce<RecommendationGroup[]>((groups, recommendation) => {
-    const title = localizedRecommendationText(recommendation, "name", lang);
-
-    if (!title) return groups;
-
-    const category = mapCategoryForPlace(recommendation, lang);
-    const existing = groups.find((group) => group.id === category.id);
-
-    if (existing) {
-      existing.items.push(recommendation);
-    } else {
-      groups.push({
-        id: category.id,
-        label: category.label,
-        items: [recommendation],
-      });
-    }
-
-    return groups;
-  }, []);
-}
-
 function RecommendationGuideBody({ content }: { content: string }) {
   const blocks = content
     .split(/\n\s*\n/)
@@ -887,102 +837,19 @@ function SupportingInformationCards({
   });
 }
 
-function ExperienceRecommendations({
-  groups,
+function FavoriteMapPlaces({
   favoritePlaces,
   lang,
   copy,
 }: {
-  groups: RecommendationGroup[];
   favoritePlaces: MapPlace[];
   lang: Lang;
   copy: (typeof fallbackGuideCopy)[Lang];
 }) {
-  if (!groups.length && !favoritePlaces.length) return null;
+  if (!favoritePlaces.length) return null;
 
   return (
-    <div className="space-y-7">
-      {groups.map((group) => (
-        <div
-          key={group.id}
-          className="border-t border-stone-200 pt-5 first:border-t-0 first:pt-0"
-        >
-          <h3 className="mb-4 text-lg font-medium text-stone-900">
-            {group.label}
-          </h3>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            {group.items.map((recommendation, index) => {
-              const title = localizedRecommendationText(
-                recommendation,
-                "name",
-                lang,
-              );
-              const detail = localizedRecommendationText(
-                recommendation,
-                "detail",
-                lang,
-              );
-              const description = localizedRecommendationText(
-                recommendation,
-                "description",
-                lang,
-              );
-
-              return (
-                <details
-                  key={`${group.id}-${title}-${index}`}
-                  className="group rounded-2xl border border-stone-200 bg-stone-50 open:bg-white"
-                >
-                  <summary className="cursor-pointer list-none p-4 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#b99455] [&::-webkit-details-marker]:hidden">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        {recommendation.favorite ? (
-                          <p className="mb-1 text-xs uppercase tracking-widest text-[#9b6b22]">
-                            {copy.recommendationPick}
-                          </p>
-                        ) : null}
-                        <h4 className="text-base font-medium text-stone-950">{title}</h4>
-                        {recommendation.neighborhood ? (
-                          <p className="mt-1 text-sm text-stone-500">
-                            {recommendation.neighborhood}
-                          </p>
-                        ) : null}
-                        {detail ? (
-                          <p className="mt-2 text-sm leading-6 text-stone-700">{detail}</p>
-                        ) : null}
-                      </div>
-                      <span aria-hidden="true" className="mt-1 text-stone-500 transition group-open:rotate-45">
-                        +
-                      </span>
-                    </div>
-                  </summary>
-                  {description && description !== detail ? (
-                    <p className="border-t border-stone-200 px-4 pt-4 text-sm leading-6 text-stone-600">
-                      {description}
-                    </p>
-                  ) : null}
-                  {recommendation.website ? (
-                    <div className="px-4 pb-4 pt-3">
-                      <a
-                        href={recommendation.website}
-                        target={recommendation.website.startsWith("http") ? "_blank" : undefined}
-                        rel={recommendation.website.startsWith("http") ? "noreferrer" : undefined}
-                        className="inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-4 py-2 text-sm text-white hover:bg-stone-800"
-                      >
-                        {copy.recommendationLink}
-                      </a>
-                    </div>
-                  ) : null}
-                </details>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-
-      {!groups.length && favoritePlaces.length ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {favoritePlaces.map((place, index) => {
             const title = localizedMapPlaceText(place, "name", lang);
             const detail = localizedMapPlaceText(place, "detail", lang);
@@ -1020,8 +887,6 @@ function ExperienceRecommendations({
               </details>
             );
           })}
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -1092,7 +957,6 @@ export default function CityPage({
   const recommendationGuides = (city?.recommendationGuides || []).filter((recommendation) =>
     Boolean(localizedRecommendationGuideText(recommendation as Record<string, unknown>, "title", lang)),
   );
-  const recommendationGroups = groupedRecommendations(city?.recommendations || [], lang);
   const mapEntries = [
     ...cityMapEntriesFromPlaces(places, lang),
     ...cityMapEntriesFromListings({ listings: propertyListings, lang, citySlug }),
@@ -1195,7 +1059,6 @@ export default function CityPage({
     );
     const hasFavoritesContent = Boolean(
       experienceCopy.favoritesIntroduction ||
-        recommendationGroups.length ||
         favoritePlaces.length,
     );
     const hostProfileCard = displayHost ? (
@@ -1354,8 +1217,7 @@ export default function CityPage({
                   </p>
                 ) : null}
                 <div className="mt-5">
-                  <ExperienceRecommendations
-                    groups={recommendationGroups}
+                  <FavoriteMapPlaces
                     favoritePlaces={favoritePlaces}
                     lang={lang}
                     copy={fallbackCopy}

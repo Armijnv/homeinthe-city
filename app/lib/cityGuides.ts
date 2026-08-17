@@ -40,27 +40,6 @@ export type CityGuideMapPlace = {
   video?: CityGuideImage;
 };
 
-export type CityGuideRecommendation = {
-  name?: string;
-  name_en?: string;
-  name_pt?: string;
-  name_nl?: string;
-  categoryPreset?: string;
-  category?: string;
-  categoryLabel_en?: string;
-  categoryLabel_pt?: string;
-  categoryLabel_nl?: string;
-  neighborhood?: string;
-  description_en?: string;
-  description_pt?: string;
-  description_nl?: string;
-  detail_en?: string;
-  detail_pt?: string;
-  detail_nl?: string;
-  website?: string;
-  favorite?: boolean;
-};
-
 export type CityGuideRecommendationGuide = {
   _key?: string;
   title_en?: string;
@@ -154,7 +133,6 @@ export type CityGuideContent = {
   cityPageExperience?: CityPageExperience;
   mapPlaces?: CityGuideMapPlace[];
   recommendationGuides?: CityGuideRecommendationGuide[];
-  recommendations?: CityGuideRecommendation[];
   sidebarCards?: CityGuideSidebarCard[];
   informationCards?: CityInformationCard[];
   cta_en?: string;
@@ -235,7 +213,6 @@ export function cityGuideIsPublic(city: CityGuideContent | null | undefined) {
     localizedContent ||
       city.mapPlaces?.length ||
       city.recommendationGuides?.length ||
-      city.recommendations?.length ||
       city.sidebarCards?.length,
   );
 }

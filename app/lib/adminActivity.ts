@@ -136,7 +136,6 @@ function cityAction(raw: RawActivity) {
   if (raw.changeType === "recommendationAdded") return `added the recommendation “${subject || "Untitled recommendation"}”`;
   if (raw.changeType === "recommendationUpdated") return `updated the recommendation “${subject || "Untitled recommendation"}”`;
   if (raw.changeType === "recommendationDeleted") return `deleted the recommendation “${subject || "Untitled recommendation"}”`;
-  if (raw.changeType === "recommendations") return "updated city recommendations";
   if (fields.length === 1 && fields[0]?.match(/^intro_(en|pt|nl)$/)) {
     const language = { en: "English", pt: "Portuguese", nl: "Dutch" }[fields[0].slice(-2)] || "localized";
     return `updated the ${language} city introduction`;

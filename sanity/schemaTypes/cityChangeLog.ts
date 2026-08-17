@@ -30,7 +30,6 @@ export const cityChangeLog = defineType({
           { title: "City content", value: "cityContent" },
           { title: "City publication", value: "cityStatus" },
           { title: "City coordinates", value: "cityCoordinates" },
-          { title: "Recommendations", value: "recommendations" },
           { title: "Recommendation added", value: "recommendationAdded" },
           { title: "Recommendation updated", value: "recommendationUpdated" },
           { title: "Recommendation deleted", value: "recommendationDeleted" },

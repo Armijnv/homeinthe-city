@@ -181,9 +181,6 @@ const cityDashboardQuery = `
       relatedProvider,
       relatedCity
     },
-    recommendations[]{
-      _key
-    }
   }
 `;
 
@@ -234,7 +231,7 @@ export default async function CityDashboardPage({ params }: PageProps) {
     <DashboardShell
       eyebrow="City host"
       title={name}
-      intro="Edit the public city guide, local recommendations, map places, and coordinate readiness without opening Sanity Studio."
+      intro="Edit the public city guide, local recommendation guides, map places, and coordinate readiness without opening Sanity Studio."
     >
       <DashboardBackLink href="/dashboard/cities" label="City workspace" />
       <StudioDraftNotice documentId={city._id} />

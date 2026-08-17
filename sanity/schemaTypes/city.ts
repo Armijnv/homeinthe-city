@@ -28,34 +28,6 @@ const mapCategoryPresets = [
 ];
 
 const cityExperienceFields = [
-  { name: "aboutCardTitle", title: "About card title", type: "string" },
-  {
-    name: "aboutCardDescription",
-    title: "About card description",
-    type: "text",
-    rows: 3,
-  },
-  { name: "livingCardTitle", title: "Living & Working card title", type: "string" },
-  {
-    name: "livingCardDescription",
-    title: "Living & Working card description",
-    type: "text",
-    rows: 3,
-  },
-  { name: "exploreCardTitle", title: "Explore card title", type: "string" },
-  {
-    name: "exploreCardDescription",
-    title: "Explore card description",
-    type: "text",
-    rows: 3,
-  },
-  { name: "favoritesCardTitle", title: "Host favorites card title", type: "string" },
-  {
-    name: "favoritesCardDescription",
-    title: "Host favorites card description",
-    type: "text",
-    rows: 3,
-  },
   { name: "aboutTitle", title: "About section title", type: "string" },
   { name: "livingTitle", title: "Living & Working section title", type: "string" },
   {
@@ -93,13 +65,6 @@ const cityExperienceFields = [
     rows: 6,
     description:
       "Personal or editorial city perspective shown in the From Your Host tab.",
-  },
-  { name: "meetHostTitle", title: "Meet your host section title", type: "string" },
-  {
-    name: "meetHostIntroduction",
-    title: "Meet your host introduction",
-    type: "text",
-    rows: 4,
   },
 ] as const;
 
@@ -700,120 +665,6 @@ export const city = defineType({
               title: "title_en",
               subtitle: "recommendationType",
               media: "featuredImage",
-            },
-          },
-        },
-      ],
-    }),
-
-    defineField({
-      name: "recommendations",
-      title: "Legacy Recommendations — Review Before Migration",
-      type: "array",
-      description:
-        "Preserved place-style recommendation records. Do not delete these until their information has been reviewed and moved into Curated Recommendation Guides or Map Places.",
-      of: [
-        {
-          type: "object",
-          fields: [
-            {
-              name: "name",
-              title: "Legacy / default recommendation name",
-              type: "string",
-            },
-            {
-              name: "name_en",
-              title: "Recommendation name (English / default)",
-              type: "string",
-            },
-            {
-              name: "name_pt",
-              title: "Recommendation name (Portuguese)",
-              type: "string",
-            },
-            {
-              name: "name_nl",
-              title: "Recommendation name (Dutch)",
-              type: "string",
-            },
-            {
-              name: "categoryPreset",
-              title: "Category preset",
-              type: "string",
-              options: {
-                list: mapCategoryPresets,
-              },
-            },
-            {
-              name: "category",
-              title: "Legacy / custom category key",
-              type: "string",
-              hidden: ({ parent }) =>
-                Boolean(parent?.categoryPreset && parent.categoryPreset !== "custom"),
-            },
-            {
-              name: "categoryLabel_en",
-              title: "Custom category label (English)",
-              type: "string",
-              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
-            },
-            {
-              name: "categoryLabel_pt",
-              title: "Custom category label (Portuguese)",
-              type: "string",
-              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
-            },
-            {
-              name: "categoryLabel_nl",
-              title: "Custom category label (Dutch)",
-              type: "string",
-              hidden: ({ parent }) => parent?.categoryPreset !== "custom",
-            },
-            {
-              name: "neighborhood",
-              title: "Neighborhood / area",
-              type: "string",
-            },
-            {
-              name: "detail_en",
-              title: "Short note (English)",
-              type: "string",
-            },
-            {
-              name: "detail_pt",
-              title: "Short note (Portuguese)",
-              type: "string",
-            },
-            {
-              name: "detail_nl",
-              title: "Short note (Dutch)",
-              type: "string",
-            },
-            {
-              name: "description_en",
-              title: "Description (English)",
-              type: "text",
-              rows: 4,
-            },
-            {
-              name: "description_pt",
-              title: "Description (Portuguese)",
-              type: "text",
-              rows: 4,
-            },
-            {
-              name: "description_nl",
-              title: "Description (Dutch)",
-              type: "text",
-              rows: 4,
-            },
-            { name: "website", title: "Website / Instagram", type: "url" },
-            { name: "favorite", title: "My pick", type: "boolean" },
-          ],
-          preview: {
-            select: {
-              title: "name_en",
-              subtitle: "categoryPreset",
             },
           },
         },

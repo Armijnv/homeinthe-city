@@ -31,7 +31,6 @@ const fieldLabels: Record<string, string> = {
   gallery: "Property photos",
   mapCoordinates: "Map coordinates",
   mapPlaces: "Map places",
-  recommendations: "Recommendations",
   cityPageExperience: "Porto Alegre page sections",
   primaryHost: "Primary host",
   content: "City information",

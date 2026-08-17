@@ -364,32 +364,6 @@ export const provider = defineType({
       },
     }),
 
-    defineField({
-      name: "legacyHost",
-      title: "Legacy Host Compatibility",
-      type: "object",
-      description:
-        "Links this provider profile back to the current host document while legacy host routes remain live.",
-      fields: [
-        defineField({
-          name: "slug",
-          title: "Legacy Host Slug",
-          type: "string",
-        }),
-        defineField({
-          name: "documentId",
-          title: "Legacy Host Document ID",
-          type: "string",
-        }),
-        defineField({
-          name: "keepLegacyRoutes",
-          title: "Keep Legacy Routes",
-          type: "boolean",
-          initialValue: true,
-          description: "Keep enabled until provider routes replace /hosts/[slug] safely.",
-        }),
-      ],
-    }),
   ],
 
   preview: {
