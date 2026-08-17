@@ -103,19 +103,19 @@ export const servicePage = defineType({
 
     defineField({
       name: "eyebrow_en",
-      title: "Eyebrow (English)",
+      title: "Small heading above the title (English)",
       type: "string",
     }),
 
     defineField({
       name: "eyebrow_pt",
-      title: "Eyebrow (Portuguese)",
+      title: "Small heading above the title (Portuguese)",
       type: "string",
     }),
 
     defineField({
       name: "eyebrow_nl",
-      title: "Eyebrow (Dutch)",
+      title: "Small heading above the title (Dutch)",
       type: "string",
     }),
 

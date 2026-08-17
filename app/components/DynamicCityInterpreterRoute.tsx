@@ -4,6 +4,8 @@ import CityInterpreterPage from "@/app/components/CityInterpreterPage";
 import {
   cityInterpreterName,
   cityInterpreterPath,
+  automaticCityInterpreterDescription,
+  automaticCityInterpreterTitle,
   interpreterLanguages,
   type CityInterpreterCoverage,
 } from "@/app/lib/cityInterpreterCoverage";
@@ -45,10 +47,9 @@ export async function dynamicCityInterpreterMetadata(
   const page = pageSlug
     ? await client.fetch<InterpreterCmsPage | null>(servicePageQuery, { slug: pageSlug })
     : null;
-  const name = cityInterpreterName(city, lang);
   const path = cityInterpreterPath(citySlug, lang);
-  const title = page?.[`seoTitle_${lang}`] || page?.[`title_${lang}`] || `Interpreter services in ${name}`;
-  const description = page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`];
+  const title = page?.[`seoTitle_${lang}`] || page?.[`title_${lang}`] || automaticCityInterpreterTitle(city, lang);
+  const description = page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`] || automaticCityInterpreterDescription(city, lang);
   const languages = Object.fromEntries(
     (["en", "pt", "nl"] as const).map((language) => [
       language,
@@ -85,10 +86,10 @@ function dynamicCityInterpreterStructuredData(
 ) {
   const citySlug = city.slug?.current || "";
   const name = cityInterpreterName(city, lang);
-  const title = page?.[`seoTitle_${lang}`] || page?.[`title_${lang}`] || `Interpreter services in ${name}`;
+  const title = page?.[`seoTitle_${lang}`] || page?.[`title_${lang}`] || automaticCityInterpreterTitle(city, lang);
   const description =
     page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`] ||
-    `Interpreter services in ${name}`;
+    automaticCityInterpreterDescription(city, lang);
   return serviceJsonLd({
     url: `https://homeinthe.city${cityInterpreterPath(citySlug, lang)}`,
     name: title,

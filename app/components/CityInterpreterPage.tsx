@@ -1,8 +1,8 @@
 import Link from "next/link";
 import ProviderProfileCard, { type ProviderListItem } from "@/app/components/ProviderProfileCard";
 import {
-  cityInterpreterName,
   cityInterpreterPath,
+  automaticCityInterpreterTitle,
   isPrimaryInterpreter,
   type CityInterpreterCoverage,
 } from "@/app/lib/cityInterpreterCoverage";
@@ -31,9 +31,8 @@ export default function CityInterpreterPage({
   page?: InterpreterCmsPage | null;
 }) {
   const t = labels[lang];
-  const cityName = cityInterpreterName(city, lang);
   const interpreters = city.interpreters || [];
-  const heading = value(page, "title", lang) || `${t.eyebrow} in ${cityName}`;
+  const heading = value(page, "title", lang) || automaticCityInterpreterTitle(city, lang);
   const intro = value(page, "intro", lang);
   const ctaTitle = value(page, "ctaTitle", lang);
   const ctaText = value(page, "ctaText", lang);

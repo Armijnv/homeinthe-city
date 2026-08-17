@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { activityFieldChanges } from "@/app/lib/activityChanges";
+import { requireAdmin } from "@/app/lib/dashboard";
 import { requireInterpreterServiceAccess } from "@/app/lib/interpreterServiceAccess";
 import type { InterpreterLanguage } from "@/app/lib/interpreterTypes";
 import { servicePageChangeLogDocument } from "@/app/lib/servicePageChangeLog";
@@ -28,6 +29,8 @@ type ExistingServicePage = Record<string, unknown> & {
 };
 
 class InterpreterServiceError extends Error {}
+
+type AssignmentProvider = { _id: string; _rev: string; roles?: string[]; primaryRole?: string; cities?: Array<{ _key?: string; _ref?: string }> };
 
 function formString(formData: FormData, field: string) {
   return String(formData.get(field) || "").trim();
@@ -89,11 +92,14 @@ function localizedArray(
   });
 }
 
-function servicePageInput(formData: FormData) {
+function servicePageInput(formData: FormData, allowAdvancedOverrides: boolean) {
+  const editableFields = allowAdvancedOverrides
+    ? scalarFields
+    : scalarFields.filter((field) => !["seoTitle", "seoDescription", "eyebrow", "title"].includes(field));
   return {
     ...Object.fromEntries(
       languages.flatMap((language) =>
-        scalarFields.map((field) => [
+        editableFields.map((field) => [
           `${field}_${language}`,
           formString(formData, `${field}_${language}`),
         ]),
@@ -137,7 +143,7 @@ export async function updateInterpreterServicePageAction(formData: FormData) {
       { slug: definition.servicePageSlug },
     );
     const input = {
-      ...servicePageInput(formData),
+      ...servicePageInput(formData, context.isAdmin),
       ...(definition.cityId
         ? { kind: "cityInterpreter", city: { _type: "reference", _ref: definition.cityId } }
         : {}),
@@ -187,4 +193,38 @@ export async function updateInterpreterServicePageAction(formData: FormData) {
     );
   }
   redirect(`${editorPath}?saved=${saved}`);
+}
+
+function assignmentEditorPath(citySlug: string) { return `/dashboard/cities/${encodeURIComponent(citySlug)}/interpreter`; }
+
+async function cityAssignmentInput(formData: FormData) {
+  await requireAdmin("/dashboard/admin");
+  const cityId = formString(formData, "cityId"); const citySlug = formString(formData, "citySlug"); const providerId = formString(formData, "providerId");
+  if (!cityId || !citySlug || !providerId) throw new InterpreterServiceError("The interpreter assignment is incomplete.");
+  const provider = await client.fetch<AssignmentProvider | null>(`*[_type == "provider" && _id == $providerId][0]{_id, _rev, roles, primaryRole, cities[]{_key, _ref}}`, { providerId });
+  if (!provider || !(provider.primaryRole === "interpreter" || provider.roles?.includes("interpreter"))) throw new InterpreterServiceError("Only providers with the Interpreter role can be assigned here.");
+  return { cityId, citySlug, providerId, provider };
+}
+
+export async function assignInterpreterToCityAction(formData: FormData) {
+  const submittedCitySlug = formString(formData, "citySlug");
+  try {
+    const input = await cityAssignmentInput(formData);
+    assertSanityWriteToken();
+    if (!(input.provider.cities || []).some((city) => city._ref === input.cityId)) await writeClient.patch(input.providerId).ifRevisionId(input.provider._rev).set({ cities: [...(input.provider.cities || []), { _key: `city-${input.cityId}`, _type: "reference", _ref: input.cityId }] }).commit();
+    revalidatePath(assignmentEditorPath(input.citySlug)); revalidatePath("/dashboard/interpreter-services"); revalidatePath(`/interpreter/${input.citySlug}`); revalidatePath(`/pt/interprete/${input.citySlug}`); revalidatePath(`/nl/tolk/${input.citySlug}`);
+    redirect(`${assignmentEditorPath(input.citySlug)}?assignment=added`);
+  } catch (error) { redirect(`${assignmentEditorPath(submittedCitySlug)}?error=${encodeURIComponent(errorMessage(error))}`); }
+}
+
+export async function removeInterpreterFromCityAction(formData: FormData) {
+  const submittedCitySlug = formString(formData, "citySlug");
+  try {
+    const input = await cityAssignmentInput(formData);
+    assertSanityWriteToken();
+    const cities = (input.provider.cities || []).filter((city) => city._ref !== input.cityId);
+    if (cities.length !== (input.provider.cities || []).length) await writeClient.patch(input.providerId).ifRevisionId(input.provider._rev).set({ cities }).commit();
+    revalidatePath(assignmentEditorPath(input.citySlug)); revalidatePath("/dashboard/interpreter-services"); revalidatePath(`/interpreter/${input.citySlug}`); revalidatePath(`/pt/interprete/${input.citySlug}`); revalidatePath(`/nl/tolk/${input.citySlug}`);
+    redirect(`${assignmentEditorPath(input.citySlug)}?assignment=removed`);
+  } catch (error) { redirect(`${assignmentEditorPath(submittedCitySlug)}?error=${encodeURIComponent(errorMessage(error))}`); }
 }

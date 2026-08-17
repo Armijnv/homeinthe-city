@@ -61,12 +61,14 @@ export default function InterpreterServiceForm({
   page,
   pageKey,
   isGeneralPage,
+  isAdmin,
   publicPath,
   action,
 }: {
   page: InterpreterCmsPage;
   pageKey: string;
   isGeneralPage: boolean;
+  isAdmin: boolean;
   publicPath: string;
   action: (formData: FormData) => void | Promise<void>;
 }) {
@@ -118,14 +120,16 @@ export default function InterpreterServiceForm({
     <form action={action} className="space-y-6">
       <input type="hidden" name="pageKey" value={pageKey} />
       {languageOptions.flatMap(({ id }) =>
-        localizedFields.map((field) => (
+        localizedFields
+          .filter((field) => isAdmin || !["seoTitle", "seoDescription", "eyebrow", "title"].includes(field))
+          .map((field) => (
           <input
             key={`${field}-${id}`}
             type="hidden"
             name={`${field}_${id}`}
             value={localized[id][field]}
           />
-        )),
+          )),
       )}
       <input
         type="hidden"
@@ -171,15 +175,15 @@ export default function InterpreterServiceForm({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
-        <h2 className="text-xl font-medium text-white">Search result information</h2>
-        <p className="mt-1 text-sm leading-6 text-stone-400">
-          Used by search engines and link previews. It does not change the visible page heading.
+      {isAdmin ? <details className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
+        <summary className="cursor-pointer text-xl font-medium text-white">Advanced search settings</summary>
+        <p className="mt-3 text-sm leading-6 text-stone-400">
+          Leave these blank to use the automatic city-aware title and search description. Any text entered here is a custom override.
         </p>
         <div className="mt-5 grid min-w-0 gap-5">
           <label>
             <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
-              Search title
+              Search title override
             </span>
             <input
               className={inputClass}
@@ -189,7 +193,7 @@ export default function InterpreterServiceForm({
           </label>
           <label>
             <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">
-              Search description
+              Search description override
             </span>
             <textarea
               rows={4}
@@ -201,27 +205,32 @@ export default function InterpreterServiceForm({
             />
           </label>
         </div>
-      </section>
+      </details> : null}
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
         <h2 className="text-xl font-medium text-white">Page introduction</h2>
+        <p className="mt-1 text-sm leading-6 text-stone-400">The page title is generated automatically from the city and interpreter service.</p>
         <div className="mt-5 grid min-w-0 gap-5">
-          <label>
-            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Eyebrow</span>
+          {isAdmin ? <details className="rounded-xl border border-white/10 bg-black/10 p-4">
+            <summary className="cursor-pointer text-sm font-medium text-white">Advanced heading overrides</summary>
+            <p className="mt-2 text-sm leading-6 text-stone-400">Leave these blank to use the automatic page title and the shared small heading.</p>
+            <label className="mt-4 block">
+            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Small heading above the title</span>
             <input
               className={inputClass}
               value={localized[activeLanguage].eyebrow}
               onChange={(event) => setLocalizedField("eyebrow", event.target.value)}
             />
-          </label>
-          <label>
-            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Page title</span>
+            </label>
+            <label className="mt-4 block">
+            <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Page title override</span>
             <input
               className={inputClass}
               value={localized[activeLanguage].title}
               onChange={(event) => setLocalizedField("title", event.target.value)}
             />
-          </label>
+            </label>
+          </details> : null}
           <label>
             <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Introduction</span>
             <textarea
@@ -239,9 +248,9 @@ export default function InterpreterServiceForm({
           <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h2 className="text-xl font-medium text-white">Additional page sections</h2>
+                <h2 className="text-xl font-medium text-white">Services and local support</h2>
                 <p className="mt-1 text-sm leading-6 text-stone-400">
-                  Optional city-specific editorial sections shown near the end of the page.
+                  Add helpful city-specific service and support information.
                 </p>
               </div>
               <button
@@ -254,7 +263,7 @@ export default function InterpreterServiceForm({
                 }
                 className="min-h-11 rounded-lg border border-white/15 px-4 py-2 text-sm text-white"
               >
-                Add section
+                Add information section
               </button>
             </div>
             <div className="mt-5 grid gap-4">
@@ -358,7 +367,7 @@ export default function InterpreterServiceForm({
       ) : null}
 
       <section className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
-        <h2 className="text-xl font-medium text-white">Contact invitation</h2>
+        <h2 className="text-xl font-medium text-white">Contact / call to action</h2>
         <div className="mt-5 grid min-w-0 gap-5">
           <label>
             <span className="mb-2 block text-xs uppercase tracking-widest text-stone-400">Heading</span>

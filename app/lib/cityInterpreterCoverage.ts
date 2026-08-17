@@ -6,6 +6,7 @@ export type CityInterpreterProvider = {
   slug?: { current?: string };
   roles?: string[];
   primaryRole?: string;
+  verificationStatus?: string;
   languages?: Array<{ language?: string; services?: string[] }>;
   mainPhoto?: { alt?: string; asset?: { url?: string } };
 };
@@ -48,6 +49,47 @@ export function cityInterpreterPath(citySlug: string, lang: InterpreterLanguage)
   if (lang === "pt") return `/pt/interprete/${citySlug}`;
   if (lang === "nl") return `/nl/tolk/${citySlug}`;
   return `/interpreter/${citySlug}`;
+}
+
+const interpreterCopy = {
+  en: {
+    title: (city: string) => `Interpreter services in ${city}`,
+    description: (city: string, languages: string) =>
+      languages
+        ? `Interpreter services in ${city}, with support in ${languages}.`
+        : `Interpreter services in ${city}.`,
+  },
+  pt: {
+    title: (city: string) => `Serviços de interpretação em ${city}`,
+    description: (city: string, languages: string) =>
+      languages
+        ? `Serviços de interpretação em ${city}, com atendimento em ${languages}.`
+        : `Serviços de interpretação em ${city}.`,
+  },
+  nl: {
+    title: (city: string) => `Tolkdiensten in ${city}`,
+    description: (city: string, languages: string) =>
+      languages
+        ? `Tolkdiensten in ${city}, met ondersteuning in ${languages}.`
+        : `Tolkdiensten in ${city}.`,
+  },
+} as const;
+
+export function automaticCityInterpreterTitle(
+  city: CityInterpreterCoverage,
+  lang: InterpreterLanguage,
+) {
+  return interpreterCopy[lang].title(cityInterpreterName(city, lang));
+}
+
+export function automaticCityInterpreterDescription(
+  city: CityInterpreterCoverage,
+  lang: InterpreterLanguage,
+) {
+  const languages = Array.from(
+    new Set((city.interpreters || []).flatMap(interpreterLanguages)),
+  ).join(", ");
+  return interpreterCopy[lang].description(cityInterpreterName(city, lang), languages);
 }
 
 export function hasInterpreterRole(provider: {

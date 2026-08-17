@@ -7,7 +7,7 @@ const languages: Record<string, string> = {
 const localizedNames: Record<string, string> = {
   seoTitle: "search title",
   seoDescription: "search description",
-  eyebrow: "eyebrow",
+  eyebrow: "small heading above the title",
   title: "page title",
   intro: "introduction",
   pricingTitle: "pricing heading",

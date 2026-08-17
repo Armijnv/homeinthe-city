@@ -382,6 +382,7 @@ export const cityInterpreterCoverageQuery = `
       slug,
       roles,
       primaryRole,
+      verificationStatus,
       languages[]{language, services},
       mainPhoto{alt, asset->{url}}
     },
@@ -415,7 +416,7 @@ export const cityInterpreterCoverageBySlugQuery = `
       (primaryRole == "interpreter" || "interpreter" in roles) &&
       ^._id in cities[]._ref
     ] | order(name asc){
-      _id, name, slug, roles, primaryRole,
+      _id, name, slug, roles, primaryRole, verificationStatus,
       languages[]{language, services},
       mainPhoto{alt, asset->{url}}
     },

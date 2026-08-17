@@ -302,6 +302,28 @@ test("city-page interpreter cards require published coverage and use the shared 
   assert.doesNotMatch(cardsSource, /interpreterCityForSlug/);
 });
 
+test("city interpreter coverage carries each provider's existing verification status to the shared card", async () => {
+  const [querySource, coverageSource, cardSource] = await Promise.all([
+    readFile(new URL("../sanity/lib/queries.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/cityInterpreterCoverage.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/ProviderProfileCard.tsx", import.meta.url), "utf8"),
+  ]);
+  for (const queryName of [
+    "cityInterpreterCoverageQuery",
+    "cityInterpreterCoverageBySlugQuery",
+  ]) {
+    const query = querySource
+      .split(`export const ${queryName} = \``)[1]
+      ?.split("`;")[0];
+    assert.ok(query, `${queryName} should be defined`);
+    assert.match(query, /verificationStatus/);
+  }
+  assert.match(coverageSource, /verificationStatus\?: string/);
+  assert.match(cardSource, /verificationLabel\(lang, provider\.verificationStatus\)/);
+  assert.match(cardSource, /status === "verified"/);
+  assert.match(cardSource, /return labels\[lang\]\.unverified/);
+});
+
 test("city navigation uses published coverage and the shared path resolver", async () => {
   const [headerSource, activeCitiesSource, cityQuerySource] = await Promise.all([
     readFile(new URL("../app/components/Header.tsx", import.meta.url), "utf8"),

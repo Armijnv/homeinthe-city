@@ -67,6 +67,7 @@ export default async function EditInterpreterServicePage({
         page={effectiveHubPage(stored)}
         pageKey={definition.key}
         isGeneralPage
+        isAdmin={context.isAdmin}
         publicPath={interpreterServicePublicPath(definition)}
         action={updateInterpreterServicePageAction}
       />
