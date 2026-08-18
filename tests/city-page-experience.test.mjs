@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
+const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, mapPlaceManagement, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
   await Promise.all([
     readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CityMap.tsx", import.meta.url), "utf8"),
@@ -13,6 +13,7 @@ const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sit
     readFile(new URL("../app/lib/cityGuides.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/sitemap.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/cities/[citySlug]/map/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/dashboard/MapPlaceManagement.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/ActiveCities.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/map-place-actions.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/components/RealEstatePages.tsx", import.meta.url), "utf8"),
@@ -139,6 +140,17 @@ test("map-place editing keeps the draggable marker and coordinate fields synchro
   assert.match(coordinatePicker, /touch-pan-y/);
   assert.match(mapActions, /\[`\$\{selector\}\.latitude`\]: latitude/);
   assert.match(mapActions, /\[`\$\{selector\}\.longitude`\]: longitude/);
+});
+
+test("adding and editing map places use the same full-width shared form", () => {
+  assert.match(mapPlaceManagement, /const \[editingPlaceKey, setEditingPlaceKey\] = useState/);
+  assert.match(mapPlaceManagement, /<MapPlaceForm\n          action=\{addAction\}/);
+  assert.match(mapPlaceManagement, /<MapPlaceForm\n            action=\{updateAction\}\n            place=\{editingPlace\}/);
+  assert.match(mapPlaceManagement, /setEditingPlaceKey\(place\._key \|\| null\)/);
+  assert.doesNotMatch(mapPlaceManagement, /<details className="min-w-\[280px\]">/);
+  assert.doesNotMatch(mapPlaceManagement, /min-w-\[320px\]/);
+  assert.match(mapPlaceForm, /className="space-y-6 rounded-2xl border border-white\/10 bg-white\/10 p-5 md:p-6"/);
+  assert.match(mapPlaceForm, /className="grid gap-4 md:grid-cols-\[1fr_1fr_auto\] md:items-end"/);
 });
 
 test("real-estate city pages and navigation derive only from eligible listing coverage", async () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import MapPlaceForm, { type EditableMapPlace } from "@/app/dashboard/MapPlaceForm";
+import { useState } from "react";
 import type { MapPlaceActionState } from "@/app/dashboard/map-place-action-state";
 import { mapCategoryForPlace } from "@/app/lib/mapCategories";
 
@@ -78,6 +79,9 @@ export default function MapPlaceManagement({
   warningMessage,
   showHostRecommendation = false,
 }: MapPlaceManagementProps) {
+  const [editingPlaceKey, setEditingPlaceKey] = useState<string | null>(null);
+  const editingPlace = places.find((place) => place._key === editingPlaceKey);
+
   return (
     <div className="space-y-10">
       {successMessage ? (
@@ -100,6 +104,28 @@ export default function MapPlaceManagement({
           showHostRecommendation={showHostRecommendation}
         />
       </section>
+
+      {editingPlace ? (
+        <section>
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <h2 className="text-2xl font-light text-white">Edit Map Place</h2>
+            <button
+              type="button"
+              onClick={() => setEditingPlaceKey(null)}
+              className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]"
+            >
+              Cancel editing
+            </button>
+          </div>
+          <MapPlaceForm
+            action={updateAction}
+            place={editingPlace}
+            returnPath={returnPath}
+            submitLabel="Save Map Place"
+            showHostRecommendation={showHostRecommendation}
+          />
+        </section>
+      ) : null}
 
       <section>
         <h2 className="mb-5 text-2xl font-light text-white">Existing map places</h2>
@@ -147,20 +173,14 @@ export default function MapPlaceManagement({
                         )}
                       </td>
                       <td className="px-5 py-4">
-                        <details className="min-w-[280px]">
-                          <summary className="cursor-pointer rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a]">
-                            Edit
-                          </summary>
-                          <div className="mt-4 min-w-[320px]">
-                            <MapPlaceForm
-                              action={updateAction}
-                              place={place}
-                              returnPath={returnPath}
-                              submitLabel="Save Map Place"
-                              showHostRecommendation={showHostRecommendation}
-                            />
-                          </div>
-                        </details>
+                        <button
+                          type="button"
+                          onClick={() => setEditingPlaceKey(place._key || null)}
+                          disabled={!place._key}
+                          className="rounded-lg border border-white/15 px-3 py-2 text-sm text-white transition hover:border-[#d6a85a] hover:text-[#d6a85a] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Edit
+                        </button>
                       </td>
                       <td className="px-5 py-4">
                         {place._key ? (
