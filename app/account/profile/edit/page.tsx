@@ -5,6 +5,7 @@ import { DashboardBackLink } from "@/app/dashboard/dashboard-ui";
 import { canEditProviderField } from "@/app/lib/clerkIdentity";
 import { requireProviderSelfEdit } from "@/app/lib/dashboard";
 import { publishProviderProfileChanges } from "./actions";
+import { ProfilePhotoInput } from "./ProfilePhotoInput";
 import { client } from "@/sanity/lib/client";
 
 type CityOption = {
@@ -511,15 +512,7 @@ export default async function Page({ searchParams }: PageProps) {
                     )}
                   </div>
                   <div className="space-y-4">
-                    <label className="block">
-                      <span className={labelClass()}>Profile photo</span>
-                      <input
-                        name="profile-photo"
-                        type="file"
-                        accept="image/*"
-                        className="w-full rounded-lg border border-dashed border-white/15 bg-white/5 px-4 py-6 text-sm text-stone-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-sm file:font-medium file:text-[#1a1f2e]"
-                      />
-                    </label>
+                    <ProfilePhotoInput />
                     <label className="block">
                       <span className={labelClass()}>Photo alt text</span>
                       <input

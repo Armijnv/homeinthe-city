@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
   dashboardFileInputClass,
+  prepareDashboardImageInput,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
 import { providerSelfEditableFields } from "@/app/lib/clerkIdentityPolicy";
@@ -402,12 +403,13 @@ export default function ProviderAdminForm({
                 name="mainPhotoFile"
                 accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,.heic,.heif"
                 className={dashboardFileInputClass}
-                onChange={(event) => {
-                  const file = event.currentTarget.files?.[0];
-                  const error = file
-                    ? selectedDashboardImageError(file, "Profile photo")
-                    : "";
-                  event.currentTarget.setCustomValidity(error);
+                data-dashboard-image
+                onChange={async (event) => {
+                  const input = event.currentTarget;
+                  const { files, error: preparationError } = await prepareDashboardImageInput(input, "Profile photo");
+                  const file = files[0];
+                  const error = preparationError || (file ? selectedDashboardImageError(file, "Profile photo") : "");
+                  input.setCustomValidity(error);
                   setPhotoError(error);
                   setSelectedPhotoUrl(file && !error ? URL.createObjectURL(file) : "");
                 }}

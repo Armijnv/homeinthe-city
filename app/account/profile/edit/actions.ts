@@ -13,6 +13,7 @@ import {
   type ProviderFieldChange,
 } from "@/app/lib/clerkIdentity";
 import { requireProviderSelfEdit } from "@/app/lib/dashboard";
+import { uploadSanityImage } from "@/app/lib/sanityImageUpload";
 import { providerChangeLogDocument } from "@/app/lib/providerChangeLog";
 import { client } from "@/sanity/lib/client";
 import { assertSanityWriteToken, writeClient } from "@/sanity/lib/writeClient";
@@ -101,8 +102,6 @@ const editableLanguages = [
   "language-3",
   "language-4",
 ];
-const maxProfilePhotoSize = 10 * 1024 * 1024;
-
 function value(formData: FormData, key: string) {
   const entry = formData.get(key);
   return typeof entry === "string" ? entry.trim() : "";
@@ -144,23 +143,11 @@ async function uploadedProfilePhotoAsset(formData: FormData) {
 
   if (!(entry instanceof File) || entry.size === 0) return null;
 
-  if (!entry.type.startsWith("image/")) {
-    throw new ProfileWorkflowError("Profile photo must be an image file.");
+  try {
+    return (await uploadSanityImage(entry, "")).asset;
+  } catch (error) {
+    throw new ProfileWorkflowError(error instanceof Error ? error.message : "Profile photo could not be uploaded.");
   }
-
-  if (entry.size > maxProfilePhotoSize) {
-    throw new ProfileWorkflowError("Profile photo must be smaller than 10 MB.");
-  }
-
-  const asset = await writeClient.assets.upload("image", entry, {
-    contentType: entry.type,
-    filename: entry.name,
-  });
-
-  return {
-    _type: "reference" as const,
-    _ref: asset._id,
-  };
 }
 
 async function imageValue(provider: ProviderRecord, formData: FormData) {

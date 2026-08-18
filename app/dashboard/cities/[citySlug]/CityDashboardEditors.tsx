@@ -27,6 +27,7 @@ import {
 } from "@/app/lib/cityServiceCards";
 import {
   dashboardFileInputClass,
+  prepareDashboardImageInput,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
 import {
@@ -202,19 +203,21 @@ function RecommendationImageField({
     };
   }, [previewUrl]);
 
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, "Featured image");
+    const file = files[0];
     if (previewUrl) URL.revokeObjectURL(previewUrl);
 
     if (!file) {
       setPreviewUrl("");
-      setImageError("");
-      setImageSelected(false);
-      event.target.setCustomValidity("");
+      setImageError(preparationError);
+      setImageSelected(Boolean(preparationError));
+      input.setCustomValidity(preparationError);
       return;
     }
 
-    const error = selectedDashboardImageError(file, "Featured image");
+    const error = preparationError || selectedDashboardImageError(file, "Featured image");
 
     setPreviewUrl(error ? "" : URL.createObjectURL(file));
     setImageError(error);
@@ -266,6 +269,7 @@ function RecommendationImageField({
               type="file"
               accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
               className={dashboardFileInputClass}
+              data-dashboard-image
               onChange={handleImageChange}
             />
           </Field>
@@ -484,19 +488,21 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
     };
   }, [previewUrl]);
 
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, "City page background");
+    const file = files[0];
     if (previewUrl) URL.revokeObjectURL(previewUrl);
 
     if (!file) {
       setPreviewUrl("");
-      setImageError("");
-      setImageSelected(false);
-      event.target.setCustomValidity("");
+      setImageError(preparationError);
+      setImageSelected(Boolean(preparationError));
+      input.setCustomValidity(preparationError);
       return;
     }
 
-    const error = selectedDashboardImageError(file, "City page background");
+    const error = preparationError || selectedDashboardImageError(file, "City page background");
     setPreviewUrl(error ? "" : URL.createObjectURL(file));
     setImageError(error);
     setImageSelected(true);
@@ -565,6 +571,7 @@ function CityPageBackgroundField({ city }: { city: CityDashboardEditorData }) {
               type="file"
               accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
               className={dashboardFileInputClass}
+              data-dashboard-image
               onChange={handleImageChange}
             />
           </Field>
@@ -607,19 +614,21 @@ function LivingServiceImageField({
     };
   }, [previewUrl]);
 
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, "Service card image");
+    const file = files[0];
     if (previewUrl) URL.revokeObjectURL(previewUrl);
 
     if (!file) {
       setPreviewUrl("");
-      setImageError("");
-      setImageSelected(false);
-      event.target.setCustomValidity("");
+      setImageError(preparationError);
+      setImageSelected(Boolean(preparationError));
+      input.setCustomValidity(preparationError);
       return;
     }
 
-    const error = selectedDashboardImageError(file, "Service card image");
+    const error = preparationError || selectedDashboardImageError(file, "Service card image");
     setPreviewUrl(error ? "" : URL.createObjectURL(file));
     setImageError(error);
     setImageSelected(true);
@@ -670,6 +679,7 @@ function LivingServiceImageField({
               type="file"
               accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
               className={dashboardFileInputClass}
+              data-dashboard-image
               onChange={handleImageChange}
             />
           </Field>
@@ -1372,19 +1382,21 @@ function InformationCardImageField({
     };
   }, [previewUrl]);
 
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, "Information card image");
+    const file = files[0];
     if (previewUrl) URL.revokeObjectURL(previewUrl);
 
     if (!file) {
       setPreviewUrl("");
-      setImageError("");
-      setImageSelected(false);
-      event.target.setCustomValidity("");
+      setImageError(preparationError);
+      setImageSelected(Boolean(preparationError));
+      input.setCustomValidity(preparationError);
       return;
     }
 
-    const error = selectedDashboardImageError(file, "Information card image");
+    const error = preparationError || selectedDashboardImageError(file, "Information card image");
     setPreviewUrl(error ? "" : URL.createObjectURL(file));
     setImageError(error);
     setImageSelected(true);
@@ -1416,6 +1428,7 @@ function InformationCardImageField({
             type="file"
             accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
             className={dashboardFileInputClass}
+            data-dashboard-image
             onChange={handleImageChange}
           />
         </Field>

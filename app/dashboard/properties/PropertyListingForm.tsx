@@ -1,4 +1,11 @@
+"use client";
+
+import { useState, type ChangeEventHandler } from "react";
 import type { DashboardPropertyListing } from "@/app/lib/propertyDashboard";
+import {
+  prepareDashboardImageInput,
+  selectedDashboardImageError,
+} from "@/app/lib/dashboardImageSelection";
 
 type Option = { _id: string; name: string };
 
@@ -75,6 +82,7 @@ function Field({
   required,
   multiple,
   accept,
+  onChange,
 }: {
   label: string;
   name: string;
@@ -83,6 +91,7 @@ function Field({
   required?: boolean;
   multiple?: boolean;
   accept?: string;
+  onChange?: ChangeEventHandler<HTMLInputElement>;
 }) {
   return (
     <label className="block">
@@ -95,6 +104,8 @@ function Field({
         required={required}
         multiple={multiple}
         accept={accept}
+        onChange={onChange}
+        data-dashboard-image={type === "file" ? true : undefined}
       />
     </label>
   );
@@ -181,6 +192,16 @@ export function PropertyListingForm({
   realtors: Option[];
   isAdmin: boolean;
 }) {
+  const [imageError, setImageError] = useState("");
+  const prepareImageSelection: ChangeEventHandler<HTMLInputElement> = async (event) => {
+    const input = event.currentTarget;
+    const label = input.name === "gallery-images" ? "Gallery image" : "Main image";
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, label);
+    const error = preparationError || files.map((file) => selectedDashboardImageError(file, label)).find(Boolean) || "";
+    input.setCustomValidity(error);
+    setImageError(error);
+  };
+
   return (
     <form action={action} encType="multipart/form-data" className="space-y-4">
       <Section title="Basics" description="The English title creates the URL for a new listing.">
@@ -297,13 +318,14 @@ export function PropertyListingForm({
         </div>
       </Section>
 
-      <Section title="Images" description="JPG, PNG, WebP, GIF, HEIC or HEIF; maximum 10 MB each.">
+      <Section title="Images" description="Images are prepared automatically for a fast web upload.">
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Main image" name="main-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" />
+          <Field label="Main image" name="main-image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" onChange={prepareImageSelection} />
           <Field label="Main image alt text" name="main-image-alt" defaultValue={property?.mainImage?.alt} />
-          <Field label="Add gallery images" name="gallery-images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" />
+          <Field label="Add gallery images" name="gallery-images" type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif" onChange={prepareImageSelection} />
           <Field label="Gallery alt text" name="gallery-alt" />
         </div>
+        {imageError ? <p className="mt-3 text-sm text-red-200">{imageError}</p> : null}
         {property?.gallery?.length ? (
           <div className="mt-4">
             <p className="mb-2 text-xs uppercase tracking-widest text-stone-400">Existing gallery</p>

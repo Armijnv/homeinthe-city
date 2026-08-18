@@ -1,6 +1,7 @@
 import { writeClient } from "@/sanity/lib/writeClient";
+import { maxDashboardImageSize } from "@/app/lib/dashboardImageSelection";
 
-export const maxSanityImageSize = 10 * 1024 * 1024;
+export const maxSanityImageSize = maxDashboardImageSize;
 
 const supportedImageTypes = new Set([
   "image/jpeg",
@@ -103,7 +104,7 @@ export async function uploadSanityImage(
   }
 
   if (file.size > maxSanityImageSize) {
-    throw new SanityImageUploadError("Image must be smaller than 10 MB.");
+    throw new SanityImageUploadError("Image could not be prepared for upload. Please try another photo.");
   }
 
   const upload = await uploadableImageBody(file, contentType);

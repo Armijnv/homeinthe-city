@@ -16,6 +16,7 @@ import {
 import { mapCategoryForPlace, mapCategoryPresets } from "@/app/lib/mapCategories";
 import {
   dashboardFileInputClass,
+  prepareDashboardImageInput,
   selectedDashboardImageError,
 } from "@/app/lib/dashboardImageSelection";
 import MapPlaceCoordinatePicker from "@/app/dashboard/MapPlaceCoordinatePicker";
@@ -196,12 +197,15 @@ function MapPlaceFormFields({
     );
   }
 
-  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+  async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const { files, error: preparationError } = await prepareDashboardImageInput(input, "Map place photo");
+    const file = files[0];
 
     if (!file) {
       setSelectedImageMeta({ selected: "", name: "", type: "", size: "" });
-      setPhotoError("");
+      setPhotoError(preparationError);
+      input.setCustomValidity(preparationError);
       return;
     }
 
@@ -211,7 +215,9 @@ function MapPlaceFormFields({
       type: file.type,
       size: String(file.size),
     });
-    setPhotoError(selectedDashboardImageError(file, "Map place photo"));
+    const error = preparationError || selectedDashboardImageError(file, "Map place photo");
+    setPhotoError(error);
+    input.setCustomValidity(error);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -499,6 +505,7 @@ function MapPlaceFormFields({
                 type="file"
                 accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.heic,.heif"
                 className={dashboardFileInputClass}
+                data-dashboard-image
                 onChange={handleImageChange}
               />
             </Field>
