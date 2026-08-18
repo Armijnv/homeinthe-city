@@ -9,6 +9,14 @@ const supportedImageTypes = new Set([
   "image/gif",
 ]);
 
+// Browsers and cameras do not consistently label JPEG files. Normalize the
+// common aliases before passing the file to Sanity, which expects image/jpeg.
+const jpegImageTypeAliases = new Set([
+  "image/jpg",
+  "image/pjpeg",
+  "image/jfif",
+]);
+
 const heicImageTypes = new Set([
   "image/heic",
   "image/heif",
@@ -43,6 +51,7 @@ function fileExtension(filename: string) {
 
 function supportedImageContentType(file: File) {
   const browserType = file.type.toLowerCase();
+  if (jpegImageTypeAliases.has(browserType)) return "image/jpeg";
   if (supportedImageTypes.has(browserType)) return browserType;
   if (heicImageTypes.has(browserType)) return browserType;
 

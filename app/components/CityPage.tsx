@@ -816,7 +816,7 @@ function SupportingInformationCards({
             <h3 className="text-xl font-medium text-stone-950">{title}</h3>
           ) : null}
           {text ? (
-            <p className={`${title ? "mt-3" : ""} text-sm leading-6 text-stone-700`}>
+            <p className={`${title ? "mt-3" : ""} whitespace-pre-line text-sm leading-6 text-stone-700`}>
               {text}
             </p>
           ) : null}

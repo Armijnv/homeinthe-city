@@ -655,6 +655,8 @@ function actionErrorState(error: unknown): CityDashboardActionState {
       ? error.message
       : error instanceof Error && error.message.includes("SANITY_API_WRITE_TOKEN")
         ? "Dashboard saving is not configured. Please ask an admin to check the Sanity write token."
+        : error instanceof Error && error.message
+          ? `The city could not be saved: ${error.message}`
         : fallback;
 
   return {

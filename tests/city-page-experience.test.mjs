@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker] =
+const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
   await Promise.all([
     readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CityExperienceLayout.tsx", import.meta.url), "utf8"),
@@ -18,6 +18,7 @@ const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, map
     readFile(new URL("../app/components/Header.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/MapPlaceForm.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/MapPlaceCoordinatePicker.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/sanityImageUpload.ts", import.meta.url), "utf8"),
   ]);
 
 test("every city uses the same shared city-page template", () => {
@@ -49,6 +50,22 @@ test("the city dashboard and schema expose the same editor for every city", () =
   assert.match(schema, /name: "cityPageExperience"/);
   assert.match(schema, /name: "informationCards"/);
   assert.match(mapDashboard, /showHostRecommendation/);
+});
+
+test("supporting information cards preserve editor-entered line breaks", () => {
+  assert.match(
+    cityPage,
+    /<p className=\{`\$\{title \? "mt-3" : ""\} whitespace-pre-line text-sm leading-6 text-stone-700`\}>/,
+  );
+});
+
+test("supporting-card JPEG uploads accept browser JPEG MIME aliases", () => {
+  assert.match(actions, /uploadedInformationCardImage/);
+  assert.match(actions, /uploadSanityImage\(/);
+  assert.match(sanityImageUpload, /"image\/jpg"/);
+  assert.match(sanityImageUpload, /"image\/pjpeg"/);
+  assert.match(sanityImageUpload, /"image\/jfif"/);
+  assert.match(sanityImageUpload, /return "image\/jpeg"/);
 });
 
 test("public discovery stays data-driven and excludes hidden cities", () => {
