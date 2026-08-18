@@ -167,6 +167,18 @@ export function cityGuidePath(lang: CityGuideLang, citySlug: string) {
   return `/brazil/${citySlug}`;
 }
 
+export const cityExploreTabId = "explore-city";
+
+/** A shareable, localized URL for a stable Sanity map-place array key. */
+export function cityMapPlacePath(
+  lang: CityGuideLang,
+  citySlug: string,
+  placeKey: string,
+) {
+  const query = new URLSearchParams({ tab: "explore", place: placeKey });
+  return `${cityGuidePath(lang, citySlug)}?${query.toString()}`;
+}
+
 export function cityGuideEnabledLanguages(
   city: CityGuideContent | null | undefined,
 ) {

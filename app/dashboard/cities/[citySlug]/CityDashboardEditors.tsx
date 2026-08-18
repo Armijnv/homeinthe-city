@@ -34,7 +34,11 @@ import {
   type CityInformationCard,
   type CityInformationCardSection,
 } from "@/app/lib/cityInformationCards";
-import type { CityPageBackgroundMode } from "@/app/lib/cityGuides";
+import {
+  cityGuidePath,
+  cityMapPlacePath,
+  type CityPageBackgroundMode,
+} from "@/app/lib/cityGuides";
 
 type Lang = "en" | "pt" | "nl";
 
@@ -1003,6 +1007,8 @@ function CityExperienceFields({
           setCards={setInformationCards}
           section="about"
           activeLanguage={activeLanguage}
+          citySlug={citySlug}
+          mapPlaces={city.mapPlaces || []}
         />
       </section>
 
@@ -1113,6 +1119,8 @@ function CityExperienceFields({
           setCards={setInformationCards}
           section="explore"
           activeLanguage={activeLanguage}
+          citySlug={citySlug}
+          mapPlaces={city.mapPlaces || []}
         />
       </section>
 
@@ -1154,6 +1162,8 @@ function CityExperienceFields({
           setCards={setInformationCards}
           section="fromHost"
           activeLanguage={activeLanguage}
+          citySlug={citySlug}
+          mapPlaces={city.mapPlaces || []}
         />
       </section>
     </div>
@@ -1467,11 +1477,15 @@ function InformationCardEditor({
   setCards,
   section,
   activeLanguage,
+  citySlug,
+  mapPlaces,
 }: {
   cards: CityDashboardInformationCard[];
   setCards: (cards: CityDashboardInformationCard[]) => void;
   section: CityInformationCardSection;
   activeLanguage: Lang;
+  citySlug: string;
+  mapPlaces: CityDashboardMapPlace[];
 }) {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const sectionCards = cards
@@ -1524,6 +1538,28 @@ function InformationCardEditor({
     if (editingKey === card._key) setEditingKey(null);
   }
 
+  function mapPlaceKeyFromDestination(destination: string) {
+    try {
+      const url = new URL(destination, "https://homeinthe.city");
+      return url.pathname === cityGuidePath(activeLanguage, citySlug) &&
+        url.searchParams.get("tab") === "explore"
+        ? url.searchParams.get("place") || ""
+        : "";
+    } catch {
+      return "";
+    }
+  }
+
+  function mapPlaceLabel(place: CityDashboardMapPlace) {
+    return (
+      place[`name_${activeLanguage}`] ||
+      place.name_en ||
+      place.name_pt ||
+      place.name_nl ||
+      "Untitled map place"
+    );
+  }
+
   return (
     <div className="mt-6 border-t border-white/10 pt-6">
       <h4 className="text-sm font-medium uppercase tracking-widest text-[#d6a85a]">
@@ -1543,6 +1579,9 @@ function InformationCardEditor({
               card.title_nl ||
               `Information card ${sectionIndex + 1}`;
             const isEditing = editingKey === card._key;
+            const destination = card[`href_${activeLanguage}`] || "";
+            const selectedPlaceKey = mapPlaceKeyFromDestination(destination);
+            const isMapPlaceDestination = Boolean(selectedPlaceKey);
 
             return (
               <article key={card._key || index} className="min-w-0 rounded-xl border border-white/10 bg-black/10 p-4">
@@ -1576,9 +1615,59 @@ function InformationCardEditor({
                       <Field label="Short text">
                         <textarea className={textareaClass} rows={4} value={card[`text_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `text_${activeLanguage}`, event.target.value)} />
                       </Field>
-                      <Field label="Destination">
-                        <input className={inputClass} value={card[`href_${activeLanguage}`] || ""} onChange={(event) => updateCard(index, `href_${activeLanguage}`, event.target.value)} />
+                      <Field label="Destination type">
+                        <select
+                          className={inputClass}
+                          value={isMapPlaceDestination ? "map-place" : "url"}
+                          onChange={(event) => {
+                            if (event.target.value === "map-place") {
+                              const firstPlace = mapPlaces.find((place) => place._key);
+                              updateCard(
+                                index,
+                                `href_${activeLanguage}`,
+                                firstPlace?._key
+                                  ? cityMapPlacePath(activeLanguage, citySlug, firstPlace._key)
+                                  : "",
+                              );
+                            } else if (isMapPlaceDestination) {
+                              updateCard(index, `href_${activeLanguage}`, "");
+                            }
+                          }}
+                        >
+                          <option value="url">Link / URL</option>
+                          <option
+                            value="map-place"
+                            disabled={!mapPlaces.some((place) => place._key)}
+                          >
+                            City map place
+                          </option>
+                        </select>
                       </Field>
+                      {isMapPlaceDestination ? (
+                        <Field label="City map place">
+                          <select
+                            className={inputClass}
+                            value={selectedPlaceKey}
+                            onChange={(event) =>
+                              updateCard(
+                                index,
+                                `href_${activeLanguage}`,
+                                cityMapPlacePath(activeLanguage, citySlug, event.target.value),
+                              )
+                            }
+                          >
+                            {mapPlaces.filter((place) => place._key).map((place) => (
+                              <option key={place._key} value={place._key}>
+                                {mapPlaceLabel(place)}
+                              </option>
+                            ))}
+                          </select>
+                        </Field>
+                      ) : (
+                        <Field label="Destination">
+                          <input className={inputClass} value={destination} onChange={(event) => updateCard(index, `href_${activeLanguage}`, event.target.value)} />
+                        </Field>
+                      )}
                     </div>
                     <InformationCardImageField card={card} />
                   </div>

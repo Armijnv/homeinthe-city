@@ -23,6 +23,21 @@ test("Dutch Provider profiles use the professionals route family", () => {
   );
 });
 
+test("city map-place links use the active language route and stable place key", () => {
+  assert.equal(
+    routes.cityMapPlacePath("en", "aracaju", "place-abc"),
+    "/brazil/aracaju?tab=explore&place=place-abc",
+  );
+  assert.equal(
+    routes.cityMapPlacePath("pt", "aracaju", "place-abc"),
+    "/pt/brasil/aracaju?tab=explore&place=place-abc",
+  );
+  assert.equal(
+    routes.cityMapPlacePath("nl", "aracaju", "place-abc"),
+    "/nl/brazilie/aracaju?tab=explore&place=place-abc",
+  );
+});
+
 test("legacy host profile URLs permanently redirect to the localized provider routes", async () => {
   const [english, portuguese, dutch] = await Promise.all([
     readFile(new URL("../app/hosts/[slug]/page.tsx", import.meta.url), "utf8"),

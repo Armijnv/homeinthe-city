@@ -6,6 +6,8 @@ import {
   cityGuideName,
   cityGuideEnabledLanguages,
   cityGuidePath,
+  cityMapPlacePath,
+  cityExploreTabId,
   localizedCityGuideList,
   localizedCityGuideText,
   providerProfilePath,
@@ -567,6 +569,7 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
         id: place._key
           ? mapPlaceAnchorId(place._key)
           : `place-${category.id}-${title}-${index}`,
+        placeKey: place._key,
         sourceType: "place",
         categoryId: category.id,
         categoryLabel: category.label,
@@ -589,6 +592,25 @@ function cityMapEntriesFromPlaces(places: MapPlace[], lang: Lang): CityMapEntry[
       },
     ];
   });
+}
+
+type CityExperienceUrlState = {
+  activeTab: string;
+  placeKey?: string;
+};
+
+function cityExperienceUrlState(): CityExperienceUrlState {
+  if (typeof window === "undefined") return { activeTab: "about-city" };
+
+  const query = new URLSearchParams(window.location.search);
+  const placeKey = query.get("place") || undefined;
+  return {
+    activeTab:
+      query.get("tab") === "explore" || placeKey
+        ? cityExploreTabId
+        : "about-city",
+    placeKey,
+  };
 }
 
 function cityMapEntriesFromListings({
@@ -906,6 +928,9 @@ export default function CityPage({
     initialPropertyListings,
   );
   const [open, setOpen] = useState(false);
+  const [experienceUrlState, setExperienceUrlState] = useState<CityExperienceUrlState>({
+    activeTab: "about-city",
+  });
 
   useEffect(() => {
     if (initialCity?.slug?.current === citySlug) {
@@ -917,6 +942,30 @@ export default function CityPage({
       setPropertyListings([]);
     });
   }, [citySlug, initialCity, initialPropertyListings]);
+
+  useEffect(() => {
+    const syncUrlState = () => setExperienceUrlState(cityExperienceUrlState());
+    syncUrlState();
+    window.addEventListener("popstate", syncUrlState);
+    return () => window.removeEventListener("popstate", syncUrlState);
+  }, []);
+
+  function setExperienceNavigation(activeTab: string, placeKey?: string) {
+    const nextState = { activeTab, placeKey };
+    setExperienceUrlState(nextState);
+
+    const url = new URL(window.location.href);
+    if (activeTab === cityExploreTabId) url.searchParams.set("tab", "explore");
+    else url.searchParams.delete("tab");
+
+    if (activeTab === cityExploreTabId && placeKey) {
+      url.searchParams.set("place", placeKey);
+    } else {
+      url.searchParams.delete("place");
+    }
+
+    window.history.pushState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
 
   const labels = {
     en: {
@@ -1198,6 +1247,10 @@ export default function CityPage({
                   longitude: city?.longitude,
                 }}
                 edgeToEdgeMobile
+                selectedPlaceKey={experienceUrlState.placeKey}
+                onPlaceSelect={(placeKey) =>
+                  setExperienceNavigation(cityExploreTabId, placeKey)
+                }
               />
             ) : null}
 
@@ -1280,7 +1333,11 @@ export default function CityPage({
               {cityGuideEnabledLanguages(city).map((language) => (
                 <a
                   key={language}
-                  href={cityGuidePath(language, citySlug)}
+                  href={
+                    experienceUrlState.placeKey
+                      ? cityMapPlacePath(language, citySlug, experienceUrlState.placeKey)
+                      : cityGuidePath(language, citySlug)
+                  }
                   aria-label={
                     language === "en"
                       ? "English"
@@ -1360,6 +1417,8 @@ export default function CityPage({
           hero={hero}
           navigationItems={navigationItems}
           sections={sections}
+          activeTab={experienceUrlState.activeTab}
+          onActiveTabChange={(tab) => setExperienceNavigation(tab)}
         />
       </div>
     );

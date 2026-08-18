@@ -20,18 +20,30 @@ export default function CityExperienceLayout({
   hero,
   navigationItems,
   sections,
+  activeTab: controlledActiveTab,
+  onActiveTabChange,
 }: {
   hero: ReactNode;
   navigationItems: CityExperienceNavigationItem[];
   sections: CityExperienceSection[];
+  activeTab?: string;
+  onActiveTabChange?: (tab: string) => void;
 }) {
-  const [activeTab, setActiveTab] = useState(navigationItems[0]?.id || "");
+  const [uncontrolledActiveTab, setUncontrolledActiveTab] = useState(
+    navigationItems[0]?.id || "",
+  );
+  const activeTab = controlledActiveTab || uncontrolledActiveTab;
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const availableItems = navigationItems.filter((item) =>
     sections.some((section) => section.id === item.id),
   );
   const activeSection =
     sections.find((section) => section.id === activeTab) || sections[0];
+
+  function selectTab(tab: string) {
+    if (onActiveTabChange) onActiveTabChange(tab);
+    else setUncontrolledActiveTab(tab);
+  }
 
   function handleTabKeyDown(
     event: KeyboardEvent<HTMLButtonElement>,
@@ -52,7 +64,7 @@ export default function CityExperienceLayout({
             ? (currentIndex + 1) % availableItems.length
             : (currentIndex - 1 + availableItems.length) % availableItems.length;
 
-    setActiveTab(availableItems[nextIndex].id);
+    selectTab(availableItems[nextIndex].id);
     tabRefs.current[nextIndex]?.focus();
   }
 
@@ -80,7 +92,7 @@ export default function CityExperienceLayout({
               aria-selected={isActive}
               aria-controls={`${item.id}-panel`}
               tabIndex={isActive ? 0 : -1}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => selectTab(item.id)}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
               className={`min-h-12 rounded-xl px-2.5 py-2 text-sm font-medium leading-tight transition focus:outline-none focus:ring-2 focus:ring-[#b99455] focus:ring-offset-2 md:min-h-14 md:rounded-2xl md:px-4 md:text-base ${
                 isActive

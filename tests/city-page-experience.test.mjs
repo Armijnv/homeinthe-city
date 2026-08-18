@@ -2,9 +2,10 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPage, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
+const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
   await Promise.all([
     readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/components/CityMap.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CityExperienceLayout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/cities/[citySlug]/CityDashboardEditors.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/cities/[citySlug]/actions.ts", import.meta.url), "utf8"),
@@ -57,6 +58,26 @@ test("supporting information cards preserve editor-entered line breaks", () => {
     cityPage,
     /<p className=\{`\$\{title \? "mt-3" : ""\} whitespace-pre-line text-sm leading-6 text-stone-700`\}>/,
   );
+});
+
+test("city map places use stable URL state and supporting cards can select them", () => {
+  assert.match(guides, /export function cityMapPlacePath/);
+  assert.match(guides, /new URLSearchParams\(\{ tab: "explore", place: placeKey \}\)/);
+  assert.match(cityPage, /placeKey: place\._key/);
+  assert.match(cityPage, /query\.get\("tab"\) === "explore" \|\| placeKey/);
+  assert.match(cityPage, /selectedPlaceKey=\{experienceUrlState\.placeKey\}/);
+  assert.match(cityMap, /candidate\.placeKey === selectedPlaceKey/);
+  assert.match(cityPage, /window\.history\.pushState/);
+  assert.match(cityPage, /window\.addEventListener\("popstate", syncUrlState\)/);
+  assert.match(editor, /Destination type/);
+  assert.match(editor, /City map place/);
+  assert.match(editor, /cityMapPlacePath\(activeLanguage, citySlug/);
+});
+
+test("supporting information card links remain button-only and manual URLs remain supported", () => {
+  assert.match(cityPage, /\{href && button \? \(/);
+  assert.match(cityPage, /<article[\s\S]*?<a\n              href=\{href\}/);
+  assert.match(editor, /<option value="url">Link \/ URL<\/option>/);
 });
 
 test("supporting-card JPEG uploads accept browser JPEG MIME aliases", () => {

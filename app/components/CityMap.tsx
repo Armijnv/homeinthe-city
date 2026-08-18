@@ -12,6 +12,7 @@ type Lang = "en" | "pt" | "nl";
 
 export type CityMapEntry = {
   id: string;
+  placeKey?: string;
   sourceType: "place" | "property";
   categoryId: string;
   categoryLabel: string;
@@ -95,6 +96,8 @@ export default function CityMap({
   cityName = "City",
   cityCenter,
   edgeToEdgeMobile = false,
+  selectedPlaceKey,
+  onPlaceSelect,
 }: {
   entries: CityMapEntry[];
   lang: Lang;
@@ -104,6 +107,8 @@ export default function CityMap({
     longitude?: number;
   };
   edgeToEdgeMobile?: boolean;
+  selectedPlaceKey?: string;
+  onPlaceSelect?: (placeKey?: string) => void;
 }) {
   const categories = useMemo(() => {
     const grouped = new Map<string, { id: string; label: string; entries: CityMapEntry[] }>();
@@ -137,6 +142,22 @@ export default function CityMap({
   const centerLongitude = mapCenter?.longitude ?? cityCenter?.longitude ?? 0;
 
   useEffect(() => {
+    if (!selectedPlaceKey) return;
+    const entry = entries.find(
+      (candidate) =>
+        candidate.sourceType === "place" && candidate.placeKey === selectedPlaceKey,
+    );
+    if (!entry) return;
+
+    const selectionTimer = window.setTimeout(() => {
+      setActiveCategory(entry.categoryId);
+      setSelectedEntry(entry);
+      mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 0);
+    return () => window.clearTimeout(selectionTimer);
+  }, [entries, selectedPlaceKey]);
+
+  useEffect(() => {
     function selectHashEntry() {
       const hashId = decodeURIComponent(window.location.hash.slice(1));
       if (!hashId) return;
@@ -166,6 +187,7 @@ export default function CityMap({
 
   function selectEntry(entry: CityMapEntry, shouldScroll = true) {
     setSelectedEntry(entry);
+    onPlaceSelect?.(entry.sourceType === "place" ? entry.placeKey : undefined);
     if (!shouldScroll) return;
     window.setTimeout(() => {
       mapSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -207,6 +229,7 @@ export default function CityMap({
           onChange={(event) => {
             setActiveCategory(event.target.value);
             setSelectedEntry(null);
+            onPlaceSelect?.();
           }}
           className="rounded-full border border-stone-300 bg-white px-4 py-2 text-sm text-stone-700 md:hidden"
         >
@@ -223,6 +246,7 @@ export default function CityMap({
             onClick={() => {
               setActiveCategory(category.id);
               setSelectedEntry(null);
+              onPlaceSelect?.();
             }}
             className={`hidden shrink-0 rounded-full px-4 py-2 text-sm transition md:inline-block ${
               activeGroup?.id === category.id
