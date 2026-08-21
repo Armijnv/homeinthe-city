@@ -410,6 +410,28 @@ export const cityInterpreterCoverageBySlugQuery = `
     name_nl,
     slug,
     country,
+    "cityGuideLanguages": select(
+      coalesce(guideStatus, "live") == "live" &&
+      primaryHost->status == "published" &&
+      (
+        defined(headline_en) && headline_en != "" ||
+        defined(headline_pt) && headline_pt != "" ||
+        defined(headline_nl) && headline_nl != "" ||
+        defined(intro_en) && intro_en != "" ||
+        defined(intro_pt) && intro_pt != "" ||
+        defined(intro_nl) && intro_nl != "" ||
+        count(introBlocks_en) > 0 ||
+        count(introBlocks_pt) > 0 ||
+        count(introBlocks_nl) > 0 ||
+        count(mapPlaces) > 0 ||
+        count(recommendationGuides) > 0 ||
+        count(sidebarCards) > 0
+      ) => select(
+        defined(enabledLanguages) => enabledLanguages,
+        primaryHost->languages[].language
+      ),
+      []
+    ),
     primaryHost->{_id, name, slug, status, roles, primaryRole},
     "interpreters": *[
       _type == "provider" &&

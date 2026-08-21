@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import CityInterpreterPage from "@/app/components/CityInterpreterPage";
 import {
   cityInterpreterName,
+  cityInterpreterCityGuidePath,
   cityInterpreterPath,
   automaticCityInterpreterDescription,
   automaticCityInterpreterTitle,
@@ -10,7 +11,7 @@ import {
   type CityInterpreterCoverage,
 } from "@/app/lib/cityInterpreterCoverage";
 import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
-import { JsonLdScript, serviceJsonLd } from "@/app/lib/structuredData";
+import { JsonLdScript, serviceJsonLd, siteUrl } from "@/app/lib/structuredData";
 import { client } from "@/sanity/lib/client";
 import { cityInterpreterCoverageBySlugQuery, servicePageQuery } from "@/sanity/lib/queries";
 
@@ -90,13 +91,20 @@ function dynamicCityInterpreterStructuredData(
   const description =
     page?.[`seoDescription_${lang}`] || page?.[`intro_${lang}`] ||
     automaticCityInterpreterDescription(city, lang);
+  const cityGuidePath = cityInterpreterCityGuidePath(city, lang);
+  const cityGuideUrl = cityGuidePath ? `${siteUrl}${cityGuidePath}` : undefined;
   return serviceJsonLd({
     url: `https://homeinthe.city${cityInterpreterPath(citySlug, lang)}`,
     name: title,
     description,
     image: "https://homeinthe.city/og-armijn2.jpg",
     serviceType: [`Business interpreter in ${name}`, "Local business coordination"],
-    areaServed: { "@type": "City", name, addressCountry: city.country || "BR" },
+    areaServed: {
+      "@type": "City",
+      ...(cityGuideUrl ? { "@id": `${cityGuideUrl}#city` } : {}),
+      name,
+      addressCountry: city.country || "BR",
+    },
     availableLanguage: Array.from(new Set((city.interpreters || []).flatMap(interpreterLanguages))),
     inLanguage: lang === "pt" ? "pt-BR" : lang === "nl" ? "nl-NL" : "en",
   });

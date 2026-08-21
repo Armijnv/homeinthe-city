@@ -1,4 +1,5 @@
 import type { InterpreterLanguage } from "@/app/lib/interpreterTypes";
+import { cityGuidePath } from "@/app/lib/cityGuides";
 
 export type CityInterpreterProvider = {
   _id: string;
@@ -19,6 +20,7 @@ export type CityInterpreterCoverage = {
   name_nl?: string;
   slug?: { current?: string };
   country?: string;
+  cityGuideLanguages?: InterpreterLanguage[];
   primaryHost?: { _id?: string; name?: string; slug?: { current?: string }; status?: string; roles?: string[]; primaryRole?: string };
   interpreters?: CityInterpreterProvider[];
   servicePage?: { _id?: string; _rev?: string; _updatedAt?: string; slug?: { current?: string } };
@@ -49,6 +51,16 @@ export function cityInterpreterPath(citySlug: string, lang: InterpreterLanguage)
   if (lang === "pt") return `/pt/interprete/${citySlug}`;
   if (lang === "nl") return `/nl/tolk/${citySlug}`;
   return `/interpreter/${citySlug}`;
+}
+
+export function cityInterpreterCityGuidePath(
+  city: CityInterpreterCoverage,
+  lang: InterpreterLanguage,
+) {
+  const citySlug = city.slug?.current;
+  return citySlug && city.cityGuideLanguages?.includes(lang)
+    ? cityGuidePath(lang, citySlug)
+    : undefined;
 }
 
 const interpreterCopy = {

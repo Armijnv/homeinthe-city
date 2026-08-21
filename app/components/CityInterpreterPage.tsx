@@ -1,20 +1,23 @@
 import Link from "next/link";
 import ProviderProfileCard, { type ProviderListItem } from "@/app/components/ProviderProfileCard";
 import {
+  cityInterpreterCityGuidePath,
   cityInterpreterPath,
   automaticCityInterpreterTitle,
+  cityInterpreterName,
   isPrimaryInterpreter,
   type CityInterpreterCoverage,
 } from "@/app/lib/cityInterpreterCoverage";
 import {
   homeInTheCityWhatsApp,
 } from "@/app/lib/interpreterHub";
+import { interpreterHubPaths } from "@/app/lib/interpreterRoutes";
 import type { InterpreterCmsPage, InterpreterLanguage } from "@/app/lib/interpreterTypes";
 
 const labels = {
-  en: { eyebrow: "Interpreter services", interpreters: "Available interpreters", primary: "Primary city host", languages: "Languages", allCities: "All interpreter services in Brazil", contact: "Message Home in the City" },
-  pt: { eyebrow: "Serviços de intérprete", interpreters: "Intérpretes disponíveis", primary: "Anfitrião principal da cidade", languages: "Idiomas", allCities: "Todos os serviços de intérprete no Brasil", contact: "Falar com a Home in the City" },
-  nl: { eyebrow: "Tolkdiensten", interpreters: "Beschikbare tolken", primary: "Primaire stadshost", languages: "Talen", allCities: "Alle tolkdiensten in Brazilië", contact: "Bericht Home in the City" },
+  en: { eyebrow: "Interpreter services", interpreters: "Available interpreters", primary: "Primary city host", languages: "Languages", cityGuide: (city: string) => `Explore the ${city} city guide`, allCities: "All interpreter services in Brazil", contact: "Message Home in the City" },
+  pt: { eyebrow: "Serviços de intérprete", interpreters: "Intérpretes disponíveis", primary: "Anfitrião principal da cidade", languages: "Idiomas", cityGuide: (city: string) => `Explore o guia de ${city}`, allCities: "Todos os serviços de intérprete no Brasil", contact: "Falar com a Home in the City" },
+  nl: { eyebrow: "Tolkdiensten", interpreters: "Beschikbare tolken", primary: "Primaire stadshost", languages: "Talen", cityGuide: (city: string) => `Ontdek de stadsgids van ${city}`, allCities: "Alle tolkdiensten in Brazilië", contact: "Bericht Home in the City" },
 } as const;
 
 function value(page: InterpreterCmsPage | null | undefined, field: "eyebrow" | "title" | "intro" | "ctaTitle" | "ctaText" | "button", lang: InterpreterLanguage) {
@@ -32,6 +35,8 @@ export default function CityInterpreterPage({
 }) {
   const t = labels[lang];
   const interpreters = city.interpreters || [];
+  const cityName = cityInterpreterName(city, lang);
+  const cityGuideHref = cityInterpreterCityGuidePath(city, lang);
   const heading = value(page, "title", lang) || automaticCityInterpreterTitle(city, lang);
   const intro = value(page, "intro", lang);
   const ctaTitle = value(page, "ctaTitle", lang);
@@ -56,6 +61,7 @@ export default function CityInterpreterPage({
               <p className="mb-3 text-xs uppercase tracking-[0.22em] text-stone-500">{value(page, "eyebrow", lang) || t.eyebrow}</p>
               <h1 className="mb-5 text-4xl font-light leading-tight text-stone-900 sm:text-5xl">{heading}</h1>
               {intro ? <p className="text-base leading-7 text-stone-600 sm:text-lg">{intro}</p> : null}
+              {cityGuideHref ? <Link href={cityGuideHref} className="mt-5 inline-flex text-sm text-stone-600 underline">{t.cityGuide(cityName)}</Link> : null}
             </section>
 
             <section>
@@ -83,7 +89,7 @@ export default function CityInterpreterPage({
           ) : null}
         </div>
 
-        <Link href={lang === "pt" ? "/pt/interpretes-brasil" : lang === "nl" ? "/nl/tolken-brazilie" : "/interpreters-brazil"} className="mt-10 inline-block text-sm text-stone-600 underline">{t.allCities}</Link>
+        <Link href={interpreterHubPaths[lang]} className="mt-10 inline-block text-sm text-stone-600 underline">{t.allCities}</Link>
       </div>
     </main>
   );
