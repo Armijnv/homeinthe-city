@@ -170,6 +170,7 @@ const cityGuideProjection = `
     },
 
     sidebarCards[]{
+      _key,
       title_en,
       title_pt,
       title_nl,

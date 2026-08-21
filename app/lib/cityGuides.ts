@@ -65,6 +65,7 @@ export type CityGuideRecommendationGuide = {
 };
 
 export type CityGuideSidebarCard = {
+  _key?: string;
   title_en?: string;
   title_pt?: string;
   title_nl?: string;

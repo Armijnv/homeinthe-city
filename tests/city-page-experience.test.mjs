@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
-const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, mapPlaceManagement, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload] =
+const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sitemap, mapDashboard, mapPlaceManagement, activeCities, mapActions, realEstatePages, header, mapPlaceForm, coordinatePicker, sanityImageUpload, queries] =
   await Promise.all([
     readFile(new URL("../app/components/CityPage.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/components/CityMap.tsx", import.meta.url), "utf8"),
@@ -21,6 +21,7 @@ const [cityPage, cityMap, experienceLayout, editor, actions, schema, guides, sit
     readFile(new URL("../app/dashboard/MapPlaceForm.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/dashboard/MapPlaceCoordinatePicker.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/sanityImageUpload.ts", import.meta.url), "utf8"),
+    readFile(new URL("../sanity/lib/queries.ts", import.meta.url), "utf8"),
   ]);
 
 test("every city uses the same shared city-page template", () => {
@@ -35,10 +36,24 @@ test("every city uses the same shared city-page template", () => {
 test("sparse city content remains optional rather than rendered as filler", () => {
   assert.match(cityPage, /mapEntries\.length \? \(/);
   assert.match(cityPage, /content: hasExploreContent \?/);
-  assert.match(cityPage, /serviceCards\.length \|\| sidebarCards\.length \?/);
+  assert.match(cityPage, /serviceCards\.length \|\| additionalLivingCards\.length \?/);
   assert.doesNotMatch(cityPage, /porto-alegre-desktop-background/);
   assert.doesNotMatch(guides, /fallbackDescriptions/);
   assert.doesNotMatch(guides, /isPortoAlegreGuide/);
+});
+
+test("Living & Working renders every valid saved additional card in stored order", () => {
+  assert.match(cityPage, /const additionalLivingCards = sidebarCards\.flatMap/);
+  assert.match(cityPage, /key: card\._key \|\| `additional-living-card-\$\{index\}`/);
+  assert.match(cityPage, /\{additionalLivingCards\.map\(\(card\) => \(/);
+  assert.match(cityPage, /key=\{card\.key\}/);
+  assert.match(queries, /sidebarCards\[\]\{\s*_key,/);
+});
+
+test("saving an unchanged Living & Working image preserves the saved asset", () => {
+  assert.match(actions, /if \(!\(entry instanceof File\) \|\| entry\.size === 0\) \{[\s\S]*?return undefined;/);
+  assert.doesNotMatch(actions, /The service card image was not received/);
+  assert.match(actions, /else if \(existingImage\?\.asset\?\._ref\) \{[\s\S]*?nextService\.image =/);
 });
 
 test("the city dashboard and schema expose the same editor for every city", () => {

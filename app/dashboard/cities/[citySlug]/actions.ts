@@ -169,15 +169,11 @@ async function uploadedLivingServiceImage(
   serviceKey: (typeof livingServiceKeys)[number],
 ) {
   const entry = formData.get(`livingServiceImage-${serviceKey}`);
-  const selected =
-    stringValue(formData, `livingServiceImageSelected-${serviceKey}`) === "1";
 
   if (!(entry instanceof File) || entry.size === 0) {
-    if (selected) {
-      throw new CityDashboardActionError(
-        "The service card image was not received. Please select it again.",
-      );
-    }
+    // A file input is empty when the editor is saving text-only changes. Keep
+    // the stored image below instead of relying on a client-side selection
+    // flag, which can be stale after a failed or cancelled selection.
     return undefined;
   }
 

@@ -25,10 +25,10 @@ test("empty city sections are conditional and configured sidebar values are opti
   assert.match(cityPageSource, /mapEntries\.length,/);
   assert.match(cityPageSource, /content: hasExploreContent \? \(/);
   assert.match(cityPageSource, /\{mapEntries\.length \? \(/);
-  assert.match(cityPageSource, /serviceCards\.length \|\| sidebarCards\.length \?/);
-  assert.match(cityPageSource, /return cardTitle \? \(/);
-  assert.match(cityPageSource, /\{cardText \? \(/);
-  assert.match(cityPageSource, /\{cardHref && cardButton \? \(/);
+  assert.match(cityPageSource, /serviceCards\.length \|\| additionalLivingCards\.length \?/);
+  assert.match(cityPageSource, /const additionalLivingCards = sidebarCards\.flatMap/);
+  assert.match(cityPageSource, /\{card\.text \? \(/);
+  assert.match(cityPageSource, /\{card\.href && card\.button \? \(/);
 });
 
 test("Provider Login is available only in the separated menu section and footer", () => {

@@ -1035,6 +1035,18 @@ export default function CityPage({
         automaticCards: serviceCards,
       }),
   );
+  const additionalLivingCards = sidebarCards.flatMap((card, index) => {
+    const title = localizedField(card, "title", lang);
+    if (!title) return [];
+
+    return [{
+      key: card._key || `additional-living-card-${index}`,
+      title,
+      text: localizedField(card, "text", lang),
+      href: localizedField(card, "href", lang),
+      button: localizedField(card, "button", lang),
+    }];
+  });
 
   {
     const experienceCopy = cityPageExperienceLocale(
@@ -1161,7 +1173,7 @@ export default function CityPage({
           <RecommendationGuideBody content={experienceCopy.livingBody} />
         ) : null,
         supportingContent:
-          serviceCards.length || sidebarCards.length ? (
+          serviceCards.length || additionalLivingCards.length ? (
             <>
               {serviceCards.map((card) => (
                 <article
@@ -1198,36 +1210,29 @@ export default function CityPage({
                 </article>
               ))}
 
-              {sidebarCards.map((card, index) => {
-                const cardTitle = localizedField(card, "title", lang);
-                const cardText = localizedField(card, "text", lang);
-                const cardHref = localizedField(card, "href", lang);
-                const cardButton = localizedField(card, "button", lang);
-
-                return cardTitle ? (
-                  <article
-                    key={`${cardHref}-${index}`}
-                    className="min-w-0 rounded-2xl bg-white p-5 shadow-xl shadow-black/10"
-                  >
-                    <h3 className="text-xl font-medium text-stone-950">
-                      {cardTitle}
-                    </h3>
-                    {cardText ? (
-                      <p className="mt-3 text-sm leading-6 text-stone-700">
-                        {cardText}
-                      </p>
-                    ) : null}
-                    {cardHref && cardButton ? (
-                      <a
-                        href={cardHref}
-                        className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
-                      >
-                        {cardButton}
-                      </a>
-                    ) : null}
-                  </article>
-                ) : null;
-              })}
+              {additionalLivingCards.map((card) => (
+                <article
+                  key={card.key}
+                  className="min-w-0 rounded-2xl bg-white p-5 shadow-xl shadow-black/10"
+                >
+                  <h3 className="text-xl font-medium text-stone-950">
+                    {card.title}
+                  </h3>
+                  {card.text ? (
+                    <p className="mt-3 text-sm leading-6 text-stone-700">
+                      {card.text}
+                    </p>
+                  ) : null}
+                  {card.href && card.button ? (
+                    <a
+                      href={card.href}
+                      className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#1a1f2e] px-5 py-2.5 text-sm text-white hover:bg-stone-800"
+                    >
+                      {card.button}
+                    </a>
+                  ) : null}
+                </article>
+              ))}
             </>
           ) : null,
       },
