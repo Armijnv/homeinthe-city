@@ -50,14 +50,14 @@ export default function CityInterpreterPage({
   return (
     <main className="min-h-screen bg-stone-50 px-4 pb-16 pt-28 sm:px-6 sm:pb-20 sm:pt-32">
       <div className="mx-auto max-w-6xl">
-        <section className="mb-10 max-w-3xl">
-          <p className="mb-3 text-xs uppercase tracking-[0.22em] text-stone-500">{value(page, "eyebrow", lang) || t.eyebrow}</p>
-          <h1 className="mb-5 text-4xl font-light leading-tight text-stone-900 sm:text-5xl">{heading}</h1>
-          {intro ? <p className="text-base leading-7 text-stone-600 sm:text-lg">{intro}</p> : null}
-        </section>
-
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1.7fr)_minmax(18rem,0.8fr)] lg:items-start">
           <div className="min-w-0 space-y-10">
+            <section className="max-w-3xl">
+              <p className="mb-3 text-xs uppercase tracking-[0.22em] text-stone-500">{value(page, "eyebrow", lang) || t.eyebrow}</p>
+              <h1 className="mb-5 text-4xl font-light leading-tight text-stone-900 sm:text-5xl">{heading}</h1>
+              {intro ? <p className="text-base leading-7 text-stone-600 sm:text-lg">{intro}</p> : null}
+            </section>
+
             <section>
               <h2 className="mb-6 text-3xl font-light text-stone-900">{t.interpreters}</h2>
               <div className="grid gap-5 md:grid-cols-2">

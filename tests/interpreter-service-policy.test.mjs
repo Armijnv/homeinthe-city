@@ -278,6 +278,8 @@ test("all city interpreter URLs use the slug-driven shared route and legacy rout
   assert.match(dynamicRouteSource, /CityInterpreterPage/);
   assert.doesNotMatch(dynamicRouteSource, /interpreterCityForSlug|interpreterPages/);
   assert.match(pageSource, /lg:grid-cols-\[minmax\(0,1\.7fr\)_minmax\(18rem,0\.8fr\)\]/);
+  assert.match(pageSource, /<div className="min-w-0 space-y-10">\s*<section className="max-w-3xl">/);
+  assert.match(pageSource, /<aside className="space-y-4 lg:sticky lg:top-28">/);
   assert.match(pageSource, /hasCta \|\| hasPricing/);
   assert.match(sitemapSource, /cityInterpreterCoverageQuery/);
   for (const source of legacyRoutes) {
