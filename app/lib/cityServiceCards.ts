@@ -8,6 +8,10 @@ import type {
 } from "@/app/lib/cityPageExperience";
 import { cityInterpreterRoute } from "@/app/lib/interpreterRoutes";
 import { cityInterpreterPath } from "@/app/lib/cityInterpreterCoverage";
+import {
+  automaticInterpreterServiceCopy,
+  localizedAutomaticServiceValue,
+} from "@/app/lib/automaticCityServiceLocalization";
 
 export type AutomaticCityServiceCard = {
   kind: "interpreter" | "real-estate";
@@ -93,21 +97,16 @@ export function automaticCityServiceCards({
 
   if (hasInterpreterCoverage) {
     const custom = presentation?.interpreter?.[lang];
+    const copy = automaticInterpreterServiceCopy({
+      lang,
+      cityName,
+      presentation: custom,
+    });
     cards.push({
       kind: "interpreter",
-      title: custom?.title?.trim() ||
-        lang === "pt"
-          ? `Serviços de intérprete em ${cityName}`
-          : lang === "nl"
-            ? `Tolkdiensten in ${cityName}`
-            : `Interpreter services in ${cityName}`,
-      text: custom?.description?.trim(),
-      button: custom?.buttonLabel?.trim() ||
-        lang === "pt"
-          ? "Serviços de intérprete"
-          : lang === "nl"
-            ? "Tolkdiensten"
-            : "Interpreter services",
+      title: copy.title,
+      text: copy.description,
+      button: copy.button,
       href: interpreterHref,
       image: presentation?.interpreter?.image,
     });
@@ -118,9 +117,9 @@ export function automaticCityServiceCards({
     const custom = presentation?.realEstate?.[lang];
     cards.push({
       kind: "real-estate",
-      title: custom?.title?.trim() || copy.title(cityName),
-      text: custom?.description?.trim() || undefined,
-      button: custom?.buttonLabel?.trim() || copy.button,
+      title: localizedAutomaticServiceValue(custom?.title, copy.title(cityName)),
+      text: localizedAutomaticServiceValue(custom?.description, undefined),
+      button: localizedAutomaticServiceValue(custom?.buttonLabel, copy.button),
       href: `${copy.pathPrefix}/${citySlug}`,
       image: presentation?.realEstate?.image,
     });

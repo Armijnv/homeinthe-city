@@ -9,6 +9,9 @@ const policy = await loadTypeScriptModule(
 const presentation = await loadTypeScriptModule(
   "app/lib/servicePagePresentation.ts",
 );
+const automaticCityServiceLocalization = await loadTypeScriptModule(
+  "app/lib/automaticCityServiceLocalization.ts",
+);
 
 function provider(citySlug, roles = ["interpreter"], options = {}) {
   return {
@@ -307,6 +310,51 @@ test("city-page interpreter cards require published coverage and use the shared 
   assert.match(cardsSource, /hasInterpreterCoverage/);
   assert.match(cardsSource, /@\/app\/lib\/cityInterpreterCoverage/);
   assert.doesNotMatch(cardsSource, /interpreterCityForSlug/);
+});
+
+test("automatic city-service cards use the requested locale before falling back", async () => {
+  const cardsSource = await readFile(
+    new URL("../app/lib/cityServiceCards.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(cardsSource, /automaticInterpreterServiceCopy/);
+  assert.match(cardsSource, /localizedAutomaticServiceValue/);
+  assert.match(cardsSource, /custom = presentation\?\.realEstate\?\.\[lang\]/);
+  assert.match(cardsSource, /presentation: custom/);
+
+  assert.equal(
+    automaticCityServiceLocalization.automaticInterpreterServiceCopy({
+      lang: "en",
+      cityName: "Aracaju",
+      presentation: { title: "Business interpreter services in Aracaju" },
+    }).title,
+    "Business interpreter services in Aracaju",
+  );
+  assert.equal(
+    automaticCityServiceLocalization.automaticInterpreterServiceCopy({
+      lang: "nl",
+      cityName: "Porto Alegre",
+      presentation: { title: "Zakelijke tolk in Porto Alegre" },
+    }).title,
+    "Zakelijke tolk in Porto Alegre",
+  );
+  assert.equal(
+    automaticCityServiceLocalization.automaticInterpreterServiceCopy({
+      lang: "pt",
+      cityName: "Porto Alegre",
+      presentation: { title: "Serviços de intérprete em Porto Alegre" },
+    }).title,
+    "Serviços de intérprete em Porto Alegre",
+  );
+  assert.equal(
+    automaticCityServiceLocalization.automaticInterpreterServiceCopy({
+      lang: "nl",
+      cityName: "Porto Alegre",
+      presentation: { title: "" },
+    }).title,
+    "Tolkdiensten in Porto Alegre",
+  );
 });
 
 test("city interpreter coverage carries each provider's existing verification status to the shared card", async () => {
